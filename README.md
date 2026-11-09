@@ -26,13 +26,13 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 | Spade swing / dig | X / K | DIG |
 | **Boot Stomp** (pogo) | Hold Down while in the air | ▼ |
 | **THE DIGGER BOOT** (super) | C / L when the boot meter is full | BOOT |
-| Sprint | Shift (or just keep running: *Cruise Control* kicks in) | automatic |
+| Sprint | Shift (or just keep running: *Full Throttle* kicks in) | automatic |
 | Pause / Mute | P or Esc / M | |
 
 ## The Digger Boot
 
 - **Boot Stomp:** hold Down in mid-air to come down heel-first on critics' heads
-  and on dirt blocks, bouncing off them. Chain three for "I DO MY OWN STUNTS!",
+  and on dirt blocks, bouncing off them. Chain three for "YEEHAW!",
   five for "DIGG. OR DIE!"
 - **THE DIGGER BOOT:** dig dirt, grab oil and gold, beat critics and land hits
   on the boss to fill the boot meter (top-left). Press **C** and a giant
@@ -42,7 +42,7 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 ## The critics
 
 - **Critic** (beret, notepad): patrols, yells "C MINUS!", "NO SUBSTANCE!",
-  "TOO MUCH LATEX!", and throws C- grade cards.
+  "SELF-INDULGENT!", and throws C- grade cards.
 - **Blogger** (propeller cap, laptop): hovers and posts "#DIGGERFAIL". Perfect
   for stomp chains.
 - **Rotten Critic** (trench coat): lobs rotten tomatoes from ledges.
