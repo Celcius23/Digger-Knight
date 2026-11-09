@@ -121,9 +121,10 @@ parachutes gliding down to a ring of ice.
 
 **The ice ring.** Tom and Sam brawl on an ice ring that melts as the clock
 runs. You're at the data center's terminal: rotate the tiles to route power to
-the shutdown switch. The data center's AI keeps talking ("If you don't destroy
-me, Sam Altman will fall. Yes, Tom Cruise falls with him. That is the price."),
-and behind it all is a wall of Tom Cruise's movies, to remind you what you'd lose.
+the shutdown switch. Meanwhile the data center's AI murmurs at you, calm and a
+little too friendly ("The ice was thicker an hour ago." "They are holding on to
+each other. That is how it works."). Behind it all, a drifting wall of Tom
+Cruise's movies reminds you what you'd lose.
 
 Whatever happens, the game cuts out: **THANKS FOR PLAYING THE DEMO. BUY THE
 FULL VERSION ON STEAM.** Then a store page opens, with screenshots from your own
