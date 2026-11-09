@@ -2313,7 +2313,6 @@ function openStore() {
   el.hidden = false; el.scrollTop = 0;
   const big = el.querySelector('#st-big'), thumbs = el.querySelectorAll('.st-thumbs img');
   thumbs.forEach(t => t.addEventListener('click', () => { big.src = t.src; thumbs.forEach(x => x.classList.remove('on')); t.classList.add('on'); t.scrollIntoView({ block: 'nearest', inline: 'center' }); }));
-  let slide = 0; el._timer = setInterval(() => { if (!thumbs.length) return; slide = (slide + 1) % thumbs.length; thumbs[slide].click(); }, 4000);
   const modal = el.querySelector('.st-modal');
   el.querySelectorAll('.st-cart').forEach(b => b.addEventListener('click', () => { modal.hidden = false; }));
   el.querySelector('.st-ok').addEventListener('click', () => { modal.hidden = true; });
