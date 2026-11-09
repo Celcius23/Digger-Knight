@@ -61,7 +61,6 @@
   .st-main{display:flex;gap:14px;background:rgba(0,0,0,.2);padding:0 0 12px}
   .st-media{flex:1 1 600px;min-width:0}
   #st-big{width:100%;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated;display:block;background:#000}
-  .st-capline{font-size:12px;color:#8f98a0;margin-top:6px;min-height:16px}
   .st-thumbs{display:flex;gap:4px;overflow-x:auto;margin-top:6px;padding-bottom:4px}
   .st-thumbs img{width:116px;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated;opacity:.6;border:2px solid transparent;cursor:pointer;flex:none}
   .st-thumbs img.on{opacity:1;border-color:#fff}
@@ -2133,7 +2132,7 @@ function snapMaybe() {
   else if (state === 'vn' && vn && vn.script[vn.i].log && vn.lt === 80) tag = 'lab';
   else if (state === 'shoot' && hero && hero.x > 40 * TS && !sDeadT && !sArena) tag = 'shoot';
   else if (state === 'shoot' && hero && hero.x > 80 * TS && !sDeadT && !sArena && SHOTS.shoot) tag = 'shoot2';
-  else if (state === 'shoot' && sArena && sBoss.t === 140) tag = 'sam';
+  else if (state === 'shoot' && sArena && sBoss.t === 26) tag = 'sam';
   if (tag && !SHOTS[tag]) try { SHOTS[tag] = cv.toDataURL('image/png'); } catch (e) { }
 }
 
@@ -2190,20 +2189,91 @@ function renderFilmShot(title, year, kind, seed) {
   }
   if (!['vault', 'cliff', 'bridge', 'tower', 'train'].includes(kind) && rr() < 0.6) runner(20 + rr() * 260, 136, '#000000aa'); // he's always running somewhere
   // letterbox + caption
-  F(0, 0, VW, 16, '#000'); F(0, VH - 26, VW, 26, '#000');
-  g.font = '8px ' + FONT; g.textBaseline = 'top'; g.textAlign = 'right'; g.fillStyle = '#888'; g.fillText(String(year), VW - 6, 4);
-  g.textAlign = 'center'; g.fillStyle = '#fff';
-  wrap(title, 38).slice(0, 2).forEach((l, k, arr) => g.fillText(l, VW / 2, VH - 22 + k * 10 + (arr.length === 1 ? 5 : 0)));
+  F(0, 0, VW, 12, '#000'); F(0, VH - 12, VW, 12, '#000');
   return c.toDataURL('image/png');
+}
+
+/* ----- "FULL VERSION" GENRE SCREENSHOTS: the cast, in every genre on the store page ----- */
+function put(kind, x, y, sc = 2, face = 1, extra = {}) {
+  ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.scale(sc, sc);
+  const o = Object.assign({ x: 3, y: 2, w: 10, h: 14, face, vx: 0, onGround: true, pogo: false, atk: 0, sprint: false, t: 7, throwT: 0, shootT: 0, enraged: false, state: 'idle', dir: face }, extra);
+  if (kind === 'digger') drawTom(o, 7);
+  else if (kind === 'hunt') drawHunt(o, 7);
+  else if (kind === 'sam') drawSamSmall(0, 0, face, extra.punch);
+  else if (kind === 'ina') drawInaSmall(0, 0, face, 7);
+  else if (kind === 'critic') drawCritic(o);
+  else if (kind === 'blogger') drawBlogger(Object.assign(o, { x: 2, y: 3 }));
+  else if (kind === 'thrower') drawThrower(Object.assign(o, { x: 2 }));
+  else if (kind === 'bro' || kind === 'drone' || kind === 'desk') drawBro(Object.assign(o, { type: kind }));
+  else if (kind === 'snobb') drawBoss(Object.assign(o, { x: 4, y: 2, w: 24, h: 34 }));
+  ctx.restore();
+}
+function genreShots() {
+  const sky = (a, b) => { const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, a); g.addColorStop(1, b); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); };
+  const band = (l, r2) => { R(0, 0, VW, 14, '#000a'); if (l) text(l, 4, 3, '#fff'); if (r2) text(r2, VW - 4, 3, '#ffd84a', 'right'); };
+  const bar = (x, y, w, f, c) => { R(x, y, w, 5, '#300'); R(x, y, Math.round(w * f), 5, c); };
+  const panel = (x, y, w, h) => { R(x, y, w, h, '#101830'); R(x, y, w, 1, '#8ab'); R(x, y + h - 1, w, 1, '#8ab'); R(x, y, 1, h, '#8ab'); R(x + w - 1, y, 1, h, '#8ab'); };
+  const boom = (x, y, r = 14) => { for (const [k, c] of [[1, '#c8321a'], [0.7, '#ff9a2a'], [0.4, '#fff6c8']]) { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r * k, 0, 7); ctx.fill(); } };
+  const floor = (y, c, top) => { R(0, y, VW, VH - y, c); if (top) R(0, y, VW, 2, top); };
+  const disc = (x, y, r, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); };
+  const sil = fn => { ctx.save(); ctx.filter = 'brightness(0)'; fn(); ctx.restore(); };
+  const rnd = rng(42);
+  const S = {
+    'Action': () => { drawCampusBG(300); floor(140, '#30364a', '#8a95ab'); put('hunt', 50, 108, 2, 1, { shootT: 8 }); R(92, 120, 70, 2, '#ffb000'); put('drone', 190, 46, 2, -1); boom(206, 62); put('bro', 236, 108, 2, -1); band('ACTION', 'COMBO x12'); },
+    'Adventure': () => { sky('#0e0a06', '#2a1c10'); ctx.save(); ctx.globalAlpha = 0.35; disc(118, 112, 60, '#ffb050'); ctx.restore(); floor(140, '#2a1a10', '#4a3020'); put('digger', 80, 108, 2); R(112, 104, 3, 12, '#6a4a2a'); disc(113, 102, 4, '#fd0'); R(220, 124, 30, 16, '#8a5a2b'); R(220, 128, 30, 2, '#e6b422'); R(232, 130, 6, 5, '#e6b422'); band('ADVENTURE', 'MAP 37%'); },
+    'RPG': () => { sky('#1a2a1a', '#3a5a3a'); floor(116, '#2a4a2a'); put('critic', 40, 52, 3, 1); put('digger', 230, 60, 2, -1); put('ina', 266, 78, 2, -1); panel(4, 124, 312, 52); text('TOM', 12, 130, '#ffd84a'); text('LV 42', 70, 130, '#fff'); bar(130, 132, 90, 0.8, '#4c4'); text('ALEJANDRO', 12, 144, '#fff'); text('LV 40', 92, 144, '#fff'); bar(150, 146, 70, 0.6, '#4c4'); text('FIGHT  MAGIC  ITEM  RUN', 12, 162, '#9cf'); band('RPG', 'GOLD 4200'); },
+    'JRPG': () => { for (let y = 0; y < 12; y++) for (let x = 0; x < 20; x++) R(x * 16, y * 16, 16, 16, (x + y) % 2 ? '#5aa04a' : '#62a852'); R(0, 72, VW, 20, '#c8a870'); for (const hx of [40, 200]) { R(hx, 24, 48, 40, '#d8c8a8'); ctx.fillStyle = '#a03a2a'; ctx.beginPath(); ctx.moveTo(hx - 6, 26); ctx.lineTo(hx + 24, 6); ctx.lineTo(hx + 54, 26); ctx.fill(); R(hx + 18, 44, 12, 20, '#6a4a2a'); } put('digger', 130, 60, 1.5); put('ina', 160, 60, 1.5, -1); panel(8, 118, 304, 54); text('ALEJANDRO:', 16, 126, '#ffd84a'); text('IN THIS VILLAGE WE SHOOT', 16, 140, '#fff'); text('ONLY IN NATURAL LIGHT.', 16, 152, '#fff'); band('JRPG', 'HOLLYDIG VILLAGE'); },
+    'Strategy': () => { for (let y = 1; y < 12; y++) for (let x = 0; x < 20; x++) R(x * 16, y * 16, 16, 16, hash(x, y) % 7 === 0 ? '#4a6a8a' : hash(x, y) % 5 === 0 ? '#3a6a2a' : '#7aa05a'); ctx.save(); ctx.globalAlpha = 0.35; for (let y = 5; y < 9; y++) for (let x = 3; x < 8; x++) R(x * 16, y * 16, 16, 16, '#48f'); ctx.restore(); for (let y = 0; y < 12; y++) R(0, y * 16, VW, 1, '#0002'); for (let x = 0; x < 20; x++) R(x * 16, 0, 1, VH, '#0002'); for (const [x, y] of [[4, 6], [5, 7], [3, 8]]) put('digger', x * 16, y * 16, 1); for (const [x, y] of [[14, 4], [15, 6], [13, 7], [16, 8]]) put('bro', x * 16, y * 16, 1, -1); band('STRATEGY', 'TURN 12'); },
+    'Simulation': () => { sky('#2a2a3a', '#4a4a5a'); floor(130, '#3a3030'); R(40, 96, 30, 4, '#8a5a2b'); R(44, 100, 2, 30, '#8a5a2b'); R(64, 100, 2, 30, '#8a5a2b'); R(40, 80, 30, 16, '#222'); put('ina', 40, 64, 2); R(150, 70, 30, 20, '#333'); R(176, 74, 10, 8, '#555'); R(160, 90, 4, 40, '#555'); panel(200, 22, 116, 66); text('BUDGET', 206, 28, '#fff'); bar(206, 38, 100, 0.12, '#f55'); text('MORALE', 206, 48, '#fff'); bar(206, 58, 100, 0.4, '#fa3'); text('TAKES 4.2M', 206, 70, '#ffd84a'); band('SIMULATION', 'DAY 312'); },
+    'Sports': () => { for (let x = 0; x < VW; x += 32) R(x, 14, 16, VH, '#3a8a3a'); for (let x = 16; x < VW; x += 32) R(x, 14, 16, VH, '#45964a'); R(0, 100, VW, 1, '#fff'); R(272, 70, 4, 60, '#fff'); R(272, 70, 44, 3, '#fff'); put('digger', 100, 96, 2.2); disc(150, 128, 5, '#fff'); R(148, 126, 3, 3, '#222'); put('sam', 240, 86, 2.4, -1); band('SPORTS', 'TOM 3 - 2 SAM'); },
+    'Racing': () => { R(0, 0, VW, VH, '#d9b26a'); R(100, 0, 120, VH, '#3a3a42'); for (let y = 6; y < VH; y += 24) { R(141, y, 2, 12, '#eee'); R(177, y, 2, 12, '#eee'); } R(100, 0, 3, VH, '#eee'); R(217, 0, 3, VH, '#eee'); R(147, 30, 26, 40, '#f0f0f0'); R(149, 63, 22, 5, '#6a8ab0'); const x = 196; R(x - 2, 134, 4, 7, '#111'); R(x - 2, 158, 4, 8, '#111'); R(x - 3, 139, 6, 21, '#222'); R(x - 6, 146, 12, 6, '#141414'); R(x - 3, 143, 6, 6, '#2b1a10'); for (let i = 0; i < 6; i++) R(x - 1 + (i % 2) * 2, 168 + i * 2, 1, 4, '#fff8'); band('RACING', 'LAP 2/3  POS 2'); },
+    'Puzzle': () => { R(0, 0, VW, VH, '#1a1030'); const cols = ['#f44', '#4cf', '#fd3', '#6e6', '#c6f']; for (let y = 0; y < 7; y++) for (let x = 0; x < 10; x++) { const c = cols[hash(x, y + 3) % 5]; R(80 + x * 16 + 2, 22 + y * 16 + 2, 12, 12, c); R(82 + x * 16 + 2, 24 + y * 16 + 2, 4, 4, '#fff8'); } ctx.save(); ctx.globalAlpha = 0.4; R(80 + 3 * 16, 22 + 3 * 16, 64, 16, '#fff'); ctx.restore(); put('critic', 10, 120, 2); text('COMBO x4', 240, 150, '#ffd84a', 'center'); band('PUZZLE', 'SCORE 12,900'); },
+    'Platformer': () => { drawBG(900); for (let x = 0; x < VW; x += 16) { R(x, 144, 16, 36, '#5a3620'); R(x, 144, 16, 4, '#3d9c4a'); } R(160, 104, 48, 12, '#5a3620'); R(160, 104, 48, 3, '#3d9c4a'); put('digger', 120, 70, 2, 1, { onGround: false, pogo: true }); put('blogger', 230, 60, 2, -1); for (let i = 0; i < 4; i++) { R(60 + i * 14, 120, 6, 6, '#ffd84a'); } band('PLATFORMER', 'BOX OFFICE $42M'); },
+    'Shooter': () => { drawCampusBG(1200); floor(140, '#30364a', '#8a95ab'); put('hunt', 40, 108, 2, 1, { shootT: 8 }); for (let i = 0; i < 3; i++) R(90 + i * 40, 120, 10, 2, '#ffb000'); put('bro', 210, 108, 2, -1, { throwT: 20 }); put('desk', 260, 108, 2, -1); band('SHOOTER', 'AMMO 12/48'); },
+    'FPS': () => { R(0, 0, VW, VH, '#2a2e3a'); ctx.fillStyle = '#3a4050'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(110, 50); ctx.lineTo(110, 130); ctx.lineTo(0, 180); ctx.fill(); ctx.beginPath(); ctx.moveTo(VW, 0); ctx.lineTo(210, 50); ctx.lineTo(210, 130); ctx.lineTo(VW, 180); ctx.fill(); R(110, 50, 100, 80, '#1a1d26'); ctx.fillStyle = '#4a5060'; ctx.beginPath(); ctx.moveTo(0, 180); ctx.lineTo(110, 130); ctx.lineTo(210, 130); ctx.lineTo(VW, 180); ctx.fill(); put('bro', 136, 64, 3, -1, { throwT: 20 }); R(158, 88, 4, 1, '#f44'); R(160, 86, 1, 5, '#f44'); R(196, 130, 40, 24, '#222'); R(206, 120, 14, 12, '#333'); R(224, 152, 40, 28, '#f0c39a'); band('FPS', 'HP 100  AMMO 30'); },
+    'Fighting': () => { sky('#f08a4b', '#5a2a5a'); floor(150, '#3a2030', '#6a4050'); put('digger', 50, 46, 6, 1, { atk: 8 }); put('sam', 196, 46, 6, -1, { punch: 1 }); text('TOM', 6, 6, '#fff'); bar(6, 16, 130, 0.7, '#fd3'); text('SAM', VW - 6, 6, '#fff', 'right'); R(184, 16, 130, 5, '#300'); R(184 + 130 * 0.55, 16, 130 * 0.45, 5, '#fd3'); text('ROUND 2', VW / 2, 30, '#fff', 'center', 16); },
+    'Horror': () => { R(0, 0, VW, VH, '#050505'); const g = ctx.createRadialGradient(150, 120, 4, 150, 120, 110); g.addColorStop(0, '#5a5a4a'); g.addColorStop(1, '#0000'); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); put('digger', 40, 108, 2); sil(() => put('critic', 230, 92, 3, -1)); R(250, 108, 3, 2, '#f00'); R(258, 108, 3, 2, '#f00'); text('SANITY', 6, 164, '#aaa'); bar(64, 166, 80, 0.2, '#a33'); },
+    'Survival': () => { sky('#0a1a2a', '#3a5a7a'); floor(140, '#e8f0f8', '#fff'); for (let i = 0; i < 80; i++) R(rnd() * VW, rnd() * 140, 1, 1, '#fff'); R(150, 132, 20, 4, '#5a3a20'); disc(160, 126, 8, '#ff9a2a'); disc(160, 128, 4, '#fff6a0'); put('hunt', 110, 108, 2); text('HUNGER', 6, 18, '#fff'); bar(70, 20, 60, 0.3, '#fa3'); text('COLD', 6, 30, '#fff'); bar(70, 32, 60, 0.8, '#6cf'); band('SURVIVAL', 'DAY 19'); },
+    'Open World': () => { sky('#7ab8f0', '#e8f4ff'); for (const [y, c] of [[90, '#8a9ab0'], [110, '#5a8a4a'], [130, '#4a7a3a']]) { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(0, VH); for (let x = 0; x <= VW; x += 20) ctx.lineTo(x, y - Math.sin(x * 0.03 + y) * 14); ctx.lineTo(VW, VH); ctx.fill(); } R(0, 150, VW, 6, '#4a8ad0'); put('digger', 150, 112, 1.5); panel(260, 18, 56, 44); R(266, 24, 44, 32, '#5a8a4a'); R(286, 38, 3, 3, '#ffd84a'); band('OPEN WORLD', 'QUESTS 1,204'); },
+    'Sandbox': () => { sky('#8ac8f0', '#d8f0ff'); for (let x = 0; x < VW; x += 16) { const h = 3 + (hash(x, 1) % 3); for (let k = 0; k < h; k++) R(x, VH - 16 - k * 16, 16, 16, k === h - 1 ? '#5aa04a' : k > h - 3 ? '#8a5a2b' : '#7a7a80'); R(x, VH - 16 - (h - 1) * 16, 16, 1, '#0003'); } put('digger', 140, 60, 2); for (let i = 0; i < 6; i++) { panel(100 + i * 20, 160, 18, 18); R(104 + i * 20, 164, 10, 10, ['#5aa04a', '#8a5a2b', '#7a7a80', '#c33', '#36c', '#fd3'][i]); } band('SANDBOX', 'BUILD MODE'); },
+    'Roguelike': () => { R(0, 0, VW, VH, '#0a0a10'); for (let y = 1; y < 12; y++) for (let x = 0; x < 20; x++) { const wall = x === 0 || x === 19 || y === 1 || y === 11 || (x === 9 && y < 7); R(x * 16, y * 16, 15, 15, wall ? '#3a3a4a' : '#1a1a24'); } put('digger', 150, 100, 1.5); put('critic', 60, 50, 1.5); put('blogger', 230, 120, 1.5, -1); R(250, 50, 8, 8, '#ffd84a'); band('ROGUELIKE', 'FLOOR 7  RUN 4,200,000'); },
+    'Metroidvania': () => { R(0, 0, VW, VH, '#1a1428'); for (let y = 0; y < VH; y += 12) for (let x = (y / 12) % 2 * 12; x < VW; x += 24) R(x, y, 22, 10, '#241c36'); floor(144, '#3a2e4a', '#5a4a6a'); R(250, 90, 30, 54, '#000'); put('digger', 60, 112, 2); panel(240, 18, 76, 40); for (let i = 0; i < 12; i++) R(246 + (i % 6) * 11, 24 + Math.floor(i / 6) * 14, 9, 11, i === 7 ? '#ffd84a' : '#3a5a8a'); text('NEW ABILITY:', VW / 2, 70, '#fff', 'center'); text('ONE MORE TAKE', VW / 2, 82, '#ffd84a', 'center'); band('METROIDVANIA', '71%'); },
+    'Souls-like': () => { sky('#0a0a0a', '#2a2a2a'); ctx.save(); ctx.globalAlpha = 0.3; for (let i = 0; i < 6; i++) disc(rnd() * VW, 120 + rnd() * 40, 40, '#888'); ctx.restore(); floor(150, '#1a1a1a'); put('snobb', 120, 10, 4, -1); put('digger', 50, 126, 1.5); bar(6, 6, 90, 0.9, '#a33'); bar(6, 14, 70, 0.5, '#4a4'); R(40, 160, 240, 16, '#000a'); text('MORTIMER, THE UNFORGIVING', VW / 2, 162, '#ddd', 'center'); },
+    'Stealth': () => { drawCampusBG(2000); floor(140, '#30364a', '#8a95ab'); R(20, 40, 90, 22, '#3a4050'); for (let x = 24; x < 106; x += 6) R(x, 42, 2, 18, '#2a2e3a'); put('hunt', 40, 30, 1.8); ctx.save(); ctx.globalAlpha = 0.25; ctx.fillStyle = '#fd3'; ctx.beginPath(); ctx.moveTo(214, 116); ctx.lineTo(120, 100); ctx.lineTo(120, 140); ctx.fill(); ctx.restore(); put('bro', 206, 108, 2, -1); text('HIDDEN', 6, 164, '#7f7'); band('STEALTH', 'ALERT 0%'); },
+    'Rhythm': () => { sky('#1a0430', '#4a0a5a'); for (let l = 0; l < 4; l++) { R(150 + l * 36, 14, 30, 140, '#0005'); R(150 + l * 36, 150, 30, 6, '#fff4'); for (let k = 0; k < 3; k++) { const y = 30 + ((l * 37 + k * 50) % 110); R(155 + l * 36, y, 20, 8, ['#f4a', '#4cf', '#fd3', '#6e6'][l]); } } put('ina', 20, 80, 3); text('PERFECT!', 220, 120, '#ffd84a', 'center', 16); band('RHYTHM', 'COMBO 128'); },
+    'Hack and Slash': () => { sky('#2a0a0a', '#6a1a1a'); floor(150, '#2a1010', '#5a2020'); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; put(i % 2 ? 'critic' : 'thrower', 150 + Math.cos(a) * 110, 90 + Math.sin(a) * 40, 1.6, Math.cos(a) > 0 ? -1 : 1); } put('digger', 130, 70, 3, 1, { atk: 8 }); ctx.strokeStyle = '#fff8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(160, 100, 50, -0.5, 2.6); ctx.stroke(); ctx.lineWidth = 1; band('HACK AND SLASH', 'x87 HITS'); },
+    'Bullet Hell': () => { R(0, 0, VW, VH, '#05040f'); for (let i = 0; i < 60; i++) R(rnd() * VW, rnd() * VH, 1, 1, '#88a'); put('sam', 140, 16, 2.5); for (let r = 0; r < 3; r++) for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2 + r * 0.2, d = 40 + r * 34; disc(160 + Math.cos(a) * d, 50 + Math.sin(a) * d * 0.8, 3, ['#f4a', '#4cf', '#fd3'][r]); } put('hunt', 150, 142, 1.3); band('BULLET HELL', 'GRAZE 999'); },
+    'Visual Novel': () => { sky('#2a2a4a', '#4a3a5a'); R(100, 20, 120, 70, '#1a1a2a'); portrait('tom', 6, 24, 1); portrait('frost', 250, 24, -1); panel(6, 120, 308, 56); text('DR. FROST:', 14, 126, '#ffd84a'); text('> ONE MORE TAKE', 14, 142, '#fff'); text('  STOP. PLEASE STOP.', 14, 156, '#aaa'); },
+    'Story Rich': () => { sky('#3a1a5a', '#ffc060'); disc(160, 120, 30, '#fff2b0'); R(0, 120, VW, 60, '#1a1018'); sil(() => { put('hunt', 120, 88, 2); put('ina', 160, 88, 2, -1); }); R(0, 0, VW, 22, '#000'); R(0, 150, VW, 30, '#000'); text('...AND THE LIGHT WAS PERFECT.', VW / 2, 160, '#ddd', 'center'); },
+    'Point & Click': () => { R(0, 0, VW, 140, '#5a3a22'); for (let x = 0; x < VW; x += 24) R(x, 0, 2, 140, '#4a2e1a'); R(200, 40, 60, 50, '#2a3a5a'); R(204, 44, 52, 42, '#6a9ac0'); floor(120, '#3a2414'); put('digger', 80, 74, 3); put('critic', 210, 82, 2.4, -1); R(0, 140, VW, 40, '#111'); for (let i = 0; i < 5; i++) panel(100 + i * 30, 146, 26, 26); R(108, 150, 3, 16, '#d2bb92'); R(106, 164, 7, 4, '#aaa'); R(134, 156, 14, 4, '#111'); R(166, 152, 10, 14, '#fff'); text('USE SPADE ON CRITIC', 6, 128, '#fff'); R(170, 96, 2, 8, '#fff'); R(168, 98, 6, 2, '#fff'); },
+    'Card Game': () => { R(0, 0, VW, VH, '#1a4a2a'); const card = (x, y, key, cost, atk) => { R(x, y, 56, 80, '#f0e8d0'); R(x + 3, y + 3, 50, 74, '#2a2a3a'); portrait(key, x + 9, y + 6, 1, 1.2); R(x + 3, y + 64, 50, 13, '#f0e8d0'); text(String(atk), x + 6, y + 67, '#a33'); disc(x + 49, y + 9, 7, '#36c'); text(String(cost), x + 46, y + 5, '#fff'); }; card(40, 80, 'tom', 7, 9); card(110, 80, 'ina', 5, 4); card(180, 80, 'frost', 3, 2); card(130, 0, 'sam', 9, 8); band('CARD GAME', 'TURN 7'); },
+    'Tower Defense': () => { R(0, 0, VW, VH, '#5a9a4a'); ctx.strokeStyle = '#c8a870'; ctx.lineWidth = 18; ctx.beginPath(); ctx.moveTo(0, 50); ctx.lineTo(120, 50); ctx.lineTo(120, 130); ctx.lineTo(240, 130); ctx.lineTo(240, 40); ctx.lineTo(VW, 40); ctx.stroke(); ctx.lineWidth = 1; for (const [x, y] of [[20, 34], [60, 34], [104, 80], [140, 116], [200, 116], [226, 70]]) put('bro', x, y, 1.1); for (const [x, y] of [[70, 76], [170, 90], [270, 70]]) { R(x, y + 20, 18, 6, '#888'); put('digger', x, y, 1.2); } band('TOWER DEFENSE', 'WAVE 12  LIVES 20'); },
+    'City Builder': () => { R(0, 0, VW, VH, '#6aa04a'); for (let x = 0; x < VW; x += 64) R(x + 28, 14, 8, VH, '#555'); for (let y = 40; y < VH; y += 56) R(0, y, VW, 8, '#555'); for (let i = 0; i < 14; i++) { const x = 4 + (i % 5) * 64, y = 18 + Math.floor(i / 5) * 56, dc = i % 3 !== 1; R(x, y, 22, 20, dc ? '#2a3a5a' : '#a03a2a'); R(x + 2, y + 2, 18, 3, dc ? '#9cf' : '#fd3'); } band('CITY BUILDER', 'POWER: -4.2 GW'); },
+    'Battle Royale': () => { R(0, 0, VW, VH, '#2a5a8a'); ctx.fillStyle = '#5a9a4a'; ctx.beginPath(); ctx.ellipse(160, 96, 130, 70, 0, 0, 7); ctx.fill(); ctx.save(); ctx.fillStyle = '#7a2a9a40'; ctx.fillRect(0, 0, VW, VH); ctx.restore(); ctx.strokeStyle = '#f3f'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(180, 96, 50, 0, 7); ctx.stroke(); ctx.lineWidth = 1; for (let i = 0; i < 40; i++) R(60 + rnd() * 200, 40 + rnd() * 110, 3, 3, ['#f44', '#fd3', '#4cf'][i % 3]); put('hunt', 172, 82, 1.2); band('BATTLE ROYALE', '47 LEFT'); },
+    'MMO': () => { R(0, 0, VW, VH, '#8a7a5a'); for (let y = 0; y < VH; y += 16) for (let x = (y / 16) % 2 * 8; x < VW; x += 16) R(x, y, 14, 14, '#9a8a6a'); const cast = ['digger', 'ina', 'critic', 'bro', 'sam', 'hunt', 'thrower', 'bro', 'critic', 'digger']; cast.forEach((k, i) => put(k, 20 + (i % 5) * 60, 30 + Math.floor(i / 5) * 50, 1.6, i % 2 ? -1 : 1)); panel(4, 128, 200, 48); text('[TRADE] WTS SPADE', 10, 134, '#fd3'); text('[LFG] DATA CENTER RAID', 10, 146, '#9cf'); text('[ALEJANDRO] NO CUTS', 10, 158, '#fff'); band('MMO', 'HOLLYDIG-02'); },
+    'Multiplayer': () => { const q = [['digger', '#3a6a9a', 'P1'], ['ina', '#9a3a6a', 'P2'], ['sam', '#6a9a3a', 'P3'], ['hunt', '#9a7a3a', 'P4']]; q.forEach(([k, c, l], i) => { const x = (i % 2) * 160, y = (i >> 1) * 90; R(x, y, 160, 90, c); R(x, y + 70, 160, 20, '#0004'); put(k, x + 60, y + 20, 2.5); text(l, x + 6, y + 6, '#fff'); }); R(159, 0, 2, VH, '#000'); R(0, 89, VW, 2, '#000'); },
+    'Co-op': () => { drawBG(1400); floor(140, '#5a3620', '#3d9c4a'); R(150, 140, 50, 40, '#140a1a'); put('digger', 100, 108, 2); put('ina', 196, 108, 2, -1); R(120, 108, 90, 6, '#555'); R(150, 96, 30, 14, '#333'); disc(186, 102, 5, '#9cf'); text('P1', 110, 96, '#4cf'); text('P2', 206, 96, '#f4a'); band('CO-OP', '2 PLAYERS'); },
+    'Casual': () => { sky('#ffe0f0', '#ffd0a0'); put('digger', 110, 30, 6); for (let i = 0; i < 5; i++) text('+1 TAKE', 60 + i * 50, 30 + (i % 2) * 20, '#c36', 'center'); panel(220, 120, 96, 26); text('UPGRADE', 268, 129, '#fff', 'center'); text('TAKES: 4,200,000', VW / 2, 160, '#c36', 'center'); },
+    'Indie': () => { sky('#3a4a6a', '#e8a080'); ctx.fillStyle = '#2a2a3a'; ctx.beginPath(); ctx.moveTo(0, 150); ctx.quadraticCurveTo(160, 90, VW, 150); ctx.lineTo(VW, VH); ctx.lineTo(0, VH); ctx.fill(); sil(() => put('digger', 150, 94, 1)); text('a game about', VW / 2, 30, '#fff8', 'center'); text('one more take', VW / 2, 42, '#fff8', 'center'); }
+  };
+  const out = [];
+  for (const [name, fn] of Object.entries(S)) {
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.filter = 'none'; ctx.globalAlpha = 1; R(0, 0, VW, VH, '#000');
+    try { fn(); } catch (e) { }
+    ctx.restore();
+    try { out.push({ src: cv.toDataURL('image/png'), cap: name }); } catch (e) { }
+  }
+  return out;
 }
 
 /* --------------------------- THE STORE PAGE --------------------------- */
 function openStore() {
   state = 'store';
   if (!SHOTS.title) { const st = state; state = 'title'; drawTitle(); try { SHOTS.title = cv.toDataURL('image/png'); } catch (e) { } state = st; }
-  const game = ['play', 'smile', 'lab', 'shoot', 'shoot2', 'sam'].filter(k => SHOTS[k]).map(k => ({ src: SHOTS[k], cap: 'Gameplay' }));
-  const films = FILMOGRAPHY.map(([t, y, k], i) => ({ src: renderFilmShot(t, y, k, i + 1), cap: 'From the filmography: ' + t + ' (' + y + ')' }));
-  const all = [...game, ...films], imgs = all.map(x => x.src);
+  const game = ['play', 'shoot', 'sam', 'smile', 'shoot2', 'lab'].filter(k => SHOTS[k]).map(k => ({ src: SHOTS[k] }));
+  const genres = genreShots();
+  const films = FILMOGRAPHY.map(([t, y, k], i) => ({ src: renderFilmShot(t, y, k, i + 1) }));
+  const all = [...game, ...genres, ...films], imgs = all.map(x => x.src);
   const cap = SHOTS.title || imgs[0] || '';
   const el = document.getElementById('store');
   el.innerHTML = `
@@ -2219,8 +2289,7 @@ function openStore() {
     <div class="st-main">
       <div class="st-media">
         <img id="st-big" src="${imgs[0] || cap}" alt="">
-        <div class="st-capline" id="st-capline">${all[0] ? all[0].cap : ''}</div>
-        <div class="st-thumbs"${imgs.length > 1 ? '' : ' hidden'}>${all.map((s, i) => `<img src="${s.src}" data-i="${i}" title="${s.cap}" class="${i ? '' : 'on'}" alt="${s.cap}">`).join('')}</div>
+        <div class="st-thumbs"${imgs.length > 1 ? '' : ' hidden'}>${all.map((s, i) => `<img src="${s.src}" data-i="${i}" class="${i ? '' : 'on'}" alt="">`).join('')}</div>
       </div>
       <div class="st-side">
         <img class="st-cap" src="${cap}" alt="">
@@ -2260,14 +2329,13 @@ function openStore() {
         <div class="st-rev"><b>An AI Bro</b><span class="neg">Not Recommended</span><p>"Didn't even let me finish my pitch."</p></div>
       </div>
     </div>
-    <div class="st-foot">A parody store page inside a fan-made game. Not affiliated with Valve or Steam. Nothing here can be purchased. The filmography stills are original pixel-art tributes, not frames from the films.
+    <div class="st-foot">A parody store page inside a fan-made game. Not affiliated with Valve or Steam. Nothing here can be purchased. The genre screenshots are mock-ups and the film stills are original pixel-art tributes, not frames from any film.
       <br><button class="st-again">Play again</button></div>
   </div></div>
   <div class="st-modal" hidden><div class="st-box"><h2>Purchase failed</h2><p>Tom has requested one more iteration of the checkout page. Please try again in 4,200,000 builds.</p><button class="st-ok">OK</button></div></div>`;
   el.hidden = false; el.scrollTop = 0;
   const big = el.querySelector('#st-big'), thumbs = el.querySelectorAll('.st-thumbs img');
-  const capline = el.querySelector('#st-capline');
-  thumbs.forEach(t => t.addEventListener('click', () => { big.src = t.src; capline.textContent = t.title; thumbs.forEach(x => x.classList.remove('on')); t.classList.add('on'); t.scrollIntoView({ block: 'nearest', inline: 'center' }); }));
+  thumbs.forEach(t => t.addEventListener('click', () => { big.src = t.src; thumbs.forEach(x => x.classList.remove('on')); t.classList.add('on'); t.scrollIntoView({ block: 'nearest', inline: 'center' }); }));
   let slide = 0; el._timer = setInterval(() => { if (!thumbs.length) return; slide = (slide + 1) % thumbs.length; thumbs[slide].click(); }, 4000);
   const modal = el.querySelector('.st-modal');
   el.querySelectorAll('.st-cart').forEach(b => b.addEventListener('click', () => { modal.hidden = false; }));

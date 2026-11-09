@@ -108,9 +108,11 @@ Clapperboards are still checkpoints, and dying is still just another take.
 ("ONE MORE MODEL AND WE FIX EVERYTHING. PROMISE."), with a full boss health bar,
 and starts lobbing RAM. The moment you pull the trigger, the game cuts out:
 **THANKS FOR PLAYING THE DEMO. BUY THE FULL VERSION ON STEAM.** Then a store
-page opens, with screenshots from your own playthrough plus a still for every
-one of Tom Cruise's 46 feature films (original pixel-art tributes, not frames
-from the movies), every popular genre tag, reviews and an Add to Cart button. It's a parody page ("STEEM"). Nothing can actually be bought.
+page opens. Its gallery starts with screenshots from your own playthrough,
+then a "full version" mock-up for every genre tag on the page (the cast in a
+fighting game, a tower defense, a card game, a horror game and so on), then an
+untitled still for each of Tom Cruise's 46 feature films (original pixel-art
+tributes, not frames from the movies). Plus reviews and an Add to Cart button. It's a parody page ("STEEM"). Nothing can actually be bought.
 
 Both playable levels are short: the shooter takes about a minute.
 
