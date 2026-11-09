@@ -11,7 +11,8 @@ Everything (pixel art, sound effects, chiptune music) is generated in code, so
 
 The soundtrack is generative. Each scene has its own original track: the
 platformer, the boss, the victory fanfare, breaking news, the lab, the smile,
-a 5/4 spy theme for the campus shooter, and the final boss. Every track is built from sections (intro,
+an original 7/8 spy theme that kicks in at Tom's transformation and drives the
+campus shooter, and the final boss. Every track is built from sections (intro,
 verse, chorus, bridge, breakdown) with their own chords, bass lines and drum
 patterns. Melodies grow from a motif that mutates each time a section returns,
 phrases end in drum fills, the boss and battle music intensify when things get
