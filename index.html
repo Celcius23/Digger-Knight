@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Top Shovel</title>
+<title>Digger: Digg or Die</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   html,body{margin:0;height:100%;background:#0b0710;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
@@ -21,13 +21,13 @@
 <div id="wrap"><canvas id="game" width="320" height="180"></canvas></div>
 <div id="touch">
   <div class="grp"><button data-k="left">&#9664;</button><button data-k="down">&#9660;</button><button data-k="right">&#9654;</button></div>
-  <div class="grp"><button data-k="attack">DIG</button><button data-k="jump">JUMP</button></div>
+  <div class="grp"><button data-k="boot">BOOT</button><button data-k="attack">DIG</button><button data-k="jump">JUMP</button></div>
 </div>
 <script>
 'use strict';
 /* =====================================================================
-   TOP SHOVEL — Tom Cruise vs. The Critics
-   A parody shovel-platformer. Everything (art, sound, music) is
+   DIGGER: DIGG. OR DIE. — Tom Cruise vs. The Critics
+   A parody shovel-platformer riffing on the movie "Digger". Everything (art, sound, music) is
    generated in code, so this single file is the whole game.
    ===================================================================== */
 const cv = document.getElementById('game');
@@ -54,7 +54,7 @@ const keys = {}, pressed = {};
 const KEYMAP = {
   ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
   ArrowDown: 'down', KeyS: 'down', ArrowUp: 'jump', KeyW: 'jump', KeyZ: 'jump', Space: 'jump', KeyJ: 'jump',
-  KeyX: 'attack', KeyK: 'attack', ShiftLeft: 'sprint', ShiftRight: 'sprint',
+  KeyX: 'attack', KeyK: 'attack', KeyC: 'boot', KeyL: 'boot', ShiftLeft: 'sprint', ShiftRight: 'sprint',
   Enter: 'start', KeyP: 'pause', Escape: 'pause', KeyM: 'mute'
 };
 function press(k) { if (!keys[k]) pressed[k] = true; keys[k] = true; initAudio(); }
@@ -113,6 +113,7 @@ const sfx = {
   check: () => { [523, 659, 784].forEach((f, i) => tone('square', f, f, 0.1, 0.15, i * 0.08)); },
   boom: () => { noise(0.4, 0.4, 500); tone('sawtooth', 120, 40, 0.4, 0.3); },
   win: () => { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone('square', f, f, 0.15, 0.15, i * 0.12)); },
+  whistle: () => tone('square', 1400, 260, 0.7, 0.12),
   die: () => { [392, 330, 262, 196].forEach((f, i) => tone('square', f, f * 0.98, 0.18, 0.18, i * 0.15)); }
 };
 
@@ -217,10 +218,11 @@ let state = 'title', paused = false, frame = 0, takes = 1;
 let player, enemies, boss, projectiles, gems, particles, popups, checkpoints;
 let cam = { x: 0 }, shake = 0, money = 0, bossActive = false, banner = null, deadT = 0, winT = 0;
 let cruiseShown = false, respawnPt = { x: 3, y: 9 };
+let bootMeter = 0, superBoot = null;
 
-const TAUNTS = ['OVERRATED!', '1 STAR!', 'SNOOZE!', 'MEH.', 'TOO LONG!', 'DERIVATIVE!', 'BOOO!'];
-const RECANTS = ['FINE! 4 STARS', 'I LOVED IT?', 'A TRIUMPH!', 'CERTIFIED FRESH', '2 THUMBS UP', 'MASTERPIECE!', 'OSCAR BAIT!'];
-const BLOGS = ['#FLOP', 'FIRST!', 'LOL', 'RATIO', 'MID.'];
+const TAUNTS = ['C MINUS!', 'ALL STYLE!', 'NO SUBSTANCE!', 'EGO TRIP!', 'TOO MUCH LATEX!', 'WHO IS THAT?!', 'MISFIRE!', 'TEETH?!'];
+const RECANTS = ['FINE. A PLUS!', 'TRANSFORMATIVE!', 'A ROMP!', 'BOLD CHOICES!', 'AWARDS SEASON!', 'MASTERPIECE!', 'I GET IT NOW'];
+const BLOGS = ['#FLOP', 'FIRST!', 'LOL', 'RATIO', 'MID.', '#DIGGERFAIL'];
 
 function place(e, tx, row) { e.x = tx * TS + (TS - e.w) / 2; e.y = row * TS - e.h; return e; }
 function mkEnemy(type, tx, row, extra = {}) {
@@ -236,12 +238,12 @@ function mkEnemy(type, tx, row, extra = {}) {
 }
 function mkBoss() {
   return place({
-    type: 'boss', boss: true, w: 24, h: 34, vx: 0, vy: 0, hp: 16, maxHp: 16, inv: 0, flash: 0,
+    type: 'boss', boss: true, w: 24, h: 34, vx: 0, vy: 0, hp: 14, maxHp: 14, inv: 0, flash: 0,
     face: -1, state: 'wait', t: 0, dead: false, say: null, onGround: false, enraged: false
   }, 204, 9);
 }
 function mkGem(x, y, val, isStatic = false) {
-  const colors = { 1: '#5ef', 5: '#6f6', 10: '#f6d', 25: '#fd3' };
+  const colors = { 1: '#b9a6ff', 5: '#ffd84a', 10: '#ffe680', 25: '#ff7a6a' };
   return { x, y, w: 8, h: 8, vx: isStatic ? 0 : rand(-1.5, 1.5), vy: isStatic ? 0 : rand(-3.5, -2), val, c: colors[val], st: isStatic, life: isStatic ? Infinity : 600, t: rand(0, 6) };
 }
 function dropGems(x, y, total) {
@@ -253,7 +255,7 @@ function dropGems(x, y, total) {
 
 function newGame() {
   buildGrid();
-  money = 0; takes = 1; cruiseShown = false; bossActive = false; winT = 0;
+  money = 0; takes = 1; cruiseShown = false; bossActive = false; winT = 0; bootMeter = 0; superBoot = null;
   respawnPt = { x: 3, y: 9 };
   enemies = [
     mkEnemy('critic', 18, 9),
@@ -277,7 +279,7 @@ function newGame() {
   projectiles = []; particles = []; popups = [];
   spawnPlayer();
   state = 'play';
-  banner = { lines: ['YOUR MISSION:', 'SILENCE THE CRITICS'], t: 200 };
+  banner = { lines: ['DIGG. OR DIE.', 'SILENCE THE CRITICS'], t: 200 };
 }
 function spawnPlayer() {
   player = {
@@ -289,7 +291,7 @@ function spawnPlayer() {
 }
 function respawn() {
   buildGrid();
-  projectiles = []; bossActive = false;
+  projectiles = []; bossActive = false; superBoot = null; bootMeter = Math.max(bootMeter, 50);
   if (!boss.dead) { const b = mkBoss(); Object.assign(boss, b); }
   takes++;
   spawnPlayer();
@@ -311,7 +313,7 @@ function digTile(tx, ty) {
   grid[ty][tx] = '.';
   const cx = tx * TS + 8, cy = ty * TS + 8;
   burst(cx, cy, 14, ['#a0672f', '#6e4420', '#c98a4b', '#3b2412'], 2.5, 0.2, 40);
-  sfx.dig(); shake = Math.max(shake, 3);
+  sfx.dig(); shake = Math.max(shake, 3); addMeter(2);
   if (Math.random() < 0.85) dropGems(cx - 4, cy - 4, pick([1, 1, 5, 5, 10]));
   return true;
 }
@@ -328,7 +330,7 @@ function hurtPlayer(dmg, srcX) {
 }
 function killPlayer() {
   const p = player;
-  p.hp = 0; state = 'dead'; deadT = 150; sfx.die();
+  p.hp = 0; state = 'dead'; deadT = 150; sfx.die(); banner = null;
   const lost = Math.floor(money * 0.2);
   if (lost > 0) { money -= lost; popup(p.x + 5, p.y - 8, '-$' + lost + 'M', '#f66', 120); }
   burst(p.x + 5, p.y + 7, 25, ['#6b3f1d', '#f2c38f', '#3a5a9a', '#fff'], 3);
@@ -366,7 +368,15 @@ function updatePlayer() {
   if (pressed.attack && p.atkCd <= 0 && p.knock <= 0) { p.atk = 16; p.atkCd = 20; p.atkId++; p.pogo = false; sfx.swing(); }
   if (p.atk > 0) p.atk--;
 
-  // Pogo: hold DOWN in the air
+  // THE DIGGER BOOT: a giant cowboy boot stomps everything on screen
+  if (pressed.boot && bootMeter >= 100 && !superBoot) {
+    bootMeter = 0; sfx.whistle();
+    const aim = bossActive && !boss.dead ? boss.x + boss.w / 2 : p.x + p.w / 2 + p.face * 56;
+    superBoot = { x: clamp(aim - 36, cam.x + 8, cam.x + VW - 84), y: -150, vy: 2, phase: 'drop', t: 0 };
+    banner = { lines: ['DIGG. OR DIE.', 'THE DIGGER BOOT!'], t: 90, y: 18 };
+  } else if (pressed.boot && !superBoot) popup(p.x + 5, p.y - 10, 'BOOT ' + Math.floor(bootMeter) + '%', '#aaa', 30);
+
+  // Boot stomp (pogo): hold DOWN in the air
   p.pogo = !p.onGround && keys.down && p.atk <= 0 && p.knock <= 0;
 
   // Pogo off dirt blocks (checked before landing so the block breaks instead)
@@ -398,7 +408,7 @@ function updatePlayer() {
     bossActive = true;
     for (let y = 0; y <= 8; y++) grid[y][GATE_X] = '#';
     burst(GATE_X * TS + 8, 8 * TS, 20, ['#888', '#ccc'], 2);
-    boss.state = 'intro'; boss.t = 130; boss.say = { text: 'OVERRATED!', t: 120 };
+    boss.state = 'intro'; boss.t = 130; boss.say = { text: 'ALL STYLE!', t: 120 };
     shake = 8; sfx.boom();
   }
 }
@@ -407,6 +417,7 @@ function pogoBounce() {
   p.vy = keys.jump ? -5.6 : -5.0; p.bouncing = true; p.combo++;
   sfx.bounce();
   if (p.combo === 3) popup(p.x + 5, p.y - 10, 'I DO MY OWN STUNTS!', '#ffd84a', 90);
+  else if (p.combo === 5) popup(p.x + 5, p.y - 10, 'DIGG. OR DIE!', '#ffd84a', 90);
   else if (p.combo > 3) popup(p.x + 5, p.y - 10, 'x' + p.combo, '#ffd84a', 40);
 }
 function swingBox() {
@@ -418,21 +429,21 @@ function swingBox() {
 /* ----------------------------- ENEMIES ------------------------------ */
 function hurtEnemy(e, dmg, fromX) {
   if (e.inv > 0 || e.dead || (e.boss && (e.state === 'wait' || e.state === 'intro' || e.state === 'dying'))) return false;
-  e.hp -= dmg; e.inv = e.boss ? 22 : 10; e.flash = 10;
+  e.hp -= dmg; e.inv = e.boss ? 22 : 10; e.flash = 10; if (e.boss) addMeter(12);
   sfx.hit(); shake = Math.max(shake, e.boss ? 4 : 2);
   burst(e.x + e.w / 2, e.y + e.h / 2, 8, ['#fff', '#ffd84a'], 2.5, 0.1, 18);
-  popup(e.x + e.w / 2, e.y - 4, pick(['BAM!', 'WHACK!', 'POW!', 'BONK!']), '#fff', 30);
+  popup(e.x + e.w / 2, e.y - 4, pick(['BAM!', 'WHACK!', 'POW!', 'BONK!', 'YEEHAW!']), '#fff', 30);
   if (!e.boss) { e.vx = sign(e.x - fromX) * 2; e.vy = -1.5; e.stun = 20; }
   if (e.hp <= 0) killEnemy(e);
-  else if (e.boss && !e.enraged && e.hp <= e.maxHp / 2) { e.enraged = true; e.say = { text: 'NOW I AM ANGRY!', t: 90 }; }
+  else if (e.boss && !e.enraged && e.hp <= e.maxHp / 2) { e.enraged = true; e.say = { text: "I'M GIVING IT A D!", t: 90 }; }
   return true;
 }
 function killEnemy(e) {
   if (e.boss) {
-    e.state = 'dying'; e.t = 160; e.vx = 0; e.say = { text: '...BRILLIANT.', t: 160 };
+    e.state = 'dying'; e.t = 160; e.vx = 0; e.say = { text: '...A PLUS.', t: 160 };
     projectiles = []; sfx.boom(); return;
   }
-  e.dead = true;
+  e.dead = true; addMeter(20);
   burst(e.x + e.w / 2, e.y + e.h / 2, 18, ['#fff', '#ddd', '#c33', '#ffd84a'], 3);
   popup(e.x + e.w / 2, e.y - 10, pick(RECANTS), '#7f7', 80);
   dropGems(e.x + e.w / 2 - 4, e.y, e.type === 'tomato' ? 15 : e.type === 'critic' ? 10 : 5);
@@ -498,7 +509,7 @@ function updateBoss(b, dx) {
         if (r < 0.35) { b.state = 'windup'; b.t = 32; }
         else if (r < 0.7 && b.onGround) {
           b.state = 'air'; b.vy = -6.2;
-          b.vx = clamp(dx / 48, -3, 3); b.t = 0;
+          b.vx = clamp(dx / 62, -2.6, 2.6); b.t = 0;
         } else { b.state = 'throw'; b.t = b.enraged ? 70 : 54; }
       }
       break;
@@ -527,11 +538,14 @@ function updateBoss(b, dx) {
       break;
     case 'throw': {
       b.vx = 0; b.face = sign(dx);
-      const shots = b.enraged ? [62, 50, 38, 26, 14] : [44, 30, 16];
+      const shots = b.enraged ? [62, 46, 30, 14] : [40, 20];
       if (shots.includes(b.t)) {
         const p = player, T = 46, g = 0.15;
         const tdx = (p.x + p.w / 2) - (b.x + b.w / 2) + rand(-24, 24), tdy = (p.y) - (b.y + 6);
-        projectiles.push({ type: 'tomato', x: b.x + b.w / 2, y: b.y + 6, w: 6, h: 6, vx: clamp(tdx / T, -4, 4), vy: clamp((tdy - 0.5 * g * T * T) / T, -6, 0), g, life: 240, t: 0, dmg: 1 });
+        if (Math.random() < 0.35) {
+          const d = Math.hypot(tdx, tdy) || 1;
+          projectiles.push({ type: 'review', x: b.x + b.w / 2, y: b.y + 8, w: 8, h: 6, vx: tdx / d * 1.8, vy: tdy / d * 1.8, g: 0, life: 200, t: 0, dmg: 1 });
+        } else projectiles.push({ type: 'tomato', x: b.x + b.w / 2, y: b.y + 6, w: 6, h: 6, vx: clamp(tdx / T, -4, 4), vy: clamp((tdy - 0.5 * g * T * T) / T, -6, 0), g, life: 240, t: 0, dmg: 1 });
         sfx.throw();
       }
       if (--b.t <= 0) { b.state = 'idle'; b.t = 36; }
@@ -552,6 +566,38 @@ function updateBoss(b, dx) {
   }
   physics(b);
   b.x = clamp(b.x, arenaL, arenaR - b.w);
+}
+
+function addMeter(n) {
+  if (bootMeter >= 100) return;
+  bootMeter = Math.min(100, bootMeter + n);
+  if (bootMeter >= 100 && player) { popup(player.x + 5, player.y - 12, 'DIGGER BOOT READY!', '#ffd84a', 100); sfx.check(); }
+}
+function updateSuperBoot() {
+  const sb = superBoot; sb.t++;
+  if (sb.phase === 'drop') {
+    sb.vy += 0.7; sb.y += sb.vy;
+    if (sb.y >= 9 * TS - 96) { sb.y = 9 * TS - 96; sb.phase = 'stomp'; sb.t = 0; bootImpact(); }
+  } else if (sb.phase === 'stomp') { if (sb.t > 45) sb.phase = 'rise'; }
+  else { sb.y -= 5; if (sb.y < -170) superBoot = null; }
+}
+function bootImpact() {
+  shake = 18; sfx.boom(); sfx.boom();
+  const L = cam.x - 8, Rr = cam.x + VW + 8;
+  for (let x = cam.x; x < cam.x + VW; x += 6) burst(x, 9 * TS - 2, 1, ['#a0672f', '#ddd', '#c98a4b'], 2.5, 0.15, 30);
+  for (const e of enemies) {
+    if (e.dead || e.x + e.w < L || e.x > Rr) continue;
+    if (e.boss) {
+      if (['wait', 'intro', 'dying'].includes(e.state)) continue;
+      e.hp -= 4; e.flash = 20; e.inv = 0;
+      if (e.hp <= 0) killEnemy(e);
+      else {
+        if (!e.enraged && e.hp <= e.maxHp / 2) { e.enraged = true; e.say = { text: "I'M GIVING IT A D!", t: 90 }; }
+        e.state = 'stunned'; e.t = 90; e.vx = 0;
+      }
+    } else { e.hp = 0; killEnemy(e); }
+  }
+  projectiles = projectiles.filter(pr => pr.x + pr.w < L || pr.x > Rr);
 }
 
 /* ---------------------------- MAIN UPDATE --------------------------- */
@@ -593,11 +639,13 @@ function update() {
       }
     }
     // Contact damage
-    for (const e of enemies) if (!e.dead && overlap(p, e) && !(e.boss && ['wait', 'intro', 'dying', 'stunned'].includes(e.state))) {
+    for (const e of enemies) if (!e.dead && overlap(p, e) && !(e.boss && !['charge', 'air'].includes(e.state))) {
       if (e.stun > 0 && !e.boss) continue;
       hurtPlayer(1, e.x + e.w / 2);
     }
   }
+
+  if (superBoot) updateSuperBoot();
 
   // Projectiles
   for (const pr of projectiles) {
@@ -626,7 +674,7 @@ function update() {
       if (g.y > LH * TS + 20) g.life = 0;
     }
     if (state === 'play' && g.life > 0 && overlap(p, g) && (g.st || g.life < 590)) {
-      g.life = 0; money += g.val; sfx.gem();
+      g.life = 0; money += g.val; sfx.gem(); addMeter(g.val >= 10 ? 5 : 2);
       popup(g.x + 4, g.y - 2, '+$' + g.val + 'M', g.c, 35);
     }
   }
@@ -695,11 +743,16 @@ function drawBG(cx) {
     const wx = x + cx * 0.45, h = 38 + Math.sin(wx * 0.021 + 1) * 10 + Math.sin(wx * 0.07) * 3;
     R(x, VH - h, 2, h, '#1a0d22');
   }
+  ctx.fillStyle = '#1a0d22';
   for (let i = -1; i < 5; i++) {
     const wx = Math.floor((cx * 0.45) / 90) * 90 + i * 90 + 30, x = wx - cx * 0.45;
     const base = VH - (38 + Math.sin((wx) * 0.021 + 1) * 10);
-    R(x, base - 34, 2, 34, '#1a0d22');
-    for (let k = -3; k <= 3; k++) R(x + k * 3 - 1, base - 36 + Math.abs(k) * 2, 4, 2, '#1a0d22');
+    // oil pumpjack, nodding away
+    R(x - 10, base - 2, 26, 3, '#1a0d22');
+    ctx.beginPath(); ctx.moveTo(x - 4, base); ctx.lineTo(x + 2, base - 20); ctx.lineTo(x + 8, base); ctx.lineTo(x + 6, base); ctx.lineTo(x + 2, base - 15); ctx.lineTo(x - 2, base); ctx.fill();
+    ctx.save(); ctx.translate(Math.round(x + 2), Math.round(base - 20)); ctx.rotate(Math.sin(frame * 0.04 + wx) * 0.28);
+    ctx.fillRect(-16, -2, 30, 3); ctx.fillRect(-19, -3, 4, 10); ctx.fillRect(10, 0, 4, 5); ctx.restore();
+    R(x - 18, base - 10, 1, 10, '#1a0d22'); R(x + 12, base - 9, 5, 7, '#1a0d22');
   }
 }
 
@@ -735,56 +788,83 @@ function drawTiles(cx) {
   }
 }
 
-const SK = '#f2c38f', SKd = '#d99f6a', HA = '#3a2414', JK = '#6b3f1d', JKd = '#4a2a12', SH = '#f4f4f4', JN = '#3a5a9a', JNd = '#2b4577', BT = '#151515', HD = '#8b5a2b', BL = '#c8ccd4', BLd = '#8a909c';
+// Digger Rockwell-style palette: silver hair, burgundy western suit, suede yokes, bolo tie, gold buckle, cowboy boots
+const HAIR = '#d6d6d6', HAIRd = '#9a9a9a', SKN = '#e9b48e', SKNd = '#c48a64', SUIT = '#7d1f2c', SUITd = '#5a1520',
+  YOKE = '#7a5530', SHIRT = '#eef2f6', STRIPE = '#9fb3c8', BOOT = '#5e3519', BOOTd = '#2e1a0c', GOLD = '#e6b422',
+  TURQ = '#33c4c4', WOOD = '#d2bb92', WOODd = '#a08a64', BLADE = '#aaaaaa', BLADEd = '#777777';
 
 function drawTom(p, t) {
   const r = painter(p.x - 3, p.y - 2, p.face, 16);
   const air = !p.onGround, run = Math.abs(p.vx) > 0.3 && !air;
-  // legs
-  if (p.pogo) {
-    r(5, 12, 2, 2, JN); r(9, 12, 2, 2, JN); r(4, 14, 3, 1, BT); r(9, 14, 3, 1, BT);
+  // legs + cowboy boots
+  if (p.pogo) { // BOOT STOMP: knees together, boot heel first
+    r(6, 11, 4, 3, SUITd); r(6, 14, 4, 3, BOOT); r(5, 16, 7, 2, BOOT); r(5, 18, 7, 1, BOOTd); r(5, 18, 2, 2, BOOTd);
+    r(7, 14, 2, 1, GOLD); r(3, 17, 2, 1, '#ddd');
   } else if (air) {
-    r(5, 12, 2, 3, JN); r(9, 11, 2, 3, JN); r(4, 15, 3, 1, BT); r(10, 14, 3, 1, BT);
+    r(4, 12, 3, 2, SUIT); r(9, 11, 3, 3, SUIT); r(3, 14, 4, 2, BOOT); r(9, 14, 4, 1, BOOT); r(4, 15, 5, 1, BOOTd); r(10, 15, 4, 1, BOOTd);
   } else {
     let a = 0, b = 0;
     if (run) { const f = Math.floor(t / (p.sprint ? 3 : 5)) % 4; a = [0, 2, 0, -2][f]; b = -a; }
-    r(5 + Math.min(0, a), 12, 2, 3, JN); r(9 + Math.max(0, b), 12, 2, 3, JNd);
-    r(5 + a, 15, 3, 1, BT); r(9 + b, 15, 3, 1, BT);
+    // the wide poster stance
+    r(4 + Math.min(0, a), 12, 3, 2, SUIT); r(9 + Math.max(0, b), 12, 3, 2, SUITd);
+    r(3 + a, 13, 3, 2, BOOT); r(10 + b, 13, 3, 2, BOOT);
+    r(3 + a, 15, 5, 1, BOOT); r(10 + b, 15, 5, 1, BOOT); r(3 + a, 15, 1, 1, BOOTd); r(10 + b, 15, 1, 1, BOOTd);
   }
-  // torso: leather jacket over white tee
-  r(5, 7, 6, 5, JK); r(7, 7, 2, 4, SH); r(5, 11, 6, 1, JNd); r(10, 8, 1, 3, JKd);
+  // torso (with a bit of a belly)
+  r(4, 7, 8, 5, SUIT); r(12, 9, 1, 2, SUIT); r(4, 7, 3, 2, YOKE); r(10, 7, 2, 2, YOKE);
+  r(7, 7, 3, 4, SHIRT); r(8, 7, 1, 4, STRIPE); r(8, 8, 1, 1, TURQ); r(4, 11, 9, 1, '#2a1a10'); r(7, 11, 3, 1, GOLD);
   // back arm
-  if (p.sprint && run) { const f = Math.floor(t / 3) % 2; r(f ? 3 : 4, 8, 2, 3, JKd); } else r(4, 8, 1, 3, JKd);
-  // head: famous grin, aviators, great hair
-  r(6, 1, 6, 6, SK); r(6, 3, 1, 2, SKd);
-  r(5, 0, 7, 2, HA); r(5, 2, 1, 3, HA); r(10, -1, 3, 2, HA); r(12, 1, 1, 1, HA);
-  r(7, 3, 2, 2, '#101018'); r(10, 3, 2, 2, '#101018'); r(9, 3, 1, 1, '#101018'); r(7, 3, 1, 1, '#7ad1ff'); r(10, 3, 1, 1, '#7ad1ff');
-  r(8, 5, 4, 1, '#fff'); r(8, 6, 3, 1, SKd);
-  // front arm + shovel
+  if (p.sprint && run) { const f = Math.floor(t / 3) % 2; r(f ? 2 : 3, 8, 2, 3, SUITd); } else r(3, 8, 1, 3, SUITd);
+  // head: silver swept-back hair, weathered face, those teeth
+  r(6, 1, 6, 6, SKN); r(6, 4, 1, 2, SKNd);
+  r(5, -1, 6, 2, HAIR); r(4, 0, 3, 4, HAIR); r(8, -2, 4, 2, HAIR); r(11, 0, 1, 1, HAIR); r(5, 0, 1, 1, HAIRd); r(9, -2, 1, 1, HAIRd);
+  r(8, 2, 2, 1, HAIRd); r(10, 2, 2, 1, HAIRd); r(8, 3, 1, 1, '#222'); r(11, 3, 1, 1, '#222'); r(7, 2, 1, 1, SKNd);
+  r(12, 4, 1, 1, SKN); r(10, 5, 2, 1, '#fff6d8'); r(9, 6, 3, 1, SKNd);
+  // front arm + D-handle spade
   if (p.pogo) {
-    r(6, 8, 2, 3, JK); r(9, 8, 2, 3, JK); r(7, 10, 3, 1, SK);
-    r(8, 9, 1, 9, HD); r(6, 17, 5, 3, BL); r(7, 20, 3, 1, BL); r(6, 17, 1, 3, BLd);
+    r(5, 7, 2, 2, SUIT); r(10, 7, 2, 2, SUIT); r(2, 6, 12, 1, WOOD); r(13, 4, 3, 5, BLADE); r(16, 5, 1, 3, BLADE); r(0, 5, 2, 3, WOOD);
   } else if (p.atk > 12) { // wind-up
-    r(9, 7, 2, 3, JK); r(10, 6, 1, 1, SK);
-    r(6, 0, 1, 1, HD); r(7, 1, 1, 1, HD); r(8, 2, 1, 1, HD); r(9, 3, 1, 1, HD); r(10, 4, 1, 1, HD); r(11, 5, 1, 1, HD);
-    r(3, -3, 4, 4, BL); r(3, -3, 1, 4, BLd);
+    r(9, 7, 2, 3, SUIT); r(10, 6, 1, 1, SKN);
+    for (let i = 0; i < 6; i++) r(6 + i, i, 1, 1, WOOD);
+    r(2, -4, 4, 5, BLADE); r(2, -4, 1, 5, BLADEd); r(3, -5, 2, 1, BLADE);
   } else if (p.atk >= 4) { // strike
-    r(10, 8, 3, 2, JK); r(13, 8, 1, 2, SK);
-    r(12, 9, 7, 1, HD); r(19, 6, 3, 7, BL); r(22, 7, 1, 5, BL); r(19, 6, 1, 7, BLd);
+    r(10, 8, 3, 2, SUIT); r(13, 8, 1, 2, SKN);
+    r(10, 7, 1, 3, WOOD); r(11, 9, 8, 1, WOOD); r(19, 6, 3, 7, BLADE); r(22, 7, 1, 5, BLADE); r(23, 9, 1, 1, BLADE); r(19, 6, 1, 7, BLADEd);
     ctx.save(); ctx.globalAlpha = 0.5;
     r(16, 2, 2, 1, '#fff'); r(19, 2, 4, 1, '#fff'); r(23, 4, 1, 3, '#fff'); r(24, 7, 1, 5, '#fff'); r(23, 12, 1, 2, '#fff');
     ctx.restore();
   } else if (p.atk > 0) { // follow-through
-    r(10, 8, 2, 3, JK); r(12, 9, 1, 6, HD); r(11, 14, 4, 2, BL);
+    r(10, 8, 2, 3, SUIT); r(12, 9, 1, 6, WOOD); r(11, 14, 4, 2, BLADE);
   } else {
-    r(10, 8, 2, 3, JK); r(11, 10, 1, 1, SK);
-    r(12, 2, 1, 11, HD); r(11, 2, 3, 1, HD); r(11, 12, 3, 3, BL); r(12, 15, 1, 1, BL); r(11, 12, 1, 3, BLd);
+    r(10, 8, 3, 2, SUIT); r(11, 10, 1, 1, '#fff'); r(12, 10, 2, 1, SKN);
+    r(13, 2, 1, 10, WOOD); r(12, -1, 3, 1, WOOD); r(12, 0, 1, 2, WOOD); r(14, 0, 1, 2, WOOD); r(12, 2, 3, 1, WOODd);
+    r(12, 12, 3, 3, BLADE); r(13, 15, 1, 1, BLADE); r(12, 12, 1, 3, BLADEd);
   }
   // speed lines when sprinting
   if (p.sprint && Math.abs(p.vx) > 1.8 && t % 4 < 2) {
-    const r2 = painter(p.x - 3, p.y - 2, p.face, 16);
-    r2(-6, 6, 4, 1, '#fff8'); r2(-9, 9, 5, 1, '#fff8'); r2(-5, 12, 3, 1, '#fff8');
+    r(-6, 6, 4, 1, '#fff8'); r(-9, 9, 5, 1, '#fff8'); r(-5, 12, 3, 1, '#fff8');
   }
+}
+
+// THE DIGGER BOOT (72x96, sole at y+96)
+function drawGiantBoot(sb) {
+  const x = Math.round(sb.x), y = Math.round(sb.y);
+  R(x + 14, y, 38, 62, BOOTd); R(x + 16, y + 2, 34, 60, BOOT); R(x + 14, y, 38, 8, '#3e2410');
+  R(x + 18, y - 4, 6, 6, '#3e2410'); R(x + 42, y - 4, 6, 6, '#3e2410');
+  R(x + 20, y + 10, 3, 46, '#7a4a24');
+  // fancy stitching + a big gold D
+  for (let i = 0; i < 6; i++) { R(x + 26 + i * 3, y + 12 + i * 2, 2, 2, GOLD); R(x + 26 + i * 3, y + 48 - i * 2, 2, 2, GOLD); }
+  text('D', x + 34, y + 24, GOLD, 'center', 16);
+  R(x + 12, y + 56, 46, 26, BOOTd); R(x + 14, y + 58, 44, 22, BOOT);
+  R(x + 56, y + 64, 10, 18, BOOTd); R(x + 56, y + 66, 9, 14, BOOT);
+  R(x + 66, y + 70, 6, 12, BOOTd); R(x + 65, y + 72, 5, 8, BOOT); R(x + 72, y + 76, 5, 6, BOOTd);
+  R(x + 30, y + 64, 26, 2, GOLD); R(x + 44, y + 60, 2, 10, GOLD);
+  R(x + 12, y + 82, 66, 4, '#1a0e06');
+  R(x + 12, y + 86, 18, 10, '#1a0e06'); R(x + 14, y + 86, 14, 8, '#3e2410');
+  // spur
+  R(x + 2, y + 80, 12, 3, '#cccccc');
+  const sp = Math.floor(frame / 4) % 2;
+  R(x - 1 + sp, y + 75, 3, 13, GOLD); R(x - 5, y + 80, 11, 3, GOLD); R(x - 3, y + 77, 7, 7, GOLD); R(x - 1, y + 79, 3, 3, '#fff6c8');
 }
 
 function drawCritic(e) {
@@ -845,8 +925,8 @@ function drawBoss(b) {
 
 function drawProjectile(pr) {
   if (pr.type === 'review') {
-    R(pr.x, pr.y, 8, 6, '#fff'); R(pr.x, pr.y + 5, 8, 1, '#bbb');
-    R(pr.x + 1, pr.y + 1, 1, 3, '#222'); R(pr.x + 4, pr.y + 1, 3, 3, '#d22'); R(pr.x + 5, pr.y, 1, 5, '#d22');
+    R(pr.x - 1, pr.y - 1, 10, 8, '#fff'); R(pr.x - 1, pr.y + 6, 10, 1, '#bbb');
+    R(pr.x + 1, pr.y, 3, 1, '#d22'); R(pr.x + 1, pr.y, 1, 5, '#d22'); R(pr.x + 1, pr.y + 4, 3, 1, '#d22'); R(pr.x + 5, pr.y + 2, 3, 1, '#d22');
   } else if (pr.type === 'tomato') {
     ctx.fillStyle = '#d22'; ctx.beginPath(); ctx.arc(Math.round(pr.x + 3), Math.round(pr.y + 3), 3.5, 0, Math.PI * 2); ctx.fill();
     R(pr.x + 1, pr.y + 1, 2, 1, '#f88'); R(pr.x + 2, pr.y - 1, 3, 1, '#4a0'); R(pr.x + 3, pr.y - 2, 1, 1, '#4a0');
@@ -861,8 +941,17 @@ function drawProjectile(pr) {
 function drawGem(g) {
   const bob = g.st ? Math.sin(g.t) * 1.5 : 0, x = Math.round(g.x), y = Math.round(g.y + bob);
   if (!g.st && g.life < 120 && frame % 6 < 3) return;
-  ctx.fillStyle = g.c; ctx.beginPath(); ctx.moveTo(x + 4, y); ctx.lineTo(x + 8, y + 4); ctx.lineTo(x + 4, y + 8); ctx.lineTo(x, y + 4); ctx.fill();
-  R(x + 3, y + 2, 2, 2, '#fff'); if (Math.sin(g.t * 2) > 0.95) { R(x - 1, y + 4, 10, 1, '#fff'); R(x + 4, y - 1, 1, 10, '#fff'); }
+  if (g.val === 1) { // crude oil drop
+    R(x + 3, y, 2, 2, '#15101c'); R(x + 2, y + 2, 4, 2, '#15101c'); R(x + 1, y + 4, 6, 3, '#15101c'); R(x + 2, y + 7, 4, 1, '#15101c');
+    R(x + 2, y + 4, 1, 2, '#8a7aff'); R(x + 5, y + 5, 1, 1, '#4a3a8a');
+  } else if (g.val === 25) { // oil barrel
+    R(x, y - 1, 8, 10, '#c2302a'); R(x, y + 1, 8, 1, '#7a1a16'); R(x, y + 6, 8, 1, '#7a1a16'); R(x + 1, y - 1, 2, 10, '#e05a4a'); R(x + 3, y + 3, 3, 2, '#fff');
+  } else { // gold nugget
+    const big = g.val === 10 ? 1 : 0;
+    R(x + 1 - big, y + 2 - big, 6 + big * 2, 5 + big * 2, '#e6b422'); R(x + 2, y + 1 - big, 3, 1, '#e6b422');
+    R(x + 2, y + 3 - big, 2, 1, '#fff4b0'); R(x + 5, y + 5, 2, 2, '#a87a10');
+  }
+  if (Math.sin(g.t * 2) > 0.95) { R(x - 1, y + 4, 10, 1, '#fff'); R(x + 4, y - 1, 1, 10, '#fff'); }
 }
 function drawCheckpoint(c) {
   const x = c.x, y = c.y;
@@ -897,6 +986,11 @@ function drawHUD() {
     if (hp === 1) R(8 + i * 10, 3, 4, 6, '#422');
   }
   text('BOX OFFICE $' + money + 'M', VW - 4, 3, '#ffd84a', 'right');
+  // Digger Boot meter
+  const mx = 50, full = bootMeter >= 100;
+  R(mx, 4, 3, 5, BOOT); R(mx, 8, 6, 2, BOOT); R(mx + 1, 4, 1, 1, GOLD);
+  R(mx + 9, 5, 42, 5, '#000'); R(mx + 10, 6, 40 * bootMeter / 100, 3, full ? (frame % 10 < 5 ? '#fff' : '#ffd84a') : '#c98a4b');
+  if (full) text('C!', mx + 56, 3, frame % 20 < 10 ? '#ffd84a' : '#fff');
   if (bossActive && !boss.dead) {
     R(60, 164, 200, 12, '#0009');
     text('M. SNOBB', 64, 166, '#fff');
@@ -928,6 +1022,7 @@ function drawWorld() {
     if (e.flash > 0 && frame % 4 < 2) ctx.restore();
   }
   for (const pr of projectiles) drawProjectile(pr);
+  if (superBoot) drawGiantBoot(superBoot);
   if ((state === 'play' || state === 'win') && !(player.inv > 0 && frame % 4 < 2)) drawTom(player, frame);
   for (const pt of particles) R(pt.x, pt.y, pt.s, pt.s, pt.c);
   for (const e of enemies) if (!e.dead) drawBubble(e);
@@ -940,26 +1035,35 @@ function drawWorld() {
 }
 
 function drawTitle() {
-  drawBG(frame * 0.6);
-  for (let x = 0; x < VW; x += TS) { R(x, 144, TS, 36, '#5a3620'); R(x, 144, TS, 4, '#3d9c4a'); R(x, 144, TS, 1, '#7fd86b'); }
-  // red carpet
-  R(0, 140, VW, 4, '#a01c2c');
-  text('TOP SHOVEL', VW / 2, 22, '#ffd84a', 'center', 16);
-  text('TOM CRUISE vs. THE CRITICS', VW / 2, 44, '#fff', 'center');
-  // big Tom
-  ctx.save(); ctx.translate(VW / 2 - 24, 82); ctx.scale(3, 3);
-  const fake = { x: 3, y: 2, w: 10, h: 14, face: 1, onGround: true, vx: 0, pogo: false, atk: (frame % 120) < 16 ? 16 - (frame % 120) : 0, sprint: false };
+  // a pulp-poster homage: paper, three color blocks, a man and his spade
+  R(0, 0, VW, VH, '#efe6d4');
+  R(16, 6, 144, 74, '#4aa3a8'); R(160, 6, 144, 74, '#8bb04a'); R(16, 80, 288, 48, '#e8582a');
+  for (let i = 0; i < 260; i++) { const h = hash(i, 7); R(h % VW, (h >> 9) % VH, 1, 1, '#0000000f'); }
+  ctx.font = '8px ' + FONT; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.lineWidth = 2; ctx.strokeStyle = '#111'; ctx.fillStyle = '#4aa3a8';
+  for (const [s, y] of [['DIGG.', 14], ['OR DIE.', 26]]) { ctx.strokeText(s, 26, y); ctx.fillText(s, 26, y); }
+  ctx.save(); ctx.translate(VW / 2 - 32, 14); ctx.scale(4, 4);
+  const fake = { x: 3, y: 2, w: 10, h: 14, face: 1, onGround: true, vx: 0, pogo: false, atk: (frame % 150) < 16 ? 16 - (frame % 150) : 0, sprint: false };
   drawTom(fake, frame);
   ctx.restore();
-  ctx.save(); ctx.translate(VW / 2 + 40, 104); ctx.scale(2, 2);
-  drawCritic({ x: 3, y: 2, w: 10, h: 14, face: -1, vx: 0, t: frame, throwT: 0 });
+  ctx.save(); ctx.translate(VW - 74, 46); ctx.scale(2, 2);
+  drawCritic({ x: 3, y: 2, w: 10, h: 14, face: -1, vx: 0, t: frame, throwT: 20 });
   ctx.restore();
-  ctx.save(); ctx.translate(VW / 2 - 92, 96); ctx.scale(2, 2);
-  drawBlogger({ x: 2, y: 3 + Math.sin(frame * 0.06) * 2, w: 12, h: 12, face: 1, t: frame });
-  ctx.restore();
-  if (frame % 60 < 40) text('PRESS ENTER / TAP', VW / 2, 152, '#fff', 'center');
-  text('ARROWS MOVE  Z JUMP  X DIG', VW / 2, 164, '#cbb', 'center');
-  text('HOLD DOWN IN AIR TO POGO', VW / 2, 172, '#cbb', 'center');
+  if (frame % 90 < 60) { R(VW - 108, 26, 64, 13, '#fff'); R(VW - 66, 39, 4, 3, '#fff'); ctx.fillStyle = '#111'; ctx.fillText('C MINUS', VW - 104, 29); }
+  text('TOM CRUISE IS', VW / 2, 92, '#111', 'center');
+  ctx.font = '16px ' + FONT; ctx.textAlign = 'center';
+  ctx.fillStyle = '#7a1f12'; ctx.fillText('DIGGER', VW / 2 + 2, 106); ctx.fillStyle = '#f6efe0'; ctx.fillText('DIGGER', VW / 2, 104);
+  text('VS. THE CRITICS', VW / 2, 132, '#d84a1a', 'center');
+  text(frame % 120 < 60 ? 'ONLY IN BROWSERS' : 'PRESS ENTER / TAP', VW / 2, 146, frame % 120 < 60 ? '#d84a1a' : '#111', 'center');
+  text('Z JUMP  X DIG  C BOOT', VW / 2, 160, '#555', 'center');
+  text('DOWN IN AIR: BOOT STOMP', VW / 2, 170, '#555', 'center');
+}
+function drawCat(x, y) {
+  const c = '#e08a3a';
+  R(x, y + 3, 10, 5, c); R(x + 7, y, 5, 5, c); R(x + 7, y - 1, 1, 1, c); R(x + 11, y - 1, 1, 1, c);
+  R(x + 8, y + 2, 1, 1, '#111'); R(x + 10, y + 2, 1, 1, '#111'); R(x + 1, y + 8, 1, 2, c); R(x + 7, y + 8, 1, 2, c);
+  const tail = Math.floor(frame / 15) % 2; R(x - 2, y + 1 + tail, 2, 3, c); R(x - 3, y - 1 + tail, 1, 3, c);
+  R(x + 2, y + 4, 4, 1, '#b8651f');
 }
 function drawWin() {
   ctx.fillStyle = '#000c'; ctx.fillRect(0, 0, VW, VH);
@@ -968,8 +1072,9 @@ function drawWin() {
   text('BOX OFFICE: $' + money + 'M', VW / 2, 80, '#ffd84a', 'center');
   text('TAKES NEEDED: ' + takes, VW / 2, 94, '#fff', 'center');
   text(takes === 1 ? 'ONE TAKE. NO STUNT DOUBLE.' : 'HE DOES HIS OWN STUNTS.', VW / 2, 112, '#cbb', 'center');
-  text('SEQUEL GREENLIT!', VW / 2, 128, '#f9a', 'center');
-  if (winT <= 0 && frame % 60 < 40) text('PRESS ENTER', VW / 2, 154, '#fff', 'center');
+  text('AND THE CAT IS SAFE.', VW / 2 - 8, 128, '#f9a', 'center'); drawCat(VW / 2 + 82, 126);
+  text('DIGG. OR DIE.', VW / 2, 140, '#ffd84a', 'center');
+  if (winT <= 0 && frame % 60 < 40) text('PRESS ENTER', VW / 2, 158, '#fff', 'center');
 }
 
 function draw() {
@@ -985,8 +1090,9 @@ function draw() {
   }
   if (banner) {
     const a = Math.min(1, banner.t / 20);
-    ctx.globalAlpha = a; R(0, 62, VW, 34, '#000b');
-    text(banner.lines[0], VW / 2, 68, '#ffd84a', 'center'); text(banner.lines[1], VW / 2, 82, '#fff', 'center');
+    const by = banner.y || 62;
+    ctx.globalAlpha = a; R(0, by, VW, 34, '#000b');
+    text(banner.lines[0], VW / 2, by + 6, '#ffd84a', 'center'); text(banner.lines[1], VW / 2, by + 20, '#fff', 'center');
     ctx.globalAlpha = 1;
   }
   if (paused) { R(0, 0, VW, VH, '#0008'); text('PAUSED', VW / 2, 80, '#fff', 'center', 16); }
@@ -1007,7 +1113,7 @@ function loop(now) {
 }
 buildGrid();
 (document.fonts ? document.fonts.load('8px "Press Start 2P"').catch(() => {}) : Promise.resolve()).finally(() => requestAnimationFrame(loop));
-window.__game = { get state() { return state; }, get player() { return player; }, get boss() { return boss; }, get money() { return money; }, get projectiles() { return projectiles; }, newGame, keys, pressed, step, grid: () => grid };
+window.__game = { get state() { return state; }, get player() { return player; }, get boss() { return boss; }, get money() { return money; }, get projectiles() { return projectiles; }, get superBoot() { return superBoot; }, get enemies() { return enemies; }, setMeter: v => { bootMeter = v; }, newGame, keys, pressed, step, grid: () => grid };
 </script>
 </body>
 </html>
