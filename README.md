@@ -110,9 +110,11 @@ and starts lobbing RAM. The moment you pull the trigger, the game cuts out:
 **THANKS FOR PLAYING THE DEMO. BUY THE FULL VERSION ON STEAM.** Then a store
 page opens. Its gallery starts with screenshots from your own playthrough,
 then a "full version" mock-up for every genre tag on the page (the cast in a
-fighting game, a tower defense, a card game, a horror game and so on), then an
-untitled still for each of Tom Cruise's 46 feature films (original pixel-art
-tributes, not frames from the movies). Plus reviews and an Add to Cart button. It's a parody page ("STEEM"). Nothing can actually be bought.
+fighting game, a tower defense, a card game, a horror game and so on), then each of
+Tom Cruise's 46 feature films reimagined as a game, untitled (the courtroom one
+is a courtroom battle, the jet one is beach volleyball, the samurai one is a
+souls-like, the motorcycle one is a race, the sequel is a shmup, and so on). All
+mock-ups use original characters, not frames from any game or film. Plus reviews and an Add to Cart button. It's a parody page ("STEEM"). Nothing can actually be bought.
 
 Both playable levels are short: the shooter takes about a minute.
 
