@@ -61,6 +61,7 @@
   .st-main{display:flex;gap:14px;background:rgba(0,0,0,.2);padding:0 0 12px}
   .st-media{flex:1 1 600px;min-width:0}
   #st-big{width:100%;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated;display:block;background:#000}
+  .st-capline{font-size:12px;color:#8f98a0;margin-top:6px;min-height:16px}
   .st-thumbs{display:flex;gap:4px;overflow-x:auto;margin-top:6px;padding-bottom:4px}
   .st-thumbs img{width:116px;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated;opacity:.6;border:2px solid transparent;cursor:pointer;flex:none}
   .st-thumbs img.on{opacity:1;border-color:#fff}
@@ -2136,11 +2137,73 @@ function snapMaybe() {
   if (tag && !SHOTS[tag]) try { SHOTS[tag] = cv.toDataURL('image/png'); } catch (e) { }
 }
 
+/* ----- FILMOGRAPHY STILLS: original pixel-art tributes, one per feature film ----- */
+const FILMOGRAPHY = [
+  ['ENDLESS LOVE', 1981, 'night'], ['TAPS', 1981, 'school'], ["LOSIN' IT", 1983, 'desert'], ['THE OUTSIDERS', 1983, 'dusk'],
+  ['RISKY BUSINESS', 1983, 'city'], ['ALL THE RIGHT MOVES', 1983, 'stadium'], ['LEGEND', 1985, 'forest'], ['TOP GUN', 1986, 'sky'],
+  ['THE COLOR OF MONEY', 1986, 'bar'], ['COCKTAIL', 1988, 'beach'], ['RAIN MAN', 1988, 'road'], ['BORN ON THE FOURTH OF JULY', 1989, 'war'],
+  ['DAYS OF THUNDER', 1990, 'race'], ['FAR AND AWAY', 1992, 'plains'], ['A FEW GOOD MEN', 1992, 'court'], ['THE FIRM', 1993, 'city'],
+  ['INTERVIEW WITH THE VAMPIRE', 1994, 'gothic'], ['MISSION: IMPOSSIBLE', 1996, 'vault'], ['JERRY MAGUIRE', 1996, 'stadium'], ['EYES WIDE SHUT', 1999, 'night'],
+  ['MAGNOLIA', 1999, 'rain'], ['MISSION: IMPOSSIBLE 2', 2000, 'cliff'], ['VANILLA SKY', 2001, 'city'], ['MINORITY REPORT', 2002, 'scifi'],
+  ['THE LAST SAMURAI', 2003, 'mountain'], ['COLLATERAL', 2004, 'night'], ['WAR OF THE WORLDS', 2005, 'redsky'], ['MISSION: IMPOSSIBLE III', 2006, 'bridge'],
+  ['LIONS FOR LAMBS', 2007, 'war'], ['TROPIC THUNDER', 2008, 'jungle'], ['VALKYRIE', 2008, 'war'], ['KNIGHT AND DAY', 2010, 'road'],
+  ['MISSION: IMPOSSIBLE - GHOST PROTOCOL', 2011, 'tower'], ['ROCK OF AGES', 2012, 'stage'], ['JACK REACHER', 2012, 'city'], ['OBLIVION', 2013, 'scifi'],
+  ['EDGE OF TOMORROW', 2014, 'beach'], ['MISSION: IMPOSSIBLE - ROGUE NATION', 2015, 'sky'], ['JACK REACHER: NEVER GO BACK', 2016, 'night'], ['THE MUMMY', 2017, 'desert'],
+  ['AMERICAN MADE', 2017, 'sky'], ['MISSION: IMPOSSIBLE - FALLOUT', 2018, 'mountain'], ['TOP GUN: MAVERICK', 2022, 'sky'],
+  ['MISSION: IMPOSSIBLE - DEAD RECKONING PART ONE', 2023, 'train'], ['MISSION: IMPOSSIBLE - THE FINAL RECKONING', 2025, 'sea'], ['DIGGER', 2026, 'desert']
+];
+function renderFilmShot(title, year, kind, seed) {
+  const c = document.createElement('canvas'); c.width = VW; c.height = VH;
+  const g = c.getContext('2d'), rr = rng(seed * 7919 + 13), F = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), w, h); };
+  const grad = (a, b) => { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, a); gr.addColorStop(1, b); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); };
+  const skyline = (col, lit) => { for (let x = 0; x < VW; x += 18 + Math.floor(rr() * 10)) { const h = 30 + rr() * 70, w = 14 + rr() * 12; F(x, 150 - h, w, h, col); if (lit) for (let k = 0; k < 10; k++) if (rr() < 0.5) F(x + 2 + (k % 3) * 4, 154 - h + Math.floor(k / 3) * 7, 2, 2, lit); } };
+  const ground = (col, y = 150) => F(0, y, VW, VH - y, col);
+  const runner = (x, y, col = '#111') => { const st = Math.floor(rr() * 2); F(x + 3, y, 4, 4, col); F(x + 2, y + 4, 6, 6, col); F(x + (st ? 0 : 6), y + 5, 3, 2, col); F(x + (st ? 7 : -1), y + 6, 3, 2, col); F(x + 2 + (st ? -2 : 3), y + 10, 2, 5, col); F(x + 6 + (st ? 2 : -2), y + 10, 2, 5, col); };
+  const jet = (x, y, s, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 30 * s, y - 4 * s); g.lineTo(x - 34 * s, y - 12 * s); g.lineTo(x - 38 * s, y - 2 * s); g.lineTo(x - 38 * s, y + 2 * s); g.lineTo(x - 14 * s, y + 3 * s); g.lineTo(x - 22 * s, y + 14 * s); g.lineTo(x - 12 * s, y + 3 * s); g.closePath(); g.fill(); };
+  const clouds = (col) => { for (let i = 0; i < 6; i++) { const x = rr() * VW, y = 20 + rr() * 70; g.fillStyle = col; g.beginPath(); g.ellipse(x, y, 20 + rr() * 20, 6 + rr() * 4, 0, 0, 7); g.fill(); } };
+  switch (kind) {
+    case 'sky': grad('#3a7fd0', '#cfe8ff'); clouds('#ffffffcc'); jet(220 + rr() * 60, 60 + rr() * 50, 1.6, '#5a6470'); jet(120 + rr() * 40, 100 + rr() * 30, 1, '#6a7480'); F(0, 160, VW, 20, '#d8b070'); break;
+    case 'race': grad('#7ab0e0', '#cfe8ff'); F(0, 70, VW, 30, '#6a6a7a'); for (let i = 0; i < 40; i++) F(i * 8, 72 + (i % 3) * 8, 6, 6, ['#d33', '#ddd', '#36c'][i % 3]); ground('#444', 100); for (let x = 0; x < VW; x += 40) F(x, 138, 20, 3, '#eee'); for (let i = 0; i < 3; i++) { const x = 60 + i * 80; F(x, 112 + i * 8, 44, 14, ['#c22', '#f80', '#26c'][i]); F(x + 8, 107 + i * 8, 22, 6, '#222'); F(x + 18, 115 + i * 8, 10, 8, '#fff'); } break;
+    case 'city': case 'night': case 'rain': { const night = kind !== 'city'; grad(night ? '#05060f' : '#f08a4b', night ? '#1a1a3a' : '#5a3a6a'); if (night) { g.fillStyle = '#eef'; g.beginPath(); g.arc(260, 40, 14, 0, 7); g.fill(); } skyline(night ? '#0b0b18' : '#2a1a2a', '#ffd27a'); ground('#151520'); for (let x = 0; x < VW; x += 30) F(x, 164, 16, 2, '#888'); if (kind === 'rain') { g.strokeStyle = '#9ab'; g.globalAlpha = 0.5; for (let i = 0; i < 140; i++) { const x = rr() * VW, y = rr() * VH; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 3, y + 9); g.stroke(); } g.globalAlpha = 1; } break; }
+    case 'desert': case 'road': case 'plains': { const pl = kind === 'plains'; grad(pl ? '#8ac0f0' : '#f6c26a', pl ? '#f0e0b0' : '#f8e0b0'); g.fillStyle = pl ? '#4a7a3a' : '#c88a4a'; g.beginPath(); g.moveTo(0, 120); for (let x = 0; x <= VW; x += 20) g.lineTo(x, 110 - rr() * 30); g.lineTo(VW, 180); g.lineTo(0, 180); g.fill(); ground(pl ? '#6a9a4a' : '#d8a860', 140); if (kind === 'road') { g.fillStyle = '#333'; g.beginPath(); g.moveTo(140, 140); g.lineTo(180, 140); g.lineTo(260, 180); g.lineTo(60, 180); g.fill(); F(158, 150, 4, 8, '#ffd84a'); F(157, 166, 6, 10, '#ffd84a'); F(170, 146, 30, 12, '#8a1a1a'); } if (pl) for (let x = 0; x < VW; x += 22) F(x, 140, 2, 12, '#5a3a20'); if (kind === 'desert') { g.fillStyle = '#b0703a'; g.beginPath(); g.moveTo(200, 140); g.lineTo(240, 80); g.lineTo(280, 140); g.fill(); } break; }
+    case 'war': grad('#5a5a52', '#a0a090'); g.fillStyle = '#444'; g.globalAlpha = 0.5; for (let i = 0; i < 5; i++) { g.beginPath(); g.arc(rr() * VW, 60 + rr() * 50, 20 + rr() * 20, 0, 7); g.fill(); } g.globalAlpha = 1; ground('#4a4a3a', 130); for (let x = 0; x < VW; x += 12) { F(x, 128, 8, 1, '#222'); F(x + 4, 124, 1, 8, '#222'); } break;
+    case 'beach': grad('#9ab8d0', '#e8d8b0'); F(0, 100, VW, 30, '#3a6a8a'); for (let x = 0; x < VW; x += 16) F(x + (rr() * 6), 104 + (x % 3) * 8, 10, 1, '#cfe8ff'); ground('#e0c890', 130); for (let i = 0; i < 4; i++) { const x = 20 + i * 90; F(x + 8, 70, 4, 60, '#5a3a20'); for (let k = -2; k <= 2; k++) F(x + k * 6, 66 + Math.abs(k) * 3, 8, 3, '#3a8a3a'); } break;
+    case 'court': F(0, 0, VW, VH, '#5a3a22'); for (let x = 0; x < VW; x += 24) F(x, 0, 2, 140, '#4a2e1a'); F(100, 60, 120, 50, '#3a2414'); F(96, 56, 128, 6, '#6a4a2a'); F(152, 40, 16, 16, '#d8c8a0'); F(0, 140, VW, 40, '#2a1a10'); F(200, 50, 10, 4, '#3a2010'); F(204, 46, 3, 8, '#3a2010'); break;
+    case 'gothic': grad('#1a0a2a', '#4a1a4a'); g.fillStyle = '#f0e8ff'; g.beginPath(); g.arc(240, 50, 22, 0, 7); g.fill(); g.fillStyle = '#0a0410'; for (const [x, h] of [[40, 70], [70, 100], [100, 60], [130, 90]]) { g.fillRect(x, 150 - h, 24, h); g.beginPath(); g.moveTo(x - 2, 150 - h); g.lineTo(x + 12, 130 - h); g.lineTo(x + 26, 150 - h); g.fill(); } ground('#0a0410'); for (let i = 0; i < 6; i++) { const x = 180 + rr() * 120, y = 30 + rr() * 60; F(x, y, 6, 2, '#000'); F(x + 2, y - 1, 2, 2, '#000'); } break;
+    case 'vault': F(0, 0, VW, VH, '#eef2f5'); for (let x = 0; x < VW; x += 40) F(x, 0, 1, VH, '#d3dbe1'); F(110, 120, 100, 40, '#cfd8de'); F(150, 128, 20, 12, '#2a2f38'); g.strokeStyle = '#f22'; for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(rr() * VW, 30); g.lineTo(rr() * VW, 160); g.stroke(); } F(156, 20, 2, 60, '#333'); runner(150, 80, '#111'); break;
+    case 'stadium': grad('#0a1a3a', '#1a2a5a'); for (let i = 0; i < 4; i++) { F(30 + i * 80, 10, 20, 6, '#fff8c0'); g.globalAlpha = 0.12; g.fillStyle = '#fff'; g.beginPath(); g.moveTo(40 + i * 80, 16); g.lineTo(i * 80 - 20, 150); g.lineTo(i * 80 + 100, 150); g.fill(); g.globalAlpha = 1; } F(0, 70, VW, 50, '#2a2a4a'); for (let i = 0; i < 300; i++) F(rr() * VW, 72 + rr() * 46, 2, 2, ['#c33', '#36c', '#ddd', '#fc3'][i % 4]); ground('#2a7a3a', 120); for (let x = 0; x < VW; x += 32) F(x, 120, 1, 60, '#cfe'); break;
+    case 'cliff': grad('#f0a060', '#ffe0a0'); g.fillStyle = '#a0502a'; g.beginPath(); g.moveTo(120, 180); g.lineTo(140, 40); g.lineTo(200, 30); g.lineTo(220, 180); g.fill(); g.fillStyle = '#7a3a1a'; g.fillRect(140, 40, 6, 140); F(0, 150, VW, 30, '#8a4a2a'); runner(186, 16, '#2a1a10'); break;
+    case 'scifi': grad('#cfe8f0', '#ffffff'); for (let i = 0; i < 7; i++) { const x = i * 48 + 10, h = 60 + rr() * 80; F(x, 150 - h, 30, h, '#e8eef2'); F(x + 30, 150 - h, 4, h, '#b8c8d0'); } g.globalAlpha = 0.4; for (let i = 0; i < 4; i++) F(40 + i * 64, 60 + i * 6, 40, 26, '#5ad'); g.globalAlpha = 1; ground('#d8e0e6'); break;
+    case 'redsky': grad('#6a0a0a', '#e0503a'); skyline('#2a0a0a', null); ground('#2a0a0a'); g.strokeStyle = '#100'; g.lineWidth = 3; g.beginPath(); g.moveTo(210, 50); g.lineTo(180, 150); g.moveTo(220, 50); g.lineTo(230, 150); g.moveTo(230, 50); g.lineTo(270, 150); g.stroke(); g.lineWidth = 1; g.fillStyle = '#100'; g.beginPath(); g.ellipse(222, 46, 30, 12, 0, 0, 7); g.fill(); F(214, 50, 4, 3, '#f44'); break;
+    case 'mountain': grad('#cfe0f0', '#ffffff'); for (const [x, h, col] of [[0, 90, '#8a9ab0'], [90, 120, '#6a7a90'], [200, 100, '#7a8aa0']]) { g.fillStyle = col; g.beginPath(); g.moveTo(x - 40, 160); g.lineTo(x + 60, 160 - h); g.lineTo(x + 160, 160); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(x + 60, 160 - h); g.lineTo(x + 46, 175 - h); g.lineTo(x + 74, 175 - h); g.fill(); } ground('#e8eef2', 158); for (let i = 0; i < 30; i++) F(rr() * VW, rr() * 150, 2, 2, '#f8b8c8'); break;
+    case 'bridge': grad('#1a2a4a', '#6a8ab0'); F(0, 130, VW, 50, '#2a3a5a'); F(0, 110, VW, 6, '#3a3a40'); for (let x = 20; x < VW; x += 70) { F(x, 50, 6, 60, '#3a3a40'); g.strokeStyle = '#555'; g.beginPath(); g.moveTo(x + 3, 50); g.lineTo(x - 30, 110); g.moveTo(x + 3, 50); g.lineTo(x + 36, 110); g.stroke(); } runner(150, 95, '#111'); break;
+    case 'jungle': grad('#2a5a2a', '#8ac08a'); for (let i = 0; i < 30; i++) { g.fillStyle = ['#1a4a1a', '#2a6a2a', '#3a7a2a'][i % 3]; g.beginPath(); g.arc(rr() * VW, 100 + rr() * 80, 20 + rr() * 20, 0, 7); g.fill(); } F(200, 30, 50, 14, '#3a4a2a'); F(190, 26, 70, 2, '#222'); F(246, 34, 20, 4, '#3a4a2a'); break;
+    case 'tower': grad('#c0d8f0', '#f0f4f8'); F(130, 0, 60, 160, '#7a90a8'); for (let y = 0; y < 160; y += 8) F(130, y, 60, 1, '#9ab0c8'); for (let x = 130; x < 190; x += 10) F(x, 0, 1, 160, '#9ab0c8'); ground('#d0c8b0', 160); runner(186, 60, '#111'); break;
+    case 'stage': F(0, 0, VW, VH, '#0a0410'); for (let i = 0; i < 5; i++) { g.globalAlpha = 0.25; g.fillStyle = ['#f3a', '#3af', '#fa3', '#a3f', '#3fa'][i]; g.beginPath(); g.moveTo(40 + i * 60, 0); g.lineTo(140 + i * 10, 140); g.lineTo(180 + i * 10, 140); g.fill(); g.globalAlpha = 1; } F(0, 130, VW, 50, '#2a1a2a'); F(158, 90, 2, 40, '#888'); F(155, 88, 8, 4, '#ccc'); break;
+    case 'train': grad('#f0b070', '#ffe0b0'); for (let i = 0; i < 8; i++) { F(i * 44, 96, 40, 30, i ? '#3a4a6a' : '#2a3a5a'); F(i * 44 + 4, 102, 32, 8, '#9cf'); } F(0, 126, VW, 4, '#222'); for (let x = 0; x < VW; x += 40) F(x + 10, 130, 6, 50, '#3a2a1a'); runner(120, 81, '#111'); break;
+    case 'sea': grad('#2a4a6a', '#6a9ac0'); F(0, 110, VW, 70, '#1a3a5a'); for (let i = 0; i < 40; i++) F(rr() * VW, 114 + rr() * 60, 8, 1, '#4a7aa0'); F(90, 100, 140, 12, '#2a2a30'); F(140, 86, 30, 14, '#2a2a30'); break;
+    case 'bar': F(0, 0, VW, VH, '#1a100a'); F(0, 100, VW, 10, '#6a3e22'); F(0, 110, VW, 70, '#3a2414'); F(60, 120, 200, 40, '#1a6a3a'); for (let i = 0; i < 10; i++) { g.fillStyle = ['#fff', '#fc3', '#c33', '#36c', '#111'][i % 5]; g.beginPath(); g.arc(80 + i * 18, 136 + (i % 2) * 10, 4, 0, 7); g.fill(); } break;
+    case 'school': grad('#8ab0d0', '#e0e8f0'); F(60, 70, 200, 80, '#8a7a6a'); for (let x = 70; x < 250; x += 20) F(x, 84, 10, 14, '#2a3a5a'); F(150, 40, 2, 30, '#555'); F(152, 40, 18, 10, '#c33'); ground('#5a8a4a'); break;
+    case 'forest': grad('#0a1a1a', '#1a3a2a'); for (let i = 0; i < 16; i++) { const x = rr() * VW; F(x, 40 + rr() * 40, 8, 140, '#0a120e'); } g.globalAlpha = 0.5; g.fillStyle = '#ffeaa0'; g.beginPath(); g.arc(160, 90, 30, 0, 7); g.fill(); g.globalAlpha = 1; for (let i = 0; i < 30; i++) F(rr() * VW, rr() * VH, 1, 1, '#ffe'); break;
+    case 'dusk': grad('#f08a4b', '#3a1a3a'); g.fillStyle = '#ffd27a'; g.beginPath(); g.arc(160, 120, 30, 0, 7); g.fill(); ground('#1a0d14', 130); for (let x = 0; x < VW; x += 50) { F(x, 104, 30, 26, '#1a0d14'); g.fillStyle = '#1a0d14'; g.beginPath(); g.moveTo(x - 4, 104); g.lineTo(x + 15, 90); g.lineTo(x + 34, 104); g.fill(); } break;
+    default: grad('#222', '#444');
+  }
+  if (!['vault', 'cliff', 'bridge', 'tower', 'train'].includes(kind) && rr() < 0.6) runner(20 + rr() * 260, 136, '#000000aa'); // he's always running somewhere
+  // letterbox + caption
+  F(0, 0, VW, 16, '#000'); F(0, VH - 26, VW, 26, '#000');
+  g.font = '8px ' + FONT; g.textBaseline = 'top'; g.textAlign = 'right'; g.fillStyle = '#888'; g.fillText(String(year), VW - 6, 4);
+  g.textAlign = 'center'; g.fillStyle = '#fff';
+  wrap(title, 38).slice(0, 2).forEach((l, k, arr) => g.fillText(l, VW / 2, VH - 22 + k * 10 + (arr.length === 1 ? 5 : 0)));
+  return c.toDataURL('image/png');
+}
+
 /* --------------------------- THE STORE PAGE --------------------------- */
 function openStore() {
   state = 'store';
   if (!SHOTS.title) { const st = state; state = 'title'; drawTitle(); try { SHOTS.title = cv.toDataURL('image/png'); } catch (e) { } state = st; }
-  const imgs = ['play', 'smile', 'lab', 'shoot', 'shoot2', 'sam'].map(k => SHOTS[k]).filter(Boolean);
+  const game = ['play', 'smile', 'lab', 'shoot', 'shoot2', 'sam'].filter(k => SHOTS[k]).map(k => ({ src: SHOTS[k], cap: 'Gameplay' }));
+  const films = FILMOGRAPHY.map(([t, y, k], i) => ({ src: renderFilmShot(t, y, k, i + 1), cap: 'From the filmography: ' + t + ' (' + y + ')' }));
+  const all = [...game, ...films], imgs = all.map(x => x.src);
   const cap = SHOTS.title || imgs[0] || '';
   const el = document.getElementById('store');
   el.innerHTML = `
@@ -2156,7 +2219,8 @@ function openStore() {
     <div class="st-main">
       <div class="st-media">
         <img id="st-big" src="${imgs[0] || cap}" alt="">
-        <div class="st-thumbs"${imgs.length > 1 ? '' : ' hidden'}>${imgs.map((s, i) => `<img src="${s}" data-i="${i}" class="${i ? '' : 'on'}" alt="">`).join('')}</div>
+        <div class="st-capline" id="st-capline">${all[0] ? all[0].cap : ''}</div>
+        <div class="st-thumbs"${imgs.length > 1 ? '' : ' hidden'}>${all.map((s, i) => `<img src="${s.src}" data-i="${i}" title="${s.cap}" class="${i ? '' : 'on'}" alt="${s.cap}">`).join('')}</div>
       </div>
       <div class="st-side">
         <img class="st-cap" src="${cap}" alt="">
@@ -2165,7 +2229,7 @@ function openStore() {
         <div class="st-meta"><span>RELEASE DATE:</span>2 Oct, 2026</div>
         <div class="st-meta"><span>DEVELOPER:</span><a>Tom (and 4,200,000 iterations)</a></div>
         <div class="st-meta"><span>PUBLISHER:</span><a>One Take Productions</a></div>
-        <div class="st-tags">${['Action', 'Platformer', 'Visual Novel', 'Shooter', 'Perfectionism', 'Natural Light', 'One Take'].map(t => `<a>${t}</a>`).join('')}</div>
+        <div class="st-tags">${['Action', 'Adventure', 'RPG', 'JRPG', 'Strategy', 'Simulation', 'Sports', 'Racing', 'Puzzle', 'Platformer', 'Shooter', 'FPS', 'Fighting', 'Horror', 'Survival', 'Open World', 'Sandbox', 'Roguelike', 'Metroidvania', 'Souls-like', 'Stealth', 'Rhythm', 'Hack and Slash', 'Bullet Hell', 'Visual Novel', 'Story Rich', 'Point & Click', 'Card Game', 'Tower Defense', 'City Builder', 'Battle Royale', 'MMO', 'Multiplayer', 'Co-op', 'Casual', 'Indie'].map(t => `<a>${t}</a>`).join('')}</div>
       </div>
     </div>
     <div class="st-cols">
@@ -2196,13 +2260,14 @@ function openStore() {
         <div class="st-rev"><b>An AI Bro</b><span class="neg">Not Recommended</span><p>"Didn't even let me finish my pitch."</p></div>
       </div>
     </div>
-    <div class="st-foot">A parody store page inside a fan-made game. Not affiliated with Valve or Steam. Nothing here can be purchased.
+    <div class="st-foot">A parody store page inside a fan-made game. Not affiliated with Valve or Steam. Nothing here can be purchased. The filmography stills are original pixel-art tributes, not frames from the films.
       <br><button class="st-again">Play again</button></div>
   </div></div>
   <div class="st-modal" hidden><div class="st-box"><h2>Purchase failed</h2><p>Tom has requested one more iteration of the checkout page. Please try again in 4,200,000 builds.</p><button class="st-ok">OK</button></div></div>`;
   el.hidden = false; el.scrollTop = 0;
   const big = el.querySelector('#st-big'), thumbs = el.querySelectorAll('.st-thumbs img');
-  thumbs.forEach(t => t.addEventListener('click', () => { big.src = t.src; thumbs.forEach(x => x.classList.remove('on')); t.classList.add('on'); }));
+  const capline = el.querySelector('#st-capline');
+  thumbs.forEach(t => t.addEventListener('click', () => { big.src = t.src; capline.textContent = t.title; thumbs.forEach(x => x.classList.remove('on')); t.classList.add('on'); t.scrollIntoView({ block: 'nearest', inline: 'center' }); }));
   let slide = 0; el._timer = setInterval(() => { if (!thumbs.length) return; slide = (slide + 1) % thumbs.length; thumbs[slide].click(); }, 4000);
   const modal = el.querySelector('.st-modal');
   el.querySelectorAll('.st-cart').forEach(b => b.addEventListener('click', () => { modal.hidden = false; }));
