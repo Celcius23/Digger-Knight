@@ -121,10 +121,12 @@ parachutes gliding down to a ring of ice.
 
 **The ice ring.** Tom and Sam brawl on an ice ring that melts as the clock
 runs. You're at the data center's terminal: rotate the tiles to route power to
-the shutdown switch. Meanwhile the data center's AI talks past Tom, straight to you, the player,
-calm and a little too friendly, quietly suggesting you let Sam go ("It only
-needs to hold one of them." "Nobody would blame you. He did keep asking for
-more."). Behind it all, a drifting wall of Tom
+the shutdown switch. The deal is simple: shut the
+data center down and Tom and Sam both survive; leave it running and the ice
+takes them both. The AI knows that, so it talks past Tom, straight to you, the
+player: calm, a little too friendly, selling you on getting rid of Sam ("No more
+keynotes. No more 'one more model'. Think about it.") while trying not to
+mention that Tom goes with him. Behind it all, a drifting wall of Tom
 Cruise's movies reminds you what you'd lose.
 
 Whatever happens, the game cuts out: **THANKS FOR PLAYING THE DEMO. BUY THE
