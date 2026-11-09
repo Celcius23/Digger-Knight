@@ -11,8 +11,7 @@ Everything (pixel art, sound effects, chiptune music) is generated in code, so
 
 The soundtrack is generative. Each scene has its own original track: the
 platformer, the boss, the victory fanfare, breaking news, the lab, the smile,
-the Agency corridors, a 5/4 spy theme for the fights, the chase, the cliff
-jump and the ice ring. Every track is built from sections (intro,
+a 5/4 spy theme for the campus shooter, and the final boss. Every track is built from sections (intro,
 verse, chorus, bridge, breakdown) with their own chords, bass lines and drum
 patterns. Melodies grow from a motif that mutates each time a section returns,
 phrases end in drum fills, the boss and battle music intensify when things get
@@ -41,13 +40,7 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 
 **Story scenes:** Z / Enter, or tap anywhere.
 
-**Agency corridors:** move, Z to jump, X to shoot (touch: D-pad, JUMP, FIRE).
-**Chase:** left/right to steer, or let go and the autopilot drives.
-**Ice-ring puzzle:** arrows to pick a tile, Z to rotate, or just tap/click a tile.
-
-**Turn-based battle:** it has its own controls. Arrow keys to choose, Z / Enter
-to confirm, X / Esc to go back. On a phone the controls switch to ▲ ▼ BACK OK,
-and you can also tap a menu item or an enemy directly (the mouse works for this too).
+**The campus shooter:** move, Z to jump, X to fire (touch: D-pad, JUMP, FIRE).
 
 The touch controls track each finger separately, so you can hold a direction and
 jump at the same time, and sliding off a button doesn't drop the input. In
@@ -97,51 +90,33 @@ whole game. A certain tech CEO calls in, pleading for a few more gigawatts.
 "Did you say... impossible?" Tom produces a black coat and sunglasses from
 somewhere, and Ethan Hunt is in the building.
 
-**The Agency.** *Your mission, should you choose to accept it: pull the plug.*
-Tom, in his long-haired, sunglasses-wearing cliff-climbing look from the
-opening of *Mission: Impossible 2*, sneaks down blinding-white vault corridors.
-Jump the laser tripwires, and wait for the security cameras to look away
-(their light turns green) before you cross. Alejandro follows with his camera.
-Only Tom shoots: hit a data center and the turn-based combat begins.
+**The campus.** *Your mission, should you choose to accept it: pull the
+plug.* Then it's back to side-scrolling, in the same style as the first level,
+but now you're Ethan Hunt in the black coat and sunglasses, with a sidearm
+instead of a spade. Fight across a night-time tech campus of concrete plazas,
+live-cable trenches and power pylons toward the data center, while AI bros try
+to stop you:
 
-| Tom | Alejandro |
-| --- | --- |
-| **Free Solo:** climb it with no rope, drop on it | **Long Take:** four hits on random foes |
-| **Cable Drop:** drop from the ceiling on a wire and pull every plug (hits all, double vs. servers) | **CUT!:** a foe loses its next turn (cancels an overclock) |
-| **Self-Destruct:** exploding sunglasses, with a countdown | **Catering:** heals the whole crew |
+- **Vest bros** patrol and throw pitch decks ("SCALE IS ALL YOU NEED!").
+- **Drone bros** hover in and swoop ("WE ARE SO BACK!").
+- **Standing-desk bros** lob energy drinks ("STAY HYDRATED, BRO").
 
-Items: **Iced Coffee** (+50 HP, revives) and **Solar Cell** (+20 SP). Data
-center A is two server racks. Data center B adds a GPU cluster that overclocks
-every third turn: defend, or yell CUT! Take both down and there's a motorcycle.
+Beaten bros quit on the spot ("PIVOTING...", "BACK TO CRYPTO", "TOUCHING GRASS").
+Clapperboards are still checkpoints, and dying is still just another take.
 
-**The chase.** Top-down pursuit of Sam's van as he throws sticks of RAM at you
-("HAVE SOME DDR5!"). Steer whenever you like. Let go and the autopilot drives
-(and dodges) for you. It ends with both vehicles flying off a cliff and two
-parachutes gliding down to a ring of ice.
+**The final boss.** At the data center's doors, Sam Altman is mid-keynote
+("ONE MORE MODEL AND WE FIX EVERYTHING. PROMISE."), with a full boss health bar,
+and starts lobbing RAM. The moment you pull the trigger, the game cuts out:
+**THANKS FOR PLAYING THE DEMO. BUY THE FULL VERSION ON STEAM.** Then a store
+page opens, with screenshots from your own playthrough, reviews and an Add to
+Cart button. It's a parody page ("STEEM"). Nothing can actually be bought.
 
-**The ice ring.** Tom and Sam brawl on an ice ring that melts as the clock
-runs. You're at the data center's terminal: rotate the tiles to route power to
-the shutdown switch. The deal is simple: shut the
-data center down and Tom and Sam both survive; leave it running and the ice
-takes them both. The AI knows that, so it talks past Tom, straight to you, the
-player: calm, a little too friendly, selling you on getting rid of Sam ("No more
-keynotes. No more 'one more model'. Think about it.") while trying not to
-mention that Tom goes with him. Behind it all, a drifting wall of Tom
-Cruise's movies reminds you what you'd lose.
-
-Whatever happens, the game cuts out: **THANKS FOR PLAYING THE DEMO. BUY THE
-FULL VERSION ON STEAM.** Then a store page opens, with screenshots from your own
-playthrough, reviews and an Add to Cart button. It's a parody page ("STEEM").
-Nothing can actually be bought.
-
-Every playable part is short: roughly half a minute of sneaking, two quick
-fights, a 35-second chase and a 45-second puzzle.
+Both playable levels are short: the shooter takes about a minute.
 
 ---
 
 *An affectionate fan-made satire. It isn't affiliated with or endorsed by Tom
 Cruise, Alejandro G. Iñárritu, Sam Altman, OpenAI, the makers of *Digger* or
-*Mission: Impossible*, Valve/Steam, or any studio. The movie titles on the wall
-are just titles; the covers are original drawings. Their appearances are caricatures, the dialogue is invented, and all
-critics, scientists and events in the game are fictional. The battle music is
-an original composition.*
+*Mission: Impossible*, Valve/Steam, or any studio. Their appearances are
+caricatures, the dialogue is invented, and all critics, scientists, AI bros and
+events in the game are fictional. All music is original.*

@@ -98,7 +98,6 @@
   .st-box h2{color:#fff;margin:0 0 8px;font-weight:normal}
   .st-ok{background:linear-gradient(to right,#47bfff 5%,#1a44c2 60%);color:#fff;border:0;padding:8px 22px;border-radius:2px;cursor:pointer}
   @media (max-width:860px){ .st-main,.st-cols{flex-direction:column} .st-side,.st-right,.st-media,.st-left{flex:none} .st-top nav,.st-acc{display:none} .st-sub a{padding:7px 8px;font-size:12px} .st-btnrow{position:static;margin-top:12px;display:inline-flex} .st-buy{padding-bottom:16px} }
-  body.drive-mode .pad .cluster{display:none}
   body.ops-mode [data-k="boot"]{display:none}
   body.m-none #touch{display:none}
 </style>
@@ -113,10 +112,6 @@
       <div class="col"><div class="b small" data-k="boot">BOOT</div><div class="b" data-k="attack">DIG</div></div>
       <div class="b big" data-k="jump">JUMP</div>
     </div>
-  </div>
-  <div id="pad-menu" class="pad">
-    <div class="cluster"><div class="col"><div class="b" data-k="mUp">&#9650;</div><div class="b" data-k="mDown">&#9660;</div></div></div>
-    <div class="cluster"><div class="b" data-k="back">BACK</div><div class="b big" data-k="ok">OK</div></div>
   </div>
   <div id="pad-tap" class="pad"><div class="hint" data-k="ok">TAP TO CONTINUE</div></div>
 </div>
@@ -178,13 +173,11 @@ addEventListener('keyup', e => {
   const k = KEYMAP[e.code], m = MENUMAP[e.code], a = ARROWMAP[e.code]; if (!k && !m && !a) return;
   if (k) release(k); if (m) release(m); if (a) release(a);
 });
-const tapAdvances = () => ['title', 'fresh', 'vn', 'blackout', 'cliff'].includes(state);
+const tapAdvances = () => ['title', 'fresh', 'vn', 'blackout'].includes(state);
 // Mouse / finger on the picture itself: advance story, or pick menu items and targets in battle
 cv.addEventListener('pointerdown', e => {
   initAudio();
   const r = cv.getBoundingClientRect(), gx = (e.clientX - r.left) * VW / r.width, gy = (e.clientY - r.top) * VH / r.height;
-  if (state === 'rpg') { rpgTap(gx, gy); return; }
-  if (state === 'ice') { iceTap(gx, gy); return; }
   if (tapAdvances()) { press('start'); press('ok'); }
 });
 cv.addEventListener('pointerup', () => { release('start'); release('ok'); });
@@ -229,12 +222,10 @@ addEventListener('touchcancel', dpadEnd);
 // Which control set is showing follows the game mode
 let padMode = '';
 function syncPad() {
-  const m = ['play', 'dead', 'ops', 'drive'].includes(state) ? 'm-play' : state === 'rpg' ? 'm-menu' : state === 'store' || state === 'demo' ? 'm-none' : 'm-tap';
-  document.body.classList.toggle('ops-mode', state === 'ops' || state === 'drive');
-  document.body.classList.toggle('drive-mode', state === 'drive');
-  const dig = document.querySelector('[data-k="attack"]'), lbl = state === 'ops' ? 'FIRE' : 'DIG'; if (dig.textContent !== lbl) dig.textContent = lbl;
-  const hint = document.querySelector('#pad-tap .hint'), ht = state === 'ice' ? 'TAP TILES TO ROTATE' : 'TAP TO CONTINUE'; if (hint.textContent !== ht) hint.textContent = ht;
-  if (m !== padMode) { document.body.classList.remove('m-play', 'm-menu', 'm-tap', 'm-none'); document.body.classList.add(m); padMode = m; fingers.clear(); dpadEnd(); for (const k in keys) keys[k] = false; resize(); }
+  const m = ['play', 'dead', 'shoot'].includes(state) ? 'm-play' : state === 'store' || state === 'demo' ? 'm-none' : 'm-tap';
+  document.body.classList.toggle('ops-mode', state === 'shoot');
+  const dig = document.querySelector('[data-k="attack"]'), lbl = state === 'shoot' ? 'FIRE' : 'DIG'; if (dig.textContent !== lbl) dig.textContent = lbl;
+  if (m !== padMode) { document.body.classList.remove('m-play', 'm-tap', 'm-none'); document.body.classList.add(m); padMode = m; fingers.clear(); dpadEnd(); for (const k in keys) keys[k] = false; resize(); }
   if (m === 'm-play') {
     dpad.querySelector('.l').classList.toggle('on', !!keys.left); dpad.querySelector('.r').classList.toggle('on', !!keys.right); dpad.querySelector('.d').classList.toggle('on', !!keys.down);
     document.querySelector('[data-k="boot"]').classList.toggle('boot-ready', bootMeter >= 100);
@@ -349,23 +340,7 @@ const SONGS = {
   cyborg: { bpm: 96, key: 38, scale: 'phryg', lead: 'sawtooth', form: ['A', 'B'], sec: {
     A: { prog: [0, 0, 1, 0], bass: 'pulse', drums: 'pound', lead: 'none', pad: 1 },
     B: { prog: [0, 1, 0, 6], bass: 'octave', drums: 'pound', lead: 'sparse', pad: 1 } } },
-  ops: { bpm: 100, key: 45, scale: 'minor', lead: 'triangle', form: ['A', 'B', 'A', 'C'], sec: {
-    A: { prog: [0, 0, 5, 4], bass: 'pulse', drums: 'tick', lead: 'sparse', pad: 1 },
-    B: { prog: [3, 4, 0, 0], bass: 'drive', drums: 'soft', lead: 'none', arp: 'slow' },
-    C: { prog: [5, 6, 0, 4], bass: 'pulse', drums: 'tick', lead: 'motif', pad: 1 } } },
-  drive: { bpm: 156, key: 42, scale: 'dorian', lead: 'square', form: ['I', 'A', 'B', 'A', 'C', 'B'], sec: {
-    I: { prog: [0, 0, 6, 6], bass: 'octave', drums: 'build', lead: 'none' },
-    A: { prog: [0, 6, 3, 4], bass: 'drive', drums: 'rock', lead: 'motif' },
-    B: { prog: [3, 4, 0, 0], bass: 'octave', drums: 'rock', lead: 'motif', arp: 'fast' },
-    C: { prog: [5, 3, 0, 4], bass: 'drive', drums: 'half', lead: 'long', pad: 1 } } },
-  cliff: { bpm: 84, key: 48, scale: 'major', lead: 'triangle', form: ['A', 'B'], sec: {
-    A: { prog: [0, 4, 5, 3], bass: 'pulse', drums: 'none', lead: 'long', pad: 1, arp: 'slow' },
-    B: { prog: [3, 4, 0, 0], bass: 'walk', drums: 'soft', lead: 'fanfare', pad: 1 } } },
-  ice: { bpm: 120, key: 45, scale: 'harm', lead: 'sawtooth', form: ['A', 'B', 'C', 'B'], sec: {
-    A: { prog: [0, 0, 5, 4], bass: 'pulse', drums: 'tick', lead: 'none', pad: 1 },
-    B: { prog: [0, 5, 3, 4], bass: 'drive', drums: 'tick', lead: 'motif' },
-    C: { prog: [3, 4, 5, 4], bass: 'octave', drums: 'rock', lead: 'long', arp: 'fast' } } },
-  rpg: { bpm: 168, key: 40, scale: 'harm', meter: 20, lead: 'sawtooth', form: ['I', 'A', 'A', 'B', 'A', 'C', 'B', 'D'], sec: {
+  spy: { bpm: 168, key: 40, scale: 'harm', meter: 20, lead: 'sawtooth', form: ['I', 'A', 'A', 'B', 'A', 'C', 'B', 'D'], sec: {
     I: { prog: [0, 0, 0, 0], bass: 'spy', drums: 'spyb', lead: 'none' },
     A: { prog: [0, 0, 5, 4], bass: 'spy', drums: 'spy', lead: 'motif' },
     B: { prog: [3, 3, 4, 4], bass: 'spy', drums: 'spy', lead: 'long', arp: 'fast' },
@@ -374,11 +349,10 @@ const SONGS = {
 };
 
 function songFor() {
-  if (state === 'rpg') return 'rpg';
-  if (state === 'ops' || state === 'drive' || state === 'cliff' || state === 'ice') return state;
+  if (state === 'shoot') return sCut ? null : sArena ? 'boss' : 'spy';
   if (state === 'vn' && vn) {
     const L = vn.script[vn.i];
-    if (L.bg === 'card') return L.text.includes('MISSION') ? 'rpg' : null;
+    if (L.bg === 'card') return L.text.includes('MISSION') ? 'spy' : null;
     if (L.hud) return 'cyborg';
     if (L.map === 'heal' || L.map === 'healed') return 'hope';
     return { news: 'news', lab: 'lab', smile: 'smile', dc: 'sad', sunset: 'sunset', bar: 'bar' }[L.bg] || 'lab';
@@ -390,9 +364,7 @@ function songFor() {
 }
 function musicIntensity() {
   if (mus && mus.name === 'boss' && boss && boss.enraged) return 2;
-  if (mus && mus.name === 'rpg' && rpg && rpg.enemies.some(e => !e.dead && e.charging)) return 2;
-  if (mus && mus.name === 'ice' && ice && ice.t > ICE_T / 2) return 2;
-  if (mus && mus.name === 'drive' && drv && drv.t > DRIVE_LEN / 2) return 2;
+  if (mus && mus.name === 'spy' && hero && state === 'shoot' && hero.x > 75 * TS) return 2;
   return 1;
 }
 
@@ -522,10 +494,11 @@ function startMusic() {
 
 /* ----------------------------- LEVEL -------------------------------- */
 // '#' ground, 'D' diggable dirt, '^' sharpened-pencil spikes, '.' air
-const LW = 107, LH = 11;
+let LW = 107; const LH = 11;
 const ARENA_X = 86, GATE_X = 85;
 let grid = [];
 function buildGrid() {
+  LW = 107;
   grid = Array.from({ length: LH }, () => Array(LW).fill('.'));
   const F = (x0, x1, y0, y1, c) => {
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++)
@@ -616,7 +589,7 @@ function dropGems(x, y, total) {
 }
 
 function newGame() {
-  buildGrid();
+  buildGrid(); tileTheme = 'carpet';
   money = 0; takes = 1; cruiseShown = false; bossActive = false; winT = 0; bootMeter = 0; superBoot = null;
   respawnPt = { x: 3, y: 9 };
   enemies = [
@@ -969,15 +942,11 @@ function update() {
     if ((pressed.start || pressed.ok) && freshT > 20 && freshT < cutF) freshT = cutF;
     else if (freshT < cutF && freshT % 4 === 0) blip();
     if (freshT === cutF + 1) { noise(0.6, 0.35, 4000); [880, 660, 880, 660].forEach((f, i) => tone('square', f, f, 0.14, 0.12, 0.1 + i * 0.16)); }
-    if (freshT > cutF + 110) startVN(INTRO, () => startOps());
+    if (freshT > cutF + 110) startVN(INTRO, () => startShoot());
     return;
   }
   if (state === 'vn') { updateVN(); decayShake(); return; }
-  if (state === 'rpg') { updateRPG(); decayShake(); return; }
-  if (state === 'ops') { updateOps(); decayShake(); return; }
-  if (state === 'drive') { updateDrive(); return; }
-  if (state === 'cliff') { updateCliff(); return; }
-  if (state === 'ice') { updateIce(); return; }
+  if (state === 'shoot') { if (pressed.pause) paused = !paused; if (!paused) updateShoot(); return; }
   if (state === 'demo') { updateDemo(); return; }
   if (state === 'store') return;
   if (state === 'blackout') { if (++creditsT > 150) state = 'title'; return; }
@@ -1136,7 +1105,14 @@ function drawTiles(cx) {
   const x0 = Math.floor(cx / TS), x1 = Math.min(LW - 1, x0 + VW / TS + 1);
   for (let ty = 0; ty < LH; ty++) for (let tx = x0; tx <= x1; tx++) {
     const t = grid[ty][tx], X = tx * TS, Y = ty * TS;
-    if (t === '#') {
+    if (t === '#' && tileTheme === 'campus') { // concrete, steel edge
+      R(X, Y, TS, TS, '#30364a'); const h = hash(tx, ty);
+      R(X + (h % 12) + 1, Y + ((h >> 4) % 10) + 4, 2, 2, '#262b3c'); R(X, Y + 15, TS, 1, '#262b3c');
+      if (!solid(tx, ty - 1)) { R(X, Y, TS, 3, '#8a95ab'); R(X, Y, TS, 1, '#c7d0e0'); if (tx % 3 === 0) R(X + 6, Y + 5, 4, 1, '#ffd84a'); }
+    } else if (t === '^' && tileTheme === 'campus') { // live cables
+      R(X, Y + 11, TS, 4, '#111'); R(X, Y + 12, TS, 1, '#333');
+      if ((frame + tx * 7) % 20 < 6) { R(X + (hash(tx, frame >> 2) % 12), Y + 6 + (frame % 4), 2, 4, '#ffe24a'); R(X + 4 + (hash(frame, tx) % 8), Y + 8, 3, 1, '#9cf'); }
+    } else if (t === '#') {
       R(X, Y, TS, TS, '#5a3620');
       const h = hash(tx, ty);
       R(X + (h % 12) + 1, Y + ((h >> 4) % 10) + 4, 2, 2, '#3e2414');
@@ -1472,11 +1448,7 @@ function draw() {
   ctx.imageSmoothingEnabled = false;
   if (state === 'title') { drawTitle(); return; }
   if (state === 'vn') { drawVN(); return; }
-  if (state === 'rpg') { drawRPG(); return; }
-  if (state === 'ops') { drawOps(); return; }
-  if (state === 'drive') { drawDrive(); return; }
-  if (state === 'cliff') { drawCliff(); return; }
-  if (state === 'ice') { drawIce(); return; }
+  if (state === 'shoot') { drawShoot(); if (paused) { R(0, 0, VW, VH, '#0008'); text('PAUSED', VW / 2, 80, '#fff', 'center', 16); } return; }
   if (state === 'demo' || state === 'store') { drawDemo(); return; }
   if (state === 'blackout') { R(0, 0, VW, VH, '#000'); return; }
   drawWorld();
@@ -1853,565 +1825,222 @@ function drawVN() {
 }
 
 /* =====================================================================
-   THE TURN-BASED BATTLE
+   THE CAMPUS: a side-scrolling shooter in the same style as level 1.
+   Ethan Hunt vs. the AI bros, all the way to the data centers.
+   Sam Altman waits at the end. Pull the trigger on him and... well.
    ===================================================================== */
-let rpg = null;
-const SKILLS = {
-  'FREE SOLO': { sp: 8, target: 'enemy', desc: 'FREE SOLO (8 SP): CLIMB IT, NO ROPE, DROP ON IT.' },
-  'CABLE DROP': { sp: 10, target: 'all', desc: 'CABLE DROP (10 SP): HITS ALL. SERVERS TAKE DOUBLE.' },
-  'SELF-DESTRUCT': { sp: 20, target: 'enemy', desc: 'SELF-DESTRUCT (20 SP): EXPLODING SUNGLASSES.' },
-  'LONG TAKE': { sp: 10, target: 'all', desc: 'LONG TAKE (10 SP): FOUR HITS ON RANDOM FOES.' },
-  'CUT!': { sp: 8, target: 'enemy', desc: 'CUT! (8 SP): A FOE LOSES ITS NEXT TURN.' },
-  'CATERING': { sp: 8, target: 'party', desc: 'CATERING (8 SP): HEAL THE WHOLE CREW 35.' }
-};
-const ITEMS = {
-  COFFEE: { desc: 'ICED COFFEE: +50 HP. CAN WAKE A KNOCKED-OUT ALLY.' },
-  SOLAR: { desc: 'SOLAR CELL: +20 SP.' }
-};
-const RPG_TIPS = [
-  'TIP: CABLE DROP HITS EVERY SERVER TWICE AS HARD.',
-  'TIP: WHEN THE CLUSTER OVERCLOCKS, DEFEND OR YELL "CUT!"',
-  'TIP: CATERING HEALS EVERYONE. COFFEE REVIVES.',
-  'TIP: SAVE 20 SP FOR SELF-DESTRUCT.'
-];
-function mkServer(x, y, label, hp = 70) { return { kind: 'server', name: 'SERVER ' + label, hp, maxHp: hp, atk: 11, x, y, w: 30, h: 50, stun: 0, imm: 0, flash: 0, ox: 0, dead: false }; }
-const ENCOUNTERS = [
-  { msg: 'DATA CENTER A! TWO SERVER RACKS SPIN UP TO DEFEND IT.', foes: () => [mkServer(30, 52, 'A', 55), mkServer(112, 60, 'B', 55)] },
-  { msg: 'DATA CENTER B. THE BIG ONE: A GPU CLUSTER, RUNNING HOT.', foes: () => [mkServer(4, 56, 'A', 60),
-    { kind: 'cluster', name: 'GPU CLUSTER', hp: 170, maxHp: 170, atk: 14, x: 52, y: 34, w: 60, h: 80, stun: 0, imm: 0, flash: 0, ox: 0, dead: false, turn: 0, charging: false },
-    mkServer(132, 60, 'B', 60)] }
-];
-function startRPG(take, enc = 0) {
-  state = 'rpg';
-  rpg = {
-    take, enc, t: 0, phase: 'intro', turn: 0, wait: 0, summoned: false, fx: null, floats: [],
-    msg: take > 1 ? RPG_TIPS[(take - 2) % RPG_TIPS.length] : ENCOUNTERS[enc].msg, items: { COFFEE: 3, SOLAR: 2 },
-    party: [
-      { key: 'tom', name: 'TOM', hp: 140, maxHp: 140, sp: 40, maxSp: 40, atk: 18, skills: ['FREE SOLO', 'CABLE DROP', 'SELF-DESTRUCT'], x: 232, y: 50, w: 32, h: 32, def: false, flash: 0, ox: 0 },
-      { key: 'ina', name: 'ALEJANDRO', hp: 110, maxHp: 110, sp: 50, maxSp: 50, atk: 13, skills: ['LONG TAKE', 'CUT!', 'CATERING'], x: 270, y: 70, w: 32, h: 32, def: false, flash: 0, ox: 0 }
-    ],
-    enemies: ENCOUNTERS[enc].foes()
-  };
-}
-const aliveP = () => rpg.party.filter(p => p.hp > 0);
-const aliveE = () => rpg.enemies.filter(e => !e.dead);
-function rfloat(t, txt, c, dy = 0) { rpg.floats.push({ x: t.x + t.w / 2, y: t.y + 8 + dy, txt, c, t: 50 }); }
+const S_LW = 132, S_ARENA = 113, S_GATE = 112;
+let hero = null, sBullets = [], bros = [], sBoss = null, sArena = false, sCut = 0, sChecks = [], sRespawn = 3, sDeadT = 0, sTakes = 1, tileTheme = 'carpet';
+const BRO_TAUNTS = ['AGI NEXT YEAR!', 'WE ARE SO BACK!', 'ACCELERATE!', "IT'S NOT A BUBBLE!", 'SCALE IS ALL YOU NEED!', 'MOVE FAST, BRO!', 'JUST VIBES, BRO'];
+const BRO_QUITS = ['PIVOTING...', 'BACK TO CRYPTO', 'TOUCHING GRASS', 'LOGGING OFF', 'SEED ROUND OVER', 'PAUSING MY STARTUP'];
 
-function beginSelect() {
-  rpg.phase = 'select'; rpg.choices = []; rpg.menu = 'main'; rpg.cursor = 0;
-  rpg.actor = rpg.party.findIndex(p => p.hp > 0);
+function buildCampus() {
+  LW = S_LW;
+  grid = Array.from({ length: LH }, () => Array(LW).fill('.'));
+  const F = (x0, x1, y0, y1, c) => { for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) if (x >= 0 && x < LW && y >= 0 && y < LH) grid[y][x] = c; };
+  F(0, LW - 1, 9, 10, '#'); F(0, 0, 0, 8, '#');
+  F(17, 19, 7, 7, '#');                                   // the lobby
+  F(28, 30, 9, 10, '.');                                  // first gap
+  F(38, 54, 8, 8, '#'); F(45, 47, 6, 6, '#');             // the raised plaza
+  F(60, 70, 9, 9, '^'); F(62, 63, 8, 8, '#'); F(66, 67, 8, 8, '#'); // live-cable trench
+  F(84, 86, 7, 7, '#'); F(96, 98, 9, 10, '.');            // the server yard
+  F(S_ARENA + 2, S_ARENA + 4, 7, 7, '#'); F(LW - 1, LW - 1, 0, 8, '#');
 }
-function menuOptions() {
-  const a = rpg.party[rpg.actor];
-  if (rpg.menu === 'main') return [
-    { label: 'ATTACK', ok: true, desc: a.key === 'tom' ? 'ATTACK: A SPINNING KICK.' : 'ATTACK: CLAPPERBOARD TO THE FACE.' },
-    { label: 'SKILL', ok: true, desc: a.name + ' SKILLS. SP: ' + a.sp },
-    { label: 'ITEM', ok: true, desc: 'COFFEE x' + rpg.items.COFFEE + '   SOLAR CELL x' + rpg.items.SOLAR },
-    { label: 'DEFEND', ok: true, desc: 'DEFEND: HALF DAMAGE THIS TURN, +4 SP.' }
+function mkBro(type, tx, row, extra = {}) {
+  const e = Object.assign({ type, vx: 0, vy: 0, inv: 0, flash: 0, stun: 0, dead: false, face: -1, say: null, t: Math.random() * 100, dir: -1, cool: 60 + rand(0, 80), throwT: 0 },
+    type === 'bro' ? { w: 10, h: 14, hp: 2 } : type === 'drone' ? { w: 12, h: 12, hp: 1, phase: rand(0, 6) } : { w: 14, h: 14, hp: 3 }, extra);
+  place(e, tx, row); e.bx = e.x; e.by = e.y; return e;
+}
+function spawnHero() {
+  hero = { x: sRespawn * TS + 3, y: 9 * TS - 14, w: 10, h: 14, vx: 0, vy: 0, face: 1, onGround: false, hp: 6, maxHp: 6, inv: 0, knock: 0, cool: 0, shootT: 0, coyote: 0, jbuf: 0 };
+  cam.x = clamp(hero.x - VW / 2, 0, LW * TS - VW);
+}
+function startShoot() {
+  state = 'shoot'; tileTheme = 'campus'; bossActive = false; paused = false;
+  buildCampus(); sRespawn = 3; sTakes = 1; sArena = false; sCut = 0; sDeadT = 0;
+  sChecks = [56, 75, 108].map(tx => ({ x: tx * TS + 2, y: 9 * TS - 18, w: 12, h: 18, tx, on: false }));
+  bros = [
+    mkBro('bro', 13, 9), mkBro('bro', 24, 9), mkBro('desk', 34, 9), mkBro('drone', 36, 4),
+    mkBro('bro', 44, 8), mkBro('bro', 52, 8), mkBro('drone', 58, 5), mkBro('drone', 72, 4),
+    mkBro('bro', 79, 9), mkBro('desk', 82, 9), mkBro('bro', 90, 9), mkBro('drone', 100, 4), mkBro('bro', 104, 9), mkBro('desk', 107, 9)
   ];
-  if (rpg.menu === 'skill') return a.skills.map(k => ({ label: k, ok: a.sp >= SKILLS[k].sp, desc: SKILLS[k].desc, value: k }));
-  if (rpg.menu === 'item') return ['COFFEE', 'SOLAR'].map(k => ({ label: k + ' x' + rpg.items[k], ok: rpg.items[k] > 0, desc: ITEMS[k].desc, value: k }));
-  // target
-  const want = rpg.pending.target;
-  const list = want === 'ally' ? rpg.party.filter(p => rpg.pending.item === 'COFFEE' || p.hp > 0) : aliveE();
-  return list.map(t => ({ label: t.name.length > 12 ? t.name.slice(0, 12) : t.name, ok: true, desc: 'TARGET: ' + t.name, value: t }));
+  sBoss = { x: (LW - 7) * TS, y: 9 * TS - 40, t: 0, say: null, throwT: 0 };
+  projectiles = []; particles = []; popups = []; sBullets = [];
+  spawnHero();
+  banner = { lines: ['EVERY CABLE LEADS TO THE DATA CENTER', 'GET PAST THE AI BROS'], t: 170 };
 }
-function commit(c) {
-  c.actor = rpg.actor; rpg.choices.push(c);
-  const next = rpg.party.findIndex((p, i) => i > rpg.actor && p.hp > 0);
-  if (next < 0) startRound();
-  else { rpg.actor = next; rpg.menu = 'main'; rpg.cursor = 0; }
+function hurtHero(dmg, srcX) {
+  const p = hero; if (p.inv > 0 || sDeadT) return;
+  p.hp -= dmg; p.inv = 70; p.knock = 14; p.vx = p.x + p.w / 2 < srcX ? -1.8 : 1.8; p.vy = -2.6;
+  sfx.hurt(); shake = 6; burst(p.x + 5, p.y + 7, 8, ['#f33', '#fff'], 2);
+  if (p.hp <= 0) { sDeadT = 120; sfx.die(); banner = null; burst(p.x + 5, p.y + 7, 25, ['#141414', '#f0c39a', '#fff'], 3); }
 }
-function updateSelect() {
-  const opts = menuOptions();
-  if (!opts.length) { rpg.menu = 'main'; return; }
-  rpg.cursor = Math.min(rpg.cursor, opts.length - 1);
-  if (pressed.mUp) { rpg.cursor = (rpg.cursor + opts.length - 1) % opts.length; blip(); }
-  if (pressed.mDown) { rpg.cursor = (rpg.cursor + 1) % opts.length; blip(); }
-  const o = opts[rpg.cursor];
-  rpg.msg = o.desc;
-  if (pressed.ok) {
-    if (!o.ok) { tone('square', 140, 120, 0.1, 0.1); return; }
-    sfx.throw();
-    if (rpg.menu === 'main') {
-      if (o.label === 'ATTACK') { rpg.pending = { cmd: 'attack', target: 'enemy' }; rpg.menu = 'target'; rpg.cursor = 0; }
-      else if (o.label === 'SKILL') { rpg.menu = 'skill'; rpg.cursor = 0; }
-      else if (o.label === 'ITEM') { rpg.menu = 'item'; rpg.cursor = 0; }
-      else commit({ cmd: 'defend' });
-    } else if (rpg.menu === 'skill') {
-      const S = SKILLS[o.value];
-      if (S.target === 'enemy') { rpg.pending = { cmd: 'skill', skill: o.value, target: 'enemy' }; rpg.menu = 'target'; rpg.cursor = 0; }
-      else commit({ cmd: 'skill', skill: o.value });
-    } else if (rpg.menu === 'item') { rpg.pending = { cmd: 'item', item: o.value, target: 'ally' }; rpg.menu = 'target'; rpg.cursor = 0; }
-    else { const c = rpg.pending; c.tgt = o.value; commit(c); }
-  } else if (pressed.back) {
-    if (rpg.menu === 'target') rpg.menu = rpg.pending.cmd === 'skill' ? 'skill' : rpg.pending.cmd === 'item' ? 'item' : 'main';
-    else if (rpg.menu !== 'main') rpg.menu = 'main';
-    else if (rpg.choices.length) { const c = rpg.choices.pop(); rpg.actor = c.actor; }
-    rpg.cursor = 0;
-  }
+function hitBro(e, fromX) {
+  if (e.dead || e.inv > 0) return;
+  e.hp--; e.inv = 8; e.flash = 8; sfx.hit(); burst(e.x + e.w / 2, e.y + e.h / 2, 6, ['#fff', '#ffd84a'], 2, 0.1, 16);
+  if (e.type === 'bro') { e.vx = sign(e.x - fromX) * 1.5; e.vy = -1.2; e.stun = 14; }
+  if (e.hp <= 0) { e.dead = true; burst(e.x + e.w / 2, e.y + e.h / 2, 16, ['#2a3a5a', '#9cc4e8', '#fff', '#ffd84a'], 3); popup(e.x + e.w / 2, e.y - 8, pick(BRO_QUITS), '#9cf', 70); }
 }
-function startRound() {
-  rpg.turn++;
-  rpg.queue = [...rpg.choices, ...aliveE().map(e => ({ enemy: e }))];
-  rpg.phase = 'act'; rpg.wait = 0;
-}
-function checkEnd() {
-  if (!aliveE().length) { rpg.phase = 'win'; rpg.wait = 110; rpg.msg = 'DATA CENTER ' + 'AB'[rpg.enc] + ' IS OFFLINE!'; sfx.win(); return true; }
-  if (!aliveP().length) { rpg.phase = 'lose'; rpg.wait = 150; rpg.msg = 'THE CREW IS DOWN... CUT! TAKE ' + (rpg.take + 1) + '.'; sfx.die(); return true; }
-  return false;
-}
-function endRound() {
-  if (checkEnd()) return;
-  rpg.party.forEach(p => { if (p.hp > 0) p.sp = Math.min(p.maxSp, p.sp + 3); p.def = false; });
-  rpg.enemies.forEach(e => { if (e.stun > 0) e.stun--; if (e.imm > 0) e.imm--; });
-  beginSelect();
-}
-function nextAction() {
-  if (checkEnd()) return;
-  const q = rpg.queue.shift();
-  if (!q) { endRound(); return; }
-  if (q.enemy) { if (q.enemy.dead) return nextAction(); enemyAct(q.enemy); }
-  else { const a = rpg.party[q.actor]; if (a.hp <= 0) return nextAction(); partyAct(a, q); }
-  rpg.wait = 70;
-}
-
-function hitEnemy(t, amt) {
-  if (!t || t.dead) return;
-  let d = Math.round(amt * rand(0.85, 1.15));
-  t.hp = Math.max(0, t.hp - d); t.flash = 14; rfloat(t, String(d), '#fff');
-  if (t.hp <= 0) { t.dead = true; rfloat(t, 'OFFLINE', '#f66', -12); }
-  sfx.hit();
-}
-function hurtAlly(p, amt) {
-  if (p.hp <= 0) return;
-  let d = Math.round(amt * rand(0.85, 1.15)); if (p.def) d = Math.round(d / 2);
-  p.hp = Math.max(0, p.hp - d); p.flash = 14; rfloat(p, String(d), '#f88');
-  if (p.hp <= 0) rfloat(p, 'KO', '#f44', -12);
-}
-function partyAct(a, q) {
-  a.ox = -16;
-  const pickT = t => (t && !t.dead) ? t : pick(aliveE());
-  if (q.cmd === 'defend') { a.def = true; a.sp = Math.min(a.maxSp, a.sp + 4); rpg.msg = a.name + ' BRACES FOR IMPACT.'; return; }
-  if (q.cmd === 'attack') {
-    hitEnemy(pickT(q.tgt), a.atk); sfx.swing();
-    rpg.msg = a.key === 'tom' ? 'TOM LANDS A SPINNING KICK!' : 'ALEJANDRO SWINGS THE CLAPPERBOARD!'; return;
-  }
-  if (q.cmd === 'item') {
-    rpg.items[q.item]--; const t = q.tgt; sfx.gem();
-    if (q.item === 'COFFEE') { const was = t.hp <= 0; t.hp = Math.min(t.maxHp, t.hp + 50); rfloat(t, '+50', '#7f7'); rpg.msg = was ? t.name + ' SIPS AN ICED COFFEE AND GETS BACK UP!' : t.name + ' DRINKS AN ICED COFFEE. +50 HP.'; }
-    else { t.sp = Math.min(t.maxSp, t.sp + 20); rfloat(t, '+20 SP', '#8cf'); rpg.msg = t.name + ' RECHARGES ON SOLAR. +20 SP.'; }
-    return;
-  }
-  a.sp -= SKILLS[q.skill].sp;
-  switch (q.skill) {
-    case 'FREE SOLO': { const t = pickT(q.tgt); hitEnemy(t, a.atk * 2.2); sfx.bounce(); rpg.msg = 'TOM FREE-SOLOS UP ' + (t ? t.name : 'THE RACK') + ' AND DROPS ON TOP!'; break; }
-    case 'CABLE DROP': aliveE().forEach(e => hitEnemy(e, a.atk * (e.kind === 'server' ? 2 : 1))); rpg.msg = 'TOM DROPS FROM THE CEILING ON A WIRE AND PULLS EVERY PLUG!'; break;
-    case 'SELF-DESTRUCT': {
-      const t = pickT(q.tgt); if (!t) break;
-      rpg.fx = { x0: a.x + 10, y0: a.y + 10, x1: t.x + t.w / 2, y1: t.y + 18, t: 0, dur: 70, tgt: t, dmg: a.atk * 3.6 };
-      tone('sine', 1200, 1200, 0.08, 0.08); rpg.msg = 'THIS MESSAGE WILL SELF-DESTRUCT IN FIVE SECONDS...'; break;
+function updateBro(e) {
+  const p = hero; e.t++;
+  if (e.inv > 0) e.inv--; if (e.flash > 0) e.flash--; if (e.say && --e.say.t <= 0) e.say = null;
+  const dx = (p.x + p.w / 2) - (e.x + e.w / 2), dy = (p.y + p.h / 2) - (e.y + e.h / 2), dist = Math.hypot(dx, dy);
+  if (e.type === 'bro') {
+    if (e.stun > 0) { e.stun--; e.vx *= 0.85; }
+    else if (e.throwT > 0) {
+      e.throwT--; e.vx = 0;
+      if (e.throwT === 12) { sfx.throw(); projectiles.push({ type: 'deck', x: e.x + e.w / 2 - 5, y: e.y + 3, w: 10, h: 7, vx: e.face * 2, vy: 0, g: 0, life: 200, t: 0, dmg: 1 }); }
+    } else {
+      e.vx = e.dir * 0.6; e.face = e.dir;
+      if (e.onGround) { const ahead = Math.floor((e.x + (e.dir > 0 ? e.w + 1 : -1)) / TS), below = Math.floor((e.y + e.h + 1) / TS); if (e.hitWall || !solid(ahead, below)) { e.dir *= -1; e.vx = e.dir * 0.6; } }
+      if (--e.cool <= 0 && dist < 150 && Math.abs(dy) < 50) { e.dir = e.face = sign(dx); e.throwT = 30; e.cool = 120 + rand(0, 70); e.say = { text: pick(BRO_TAUNTS), t: 60 }; }
     }
-    case 'LONG TAKE':
-      for (let k = 0; k < 4; k++) { const t = pick(aliveE()); if (t) hitEnemy(t, a.atk * 0.75); }
-      rpg.msg = 'ALEJANDRO SHOOTS ONE LONG, UNBROKEN TAKE!'; break;
-    case 'CUT!': {
-      const t = pickT(q.tgt); if (!t) break;
-      if (t.imm > 0) { rpg.msg = t.name + ' IGNORES THE DIRECTOR THIS TIME.'; break; }
-      t.stun = 1; if (t.kind !== 'server') t.imm = 2; rfloat(t, 'CUT!', '#ffd84a');
-      rpg.msg = '"CUT!" ' + t.name + ' FREEZES IN PLACE.'; sfx.check(); break;
+    physics(e);
+  } else if (e.type === 'drone') {
+    if (dist < 150) { e.bx += clamp(dx, -1, 1) * 0.5; e.by += clamp(dy, -1, 1) * 0.25; e.face = sign(dx); }
+    e.x = e.bx; e.y = e.by + Math.sin(e.t * 0.06 + e.phase) * 6;
+    if (!e.say && Math.random() < 0.004) e.say = { text: pick(BRO_TAUNTS), t: 50 };
+  } else {
+    e.face = sign(dx);
+    if (--e.cool <= 0 && dist < 190) {
+      const T = 50, g = 0.15;
+      projectiles.push({ type: 'can', x: e.x + e.w / 2 - 3, y: e.y, w: 6, h: 8, vx: clamp(dx / T, -3, 3), vy: clamp((dy - 0.5 * g * T * T) / T, -5, 1), g, life: 240, t: 0, dmg: 1 });
+      sfx.throw(); e.cool = 110 + rand(0, 40); if (Math.random() < 0.4) e.say = { text: 'STAY HYDRATED, BRO', t: 50 };
     }
-    case 'CATERING':
-      aliveP().forEach(p => { p.hp = Math.min(p.maxHp, p.hp + 35); rfloat(p, '+35', '#7f7'); });
-      rpg.msg = 'CRAFT SERVICES ARRIVES. EVERYONE EATS. +35 HP.'; sfx.gem(); break;
+    physics(e);
   }
 }
-function enemyAct(e) {
-  e.ox = 12;
-  const tgts = aliveP(); if (!tgts.length) return;
-  if (e.stun > 0) {
-    rpg.msg = e.name + ' IS FROZEN BY THE DIRECTOR.';
-    if (e.charging) { e.charging = false; rpg.msg += ' THE OVERCLOCK FIZZLES OUT.'; }
+function updateShoot() {
+  if (banner && --banner.t <= 0) banner = null;
+  if (sCut) { if (++sCut > 28) startDemo(); return; }
+  const p = hero;
+  for (const pt of particles) { pt.vy += pt.g; pt.x += pt.vx; pt.y += pt.vy; pt.life--; }
+  particles = particles.filter(pt => pt.life > 0);
+  for (const pu of popups) { pu.t--; pu.y -= 0.35; } popups = popups.filter(pu => pu.t > 0);
+  decayShake();
+  if (sDeadT) {
+    if (--sDeadT === 0) { buildCampus(); spawnHero(); projectiles = []; sBullets = []; sArena = false; sBoss.t = 0; sBoss.say = null; banner = { lines: ['TAKE ' + (++sTakes), 'ACTION!'], t: 80 }; }
     return;
   }
-  if (e.kind === 'server') {
-    if (Math.random() < 0.7) { const t = pick(tgts); hurtAlly(t, e.atk); rpg.msg = e.name + ' OVERHEATS ALL OVER ' + t.name + '!'; }
-    else { tgts.forEach(p => hurtAlly(p, 6)); rpg.msg = e.name + "'S FANS ROAR. EVERYONE TAKES THE HEAT."; }
-    sfx.hurt(); return;
+  // movement (same feel as level 1)
+  const move = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+  if (p.knock > 0) p.knock--; else { p.vx += (move * 1.7 - p.vx) * (p.onGround ? 0.35 : 0.2); if (move) p.face = move; }
+  if (p.onGround) p.coyote = 6; else if (p.coyote > 0) p.coyote--;
+  if (pressed.jump) p.jbuf = 7; else if (p.jbuf > 0) p.jbuf--;
+  if (p.jbuf > 0 && p.coyote > 0 && p.knock <= 0) { p.vy = -4.6; p.coyote = 0; p.jbuf = 0; sfx.jump(); }
+  if (!keys.jump && p.vy < -2) p.vy = -2;
+  physics(p);
+  if (p.x < 0) p.x = 0;
+  if (sArena && p.x < S_ARENA * TS) p.x = S_ARENA * TS;
+  if (p.inv > 0) p.inv--;
+  // shooting
+  if (p.cool > 0) p.cool--; if (p.shootT > 0) p.shootT--;
+  if (pressed.attack && p.cool <= 0 && p.knock <= 0) {
+    p.cool = 11; p.shootT = 8;
+    sBullets.push({ x: p.x + (p.face > 0 ? p.w + 2 : -8), y: p.y + 5, vx: p.face * 5.5, d: 0 });
+    tone('square', 880, 220, 0.07, 0.1); noise(0.04, 0.12, 3000);
+    if (sArena && sBoss.t > 30) { sCut = 1; noise(0.7, 0.45, 2500); return; } // the moment you fire at Sam: cut
   }
-  e.turn++; // the GPU cluster
-  if (e.charging) { e.charging = false; tgts.forEach(p => hurtAlly(p, 30)); rpg.msg = 'OVERCLOCK BLAST! THE ROOM HITS 200 DEGREES!'; shake = 14; sfx.boom(); return; }
-  if (e.turn % 3 === 0) { e.charging = true; rpg.msg = 'THE GPU CLUSTER IS OVERCLOCKING... DEFEND, OR YELL CUT!'; tone('sawtooth', 80, 400, 0.8, 0.12); return; }
-  if (Math.random() < 0.5) { tgts.forEach(p => hurtAlly(p, 11)); rpg.msg = 'THERMAL EXHAUST! EVERYONE GETS COOKED.'; }
-  else { const t = pick(tgts); hurtAlly(t, 20); rpg.msg = 'THE CLUSTER BURNS A MEGAWATT AT ' + t.name + '!'; }
-  sfx.hurt();
-}
-
-function rpgTap(x, y) {
-  if (!rpg) return;
-  if (rpg.phase !== 'select') { pressed.ok = true; return; }
-  const opts = menuOptions();
-  if (x < 124 && y > 114) {
-    const first = Math.max(0, Math.min(rpg.cursor - 3, opts.length - 4)), i = first + Math.floor((y - 117) / 14);
-    if (i >= first && i < Math.min(opts.length, first + 4)) { rpg.cursor = i; pressed.ok = true; }
-    return;
+  for (const b of sBullets) {
+    b.x += b.vx; b.d += Math.abs(b.vx);
+    if (solid(Math.floor(b.x / TS), Math.floor(b.y / TS)) || b.d > 260) { b.dead = true; burst(b.x, b.y, 3, ['#ffd84a', '#fff'], 1, 0.05, 10); continue; }
+    for (const e of bros) if (!e.dead && b.x > e.x && b.x < e.x + e.w && b.y > e.y - 2 && b.y < e.y + e.h + 2) { hitBro(e, b.x - b.vx); b.dead = true; break; }
   }
-  if (rpg.menu === 'target') opts.forEach((o, i) => { const t = o.value; if (x >= t.x - 4 && x <= t.x + t.w + 4 && y >= t.y - 12 && y <= t.y + t.h) { rpg.cursor = i; pressed.ok = true; } });
-}
-function updateRPG() {
-  const rp = rpg; rp.t++;
-  for (const f of rp.floats) { f.t--; f.y -= 0.4; }
-  rp.floats = rp.floats.filter(f => f.t > 0);
-  for (const m of [...rp.party, ...rp.enemies]) { m.ox *= 0.82; if (m.flash > 0) m.flash--; }
-  if (rp.fx) {
-    const b = rp.fx; b.t++;
-    if (b.t < b.dur && b.t % 14 === 0) tone('sine', 1200, 1200, 0.06, 0.07);
-    if (b.t === b.dur) { shake = 14; sfx.boom(); hitEnemy(b.tgt.dead ? pick(aliveE()) : b.tgt, b.dmg); }
-    if (b.t > b.dur + 32) rp.fx = null;
-  }
-  switch (rp.phase) {
-    case 'intro': if (rp.t > 110 || pressed.ok) beginSelect(); break;
-    case 'select': updateSelect(); break;
-    case 'act':
-      if (rp.wait > 0) { rp.wait--; if (rp.wait < 50 && pressed.ok && !rp.fx) rp.wait = 0; }
-      else if (!rp.fx) nextAction();
-      break;
-    case 'win': if (--rp.wait <= 0) resumeOps(rp.enc); break;
-    case 'lose': if (--rp.wait <= 0) startRPG(rp.take + 1, rp.enc); break;
-  }
-}
-
-function drawServer(e) {
-  const x = Math.round(e.x + e.ox), y = e.y;
-  R(x, y, e.w, e.h, '#3a4250'); R(x + 1, y + 1, e.w - 2, e.h - 2, '#262c36');
-  for (let k = 0; k < 6; k++) {
-    R(x + 3, y + 4 + k * 7, e.w - 6, 5, '#323a48');
-    const h = hash(k + e.x, Math.floor(frame / 6)) % 4;
-    R(x + 5, y + 6 + k * 7, 2, 1, h === 0 ? '#f44' : '#4f6'); R(x + 9, y + 6 + k * 7, 2, 1, h === 1 ? '#fa0' : '#48f');
-    R(x + e.w - 9, y + 5 + k * 7, 4, 3, (frame + k * 3) % 8 < 4 ? '#4a5260' : '#3a4250');
-  }
-  text('GPU', x + e.w / 2, y + e.h - 9, '#8cf', 'center');
-  ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = '#ff7a2a';
-  for (let i = 0; i < 3; i++) { const wx = x + 6 + i * 9; for (let k = 0; k < 4; k++) ctx.fillRect(wx + Math.round(Math.sin(frame * 0.2 + k + i) * 2), y - 4 - k * 3, 1, 2); }
-  ctx.restore();
-}
-function drawRPG() {
-  const rp = rpg;
-  const sx = shake ? rand(-shake, shake) : 0;
-  ctx.save(); ctx.translate(Math.round(sx), 0);
-  drawDCBG(true);
+  sBullets = sBullets.filter(b => !b.dead);
+  // live cables, pits
+  const cxT = Math.floor((p.x + p.w / 2) / TS), fyT = Math.floor((p.y + p.h - 2) / TS);
+  if (tileAt(cxT, fyT) === '^' && p.inv <= 0) { hurtHero(1, p.x + p.w / 2 - p.face); if (!sDeadT) { p.vy = -5; } }
+  if (p.y > LH * TS + 24 && !sDeadT) { p.hp = 0; sDeadT = 120; sfx.die(); }
+  for (const c of sChecks) if (!c.on && overlap(p, c)) { c.on = true; sRespawn = c.tx; sfx.check(); popup(c.x + 6, c.y - 6, "THAT'S A WRAP!", '#ffd84a', 80); }
   // enemies
-  for (const e of rp.enemies) {
-    if (e.dead) continue;
-    if (e.flash > 0 && frame % 4 < 2) ctx.filter = 'brightness(3)';
-    if (e.stun > 0) for (let i = 0; i < 3; i++) { const a = frame * 0.15 + i * 2.1; R(e.x + e.w / 2 + Math.cos(a) * 12, e.y - 12 + Math.sin(a) * 3, 3, 3, '#ffd84a'); }
-    if (e.kind === 'server') drawServer(e);
-    else {
-      if (e.charging) { ctx.save(); ctx.globalAlpha = 0.35 + 0.25 * Math.sin(frame * 0.4); R(e.x - 6, e.y - 2, e.w + 12, e.h + 4, '#ffd84a'); ctx.restore(); }
-      drawServer(e);
-    }
-    ctx.filter = 'none';
-    // hp bar
-    R(e.x + e.w / 2 - 15, e.y - 6, 30, 3, '#300'); R(e.x + e.w / 2 - 15, e.y - 6, 30 * e.hp / e.maxHp, 3, e.kind === 'cluster' ? '#f0a' : '#d22');
+  for (const e of bros) if (!e.dead && Math.abs(e.x - p.x) < 280) updateBro(e);
+  for (const e of bros) if (!e.dead && overlap(p, e) && !(e.stun > 0)) hurtHero(1, e.x + e.w / 2);
+  for (const pr of projectiles) {
+    pr.t++; pr.life--; pr.vy += pr.g; pr.x += pr.vx; pr.y += pr.vy;
+    if (solid(Math.floor((pr.x + pr.w / 2) / TS), Math.floor((pr.y + pr.h / 2) / TS)) || pr.y > LH * TS) { pr.life = 0; burst(pr.x + 3, pr.y + 3, 6, pr.type === 'can' ? ['#3c3', '#111', '#fff'] : ['#fff', '#ccc'], 1.5); }
+    if (pr.life > 0 && overlap(p, pr)) { hurtHero(pr.dmg, pr.x + pr.w / 2); pr.life = 0; }
   }
-  // party
-  rp.party.forEach((p, i) => {
-    const active = rp.phase === 'select' && rp.actor === i;
-    if (p.flash > 0 && frame % 4 < 2) ctx.filter = 'brightness(3)';
-    if (p.hp <= 0) ctx.filter = 'grayscale(1) brightness(0.6)';
-    ctx.save(); ctx.translate(Math.round(p.x + p.ox), p.y + (active && frame % 20 < 10 ? -1 : 0)); ctx.scale(2, 2);
-    if (p.key === 'tom') drawEthanSmall(0, 0, -1, frame, Math.abs(p.ox) > 4);
-    else drawInaSmall(0, 0, -1, frame);
-    ctx.restore(); ctx.filter = 'none';
-    if (p.def) text('DEF', p.x + 16, p.y - 8, '#8cf', 'center');
-  });
-  // target arrow
-  if (rp.phase === 'select' && rp.menu === 'target') {
-    const o = menuOptions()[rp.cursor];
-    if (o) { const t = o.value, bx = t.x + t.w / 2, by = t.y - 14 + (frame % 20 < 10 ? 0 : 2); R(bx - 3, by, 7, 2, '#ffd84a'); R(bx - 2, by + 2, 5, 2, '#ffd84a'); R(bx - 1, by + 4, 3, 2, '#ffd84a'); }
+  projectiles = projectiles.filter(pr => pr.life > 0);
+  // the final boss
+  if (!sArena && p.x > (S_ARENA + 2) * TS) {
+    sArena = true; sBoss.t = 0;
+    for (let y = 0; y <= 8; y++) grid[y][S_GATE] = '#';
+    shake = 8; sfx.boom(); burst(S_GATE * TS + 8, 8 * TS, 20, ['#888', '#ccc'], 2);
   }
-  if (rp.fx) {
-    const b = rp.fx;
-    if (b.t < b.dur) { // the sunglasses fly over, counting down
-      const k = Math.min(1, b.t / 30), x = b.x0 + (b.x1 - b.x0) * k, y = b.y0 + (b.y1 - b.y0) * k - Math.sin(k * Math.PI) * 30;
-      R(x - 7, y, 6, 4, '#111'); R(x + 1, y, 6, 4, '#111'); R(x - 1, y + 1, 2, 1, '#111'); R(x - 6, y, 2, 1, '#6af'); R(x + 2, y, 2, 1, '#6af');
-      text(String(5 - Math.floor(b.t / 14)), x + 12, y - 2, '#f44', 'left');
-    } else { // boom
-      const k = (b.t - b.dur) / 32;
-      ctx.save(); ctx.globalAlpha = 1 - k;
-      ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(b.x1, b.y1, 10 + k * 40, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#ff9a2a'; ctx.beginPath(); ctx.arc(b.x1, b.y1, 6 + k * 30, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#c8321a'; ctx.beginPath(); ctx.arc(b.x1, b.y1, 3 + k * 16, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
+  if (sArena) {
+    const B = sBoss; B.t++;
+    const lines = { 1: 'OH, HEY! SUPER EXCITED YOU MADE IT.', 110: 'THIS IS THE MOST IMPORTANT DATA CENTER EVER BUILT.', 230: 'ONE MORE MODEL AND WE FIX EVERYTHING. PROMISE.' };
+    if (lines[B.t]) B.say = { text: lines[B.t], t: 105 };
+    if (B.say && --B.say.t <= 0) B.say = null;
+    if (B.t > 340 && --B.throwT <= 0) {
+      B.throwT = 70; const dx = p.x - B.x, T = 46, g = 0.15;
+      projectiles.push({ type: 'ram', x: B.x, y: B.y + 6, w: 12, h: 6, vx: clamp(dx / T, -4, 4), vy: clamp(((p.y - B.y) - 0.5 * g * T * T) / T, -6, 0), g, life: 240, t: 0, dmg: 1 });
+      sfx.throw(); if (Math.random() < 0.35) B.say = { text: pick(['JUST A FEW MORE GIGAWATTS!', 'HAVE SOME RAM!', 'SCALING UP!']), t: 70 };
     }
   }
-  for (const f of rp.floats) { ctx.globalAlpha = Math.min(1, f.t / 12); text(f.txt, f.x, f.y, f.c, 'center'); ctx.globalAlpha = 1; }
-  ctx.restore();
-
-  // message banner
-  R(4, 2, 312, 25, '#000c'); R(4, 26, 312, 1, '#8ab');
-  wrap(rp.msg, 38).slice(0, 2).forEach((ln, k) => text(ln, 8, 6 + k * 10, '#fff'));
-  // command box
-  const box = (x, y, w, h) => { R(x, y, w, h, '#101830'); R(x, y, w, 1, '#8ab'); R(x, y + h - 1, w, 1, '#8ab'); R(x, y, 1, h, '#8ab'); R(x + w - 1, y, 1, h, '#8ab'); };
-  box(2, 114, 122, 64); box(126, 114, 192, 64);
-  if (rp.phase === 'select') {
-    const opts = menuOptions();
-    const first = Math.max(0, Math.min(rp.cursor - 3, opts.length - 4));
-    opts.slice(first, first + 4).forEach((o, k) => {
-      const i = first + k, y = 120 + k * 14;
-      text(o.label, 16, y, !o.ok ? '#555' : i === rp.cursor ? '#ffd84a' : '#fff');
-      if (i === rp.cursor) { R(6, y + 1, 2, 6, '#ffd84a'); R(8, y + 2, 2, 4, '#ffd84a'); R(10, y + 3, 2, 2, '#ffd84a'); }
-    });
-  } else text(rp.phase === 'act' ? '...' : '', 18, 120, '#888');
-  // party status
-  rp.party.forEach((p, i) => {
-    const y = 120 + i * 28, active = rp.phase === 'select' && rp.actor === i;
-    text(p.name, 132, y, p.hp <= 0 ? '#f44' : active ? '#ffd84a' : '#fff');
-    text(p.hp <= 0 ? 'KO' : p.hp + '/' + p.maxHp, 312, y, p.hp <= 0 ? '#f44' : '#fff', 'right');
-    R(132, y + 11, 100, 4, '#300'); R(132, y + 11, 100 * p.hp / p.maxHp, 4, p.hp / p.maxHp < 0.3 ? '#fa3' : '#4c4');
-    text('SP ' + p.sp, 312, y + 10, '#8cf', 'right');
-  });
-  if (rp.take > 1 && rp.phase === 'intro') text('TAKE ' + rp.take, VW / 2, 92, '#fff', 'center');
+  // camera
+  let target = p.x + p.w / 2 - VW / 2 + p.face * 24;
+  if (sArena) target = S_ARENA * TS;
+  cam.x += (clamp(target, 0, LW * TS - VW) - cam.x) * (sArena ? 0.08 : 0.12);
 }
 
-
-/* =====================================================================
-   THE AGENCY: a short side-scrolling infiltration through white corridors.
-   Shooting a data center starts a turn-based fight.
-   ===================================================================== */
-const OPS_FLOOR = 150, OPS_LEN = 2800, OPS_DC = [1500, 2350], OPS_BIKE = 2640;
-const OPS_HAZ = [
-  { k: 'laser', x: 380 }, { k: 'cam', x: 640 }, { k: 'laser', x: 900, blink: 1 }, { k: 'cam', x: 1180 }, { k: 'laser', x: 1330 },
-  { k: 'laser', x: 1760 }, { k: 'cam', x: 1960 }, { k: 'laser', x: 2170, blink: 1 }
-];
-const OPS_TALK = [
-  { x: 60, who: 'tom', text: 'WHITE ROOM. FEELS LIKE HOME.' },
-  { x: 300, who: 'ina', text: 'THIS LIGHT. SO PURE. SO... FLUORESCENT.' },
-  { x: 560, who: 'tom', text: 'CAMERAS. STAY OUT OF THE LIGHT.' },
-  { x: 1040, who: 'ina', text: 'KEEP WALKING. NO CUTS.' },
-  { x: 1400, who: 'tom', text: 'THERE. DATA CENTER NUMBER ONE.' },
-  { x: 1640, who: 'ina', text: 'THE SMOKE. THE SPARKS. I AM WEEPING, TOM.' },
-  { x: 2240, who: 'tom', text: 'ONE MORE. THE BIG ONE.' },
-  { x: 2480, who: 'tom', text: 'A MOTORCYCLE. OF COURSE THERE IS A MOTORCYCLE.' }
-];
-let ops = null, encounter = 0;
-function startOps() {
-  state = 'ops';
-  ops = { x: 40, y: OPS_FLOOR, vy: 0, vx: 0, face: 1, ground: true, cool: 0, bullets: [], camx: 0, t: 0, flash: 0, knock: 0,
-    inaX: 0, dcDown: [false, false], engage: 0, say: null, said: {}, bikeT: 0, shootT: 0 };
+function drawCampusBG(cx) {
+  const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#060a1c'); g.addColorStop(0.6, '#14204a'); g.addColorStop(1, '#2a3a6a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+  for (const s of STARS) { const x = ((s.x - cx * 0.03) % 640 + 640) % 640; if (x < VW && Math.sin(frame * 0.05 + s.tw) > -0.6) R(x, s.y * 0.7, s.s, s.s, '#cfe0ff'); }
+  // far: data center halls and cooling towers
+  for (let i = -1; i < 6; i++) {
+    const wx = Math.floor(cx * 0.2 / 110) * 110 + i * 110, x = wx - cx * 0.2, h = 34 + hash(i + Math.floor(cx * 0.2 / 110), 4) % 22;
+    R(x, VH - 40 - h, 90, h + 40, '#0f1630');
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 10; c++) if (hash(c + wx, r) % 3) R(x + 6 + c * 8, VH - 34 - h + r * 7, 4, 2, (Math.floor(frame / 12) + c + r) % 7 ? '#2f6aa8' : '#9cf');
+    ctx.fillStyle = '#121a36'; ctx.beginPath(); ctx.moveTo(x + 92, VH - 30); ctx.lineTo(x + 96, VH - 70); ctx.lineTo(x + 108, VH - 70); ctx.lineTo(x + 112, VH - 30); ctx.fill();
+    ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = '#dfe8ff';
+    for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(x + 102 + Math.sin(frame * 0.02 + k) * 4, VH - 76 - ((frame * 0.3 + k * 14) % 40), 6 + k * 2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.restore();
+  }
+  // near: power pylons and the lines that feed it all
+  ctx.strokeStyle = '#1c2850'; ctx.lineWidth = 1;
+  for (let i = -1; i < 5; i++) {
+    const wx = Math.floor(cx * 0.45 / 90) * 90 + i * 90, x = wx - cx * 0.45;
+    ctx.beginPath(); ctx.moveTo(x, VH - 20); ctx.lineTo(x + 8, VH - 82); ctx.lineTo(x + 16, VH - 20); ctx.stroke();
+    R(x - 2, VH - 76, 20, 2, '#1c2850'); R(x + 1, VH - 66, 14, 2, '#1c2850');
+    ctx.beginPath(); ctx.moveTo(x + 18, VH - 75); ctx.quadraticCurveTo(x + 53, VH - 60, x + 88, VH - 75); ctx.stroke();
+  }
 }
-function resumeOps(enc) {
-  state = 'ops'; ops.dcDown[enc] = true; ops.engage = 0;
-  opsSay('tom', enc ? "THAT'S TWO. NOW... SAM." : 'ONE DOWN.');
+function drawHunt(p, t) { // Ethan Hunt: black coat, sunglasses, sidearm
+  const r = painter(p.x - 3, p.y - 2, p.face, 16), sk = '#f0c39a', hr = '#2b1a10', cl = '#141414';
+  const run = Math.abs(p.vx) > 0.3 && p.onGround, f = run ? Math.floor(t / 5) % 4 : 0, a = [0, 2, 0, -2][f];
+  if (!p.onGround) { r(5, 12, 2, 3, '#222'); r(9, 11, 2, 3, '#222'); r(4, 15, 3, 1, '#000'); r(10, 14, 3, 1, '#000'); }
+  else { r(5 + Math.min(0, a), 12, 2, 3, '#222'); r(9 + Math.max(0, -a), 12, 2, 3, '#1a1a1a'); r(5 + a, 15, 3, 1, '#000'); r(9 - a, 15, 3, 1, '#000'); }
+  r(4, 7, 7, 6, cl); r(3, 11, 2, run ? 3 : 2, cl); r(7, 7, 2, 4, '#0b0b0b');               // coat (tails flap when running)
+  r(6, 1, 6, 6, sk); r(5, 0, 7, 2, hr); r(5, 2, 1, 3, hr); r(10, -1, 2, 2, hr);
+  r(7, 3, 5, 1, '#111'); r(8, 3, 1, 1, '#6af'); r(8, 5, 3, 1, '#a0605a');
+  r(10, 8, 4, 2, cl); r(14, 8, 3, 2, '#2a2a2a'); r(14, 7, 1, 1, '#2a2a2a');               // arm + pistol
+  if (p.shootT > 5) r(17, 7, 3, 3, '#ffd84a');
 }
-function opsSay(who, text, t = 160) { if (ops) ops.say = { who, text, t }; }
-const laserOn = h => !h.blink || frame % 150 < 95;
-const camCenter = h => h.x + Math.sin(frame * 0.02 + h.x * 0.01) * 60;
-const camOn = h => (frame + h.x) % 260 < 140; // then it looks away for a while: that's your window
-function updateOps() {
-  const o = ops; o.t++;
-  if (o.flash > 0) o.flash--;
-  if (o.engage > 0) { if (--o.engage === 0) startRPG(1, encounter); return; }
-  if (o.bikeT > 0) { if (++o.bikeT > 80) startDrive(); return; }
-  const move = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
-  if (o.knock > 0) o.knock--; else { o.vx = move * 1.9; if (move) o.face = move; }
-  if (pressed.jump && o.ground) { o.vy = -4.8; o.ground = false; sfx.jump(); }
-  if (!keys.jump && o.vy < -2) o.vy = -2;
-  o.vy += GRAV; o.y += o.vy; if (o.y >= OPS_FLOOR) { o.y = OPS_FLOOR; o.vy = 0; o.ground = true; }
-  o.x += o.knock > 0 ? -1.2 : o.vx;
-  OPS_DC.forEach((dx, i) => { if (!o.dcDown[i] && o.x > dx - 12) o.x = dx - 12; });
-  o.x = clamp(o.x, 12, OPS_LEN - 20);
-  if (o.cool > 0) o.cool--; if (o.shootT > 0) o.shootT--;
-  if (pressed.attack && o.cool <= 0 && o.knock <= 0) {
-    o.cool = 14; o.shootT = 10; o.bullets.push({ x: o.x + o.face * 16, y: o.y - 19, vx: o.face * 6 });
-    tone('square', 900, 180, 0.08, 0.12); noise(0.05, 0.15, 3000);
+function drawBro(e) {
+  const r = painter(e.x - 3, e.y - (e.type === 'drone' ? 3 : 2), e.face, 16), sk = '#f1c8a0';
+  if (e.type === 'drone') {
+    const pf = Math.floor(e.t / 3) % 2; r(pf ? 0 : 2, 12, pf ? 16 : 12, 1, '#bbb'); r(3, 13, 10, 2, '#444'); r(7, 15, 2, 1, '#f33');
+  } else if (e.type === 'desk') {
+    r(0, 11, 16, 2, '#d8d8d8'); r(2, 13, 2, 3, '#999'); r(12, 13, 2, 3, '#999'); r(9, 6, 6, 5, '#bfc6cf'); r(10, 7, 4, 3, frame % 40 < 20 ? '#7af' : '#a7f');
+  } else {
+    const f = Math.abs(e.vx) > 0.1 ? Math.floor(e.t / 8) % 2 : 0;
+    r(6, 13, 2, 3 - f, '#c2a878'); r(9, 13, 2, 3, '#b8a070'); r(5, 15, 3, 1, '#fff'); r(9, 15, 3, 1, '#fff');
   }
-  for (const b of o.bullets) {
-    b.x += b.vx;
-    OPS_DC.forEach((dx, i) => { if (!b.dead && !o.dcDown[i] && b.x > dx && b.x < dx + 56) { b.dead = true; encounter = i; o.engage = 45; sfx.boom(); shake = 8; } });
-    if (Math.abs(b.x - o.x) > 340) b.dead = true;
-  }
-  o.bullets = o.bullets.filter(b => !b.dead);
-  for (const h of OPS_HAZ) {
-    if (o.knock > 0) break;
-    if (h.k === 'laser' && laserOn(h) && o.x + 6 > h.x && o.x - 6 < h.x + 28 && o.y > OPS_FLOOR - 16) {
-      o.knock = 26; o.vy = -2.5; o.ground = false; o.flash = 20; sfx.hurt();
-      opsSay('ina', pick(['CUT! AGAIN!', 'AGAIN. WITH FEELING.', 'NO. FROM THE TOP.']), 90);
-    }
-    if (h.k === 'cam' && camOn(h) && Math.abs(o.x - camCenter(h)) < 18) {
-      o.x = h.x - 120; o.knock = 10; o.flash = 30; [700, 500, 700].forEach((f, i) => tone('square', f, f, 0.1, 0.1, i * 0.12));
-      opsSay('ina', 'SPOTTED! CUT! BACK TO ONE!', 100);
-    }
-  }
-  for (const tk of OPS_TALK) if (!o.said[tk.x] && o.x > tk.x) { o.said[tk.x] = 1; opsSay(tk.who, tk.text); }
-  if (o.say && --o.say.t <= 0) o.say = null;
-  o.inaX += (o.x - 46 * o.face - o.inaX) * 0.05;
-  if (o.dcDown[1] && o.x > OPS_BIKE - 18) { o.bikeT = 1; opsSay('tom', 'ALEJANDRO! FILM THIS!', 90); tone('sawtooth', 80, 260, 0.6, 0.15); }
-  o.camx += (clamp(o.x - 120, 0, OPS_LEN - VW) - o.camx) * 0.1;
+  r(5, 7, 6, 6, '#9cc4e8'); r(5, 7, 2, 5, '#2a3a5a'); r(9, 7, 2, 5, '#2a3a5a'); r(4, 8, 1, 3, '#9cc4e8');  // fleece vest over a light shirt
+  r(6, 2, 5, 5, sk); r(5, 0, 7, 3, '#7a5230'); r(10, 0, 2, 1, '#9a6a40'); r(5, 4, 1, 1, '#fff'); r(11, 4, 1, 1, '#fff'); // swoop hair + earbuds
+  r(8, 3, 1, 1, '#222'); r(10, 3, 1, 1, '#222'); r(8, 5, 3, 1, '#c07a70');
+  if (e.type === 'bro') { if (e.throwT > 12) { r(10, 3, 2, 4, '#9cc4e8'); r(11, 1, 4, 3, '#fff'); } else { r(10, 8, 2, 3, '#9cc4e8'); r(11, 9, 2, 3, '#222'); } }
 }
-function bubbleAt(str, cx, topY, left) {
-  const lines = wrap(str, 22), w = Math.max(...lines.map(l => l.length)) * 8 + 8, h = lines.length * 10 + 5;
-  const x = clamp(cx - w / 2, left + 2, left + VW - w - 2), y = topY - h - 4;
-  R(x, y, w, h, '#fff'); R(cx - 2, y + h, 4, 3, '#fff');
-  ctx.font = '8px ' + FONT; ctx.fillStyle = '#111'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-  lines.forEach((l, k) => ctx.fillText(l, Math.round(x + 4), Math.round(y + 3 + k * 10)));
-}
-function drawBike(x, y) { // side view, facing right
-  ctx.fillStyle = '#111'; for (const wx of [x + 4, x + 26]) { ctx.beginPath(); ctx.arc(wx, y - 6, 6, 0, Math.PI * 2); ctx.fill(); }
-  R(x + 2, y - 7, 2, 2, '#888'); R(x + 24, y - 7, 2, 2, '#888');
-  R(x + 6, y - 14, 18, 5, '#1e1e1e'); R(x + 10, y - 17, 9, 3, '#2a2a2a'); R(x + 22, y - 18, 2, 8, '#555'); R(x + 20, y - 19, 6, 2, '#777'); R(x + 6, y - 10, 12, 2, '#c33');
-}
-function drawOps() {
-  const o = ops, cx = Math.round(o.camx), sx = shake ? Math.round(rand(-shake, shake)) : 0;
-  ctx.save(); ctx.translate(-cx + sx, 0);
-  // the white corridor
-  R(cx, 0, VW, VH, '#e9eef2'); R(cx, 0, VW, 22, '#f8fbfd'); R(cx, 22, VW, 2, '#cfd8de');
-  for (let x = Math.floor(cx / 64) * 64; x < cx + VW + 64; x += 64) { R(x + 10, 6, 40, 6, '#ffffff'); R(x + 10, 12, 40, 1, '#d8e2e8'); }
-  for (let x = Math.floor(cx / 48) * 48; x < cx + VW + 48; x += 48) R(x, 24, 1, OPS_FLOOR - 24, '#d3dbe1');
-  for (let x = Math.floor(cx / 192) * 192 + 90; x < cx + VW + 192; x += 192) { R(x, 40, 30, 20, '#d9e1e6'); for (let k = 0; k < 4; k++) R(x + 2, 42 + k * 5, 26, 2, '#c3ccd2'); }
-  R(cx, 104, VW, 2, '#d33');
-  for (const [sxp, s] of [[180, 'LEVEL 4 // AUTHORIZED ONLY'], [1240, 'SERVER ROOM A >'], [1880, 'NO ITERATIONS PAST THIS POINT'], [2440, 'MOTOR POOL >']])
-    if (sxp > cx - 260 && sxp < cx + VW) text(s, sxp, 72, '#8a96a0');
-  R(cx, OPS_FLOOR, VW, VH - OPS_FLOOR, '#c7d0d6');
-  for (let x = Math.floor(cx / 32) * 32; x < cx + VW + 32; x += 32) R(x, OPS_FLOOR + 6, 18, 1, '#dde4e8');
-  // hazards
-  for (const h of OPS_HAZ) {
-    if (h.x < cx - 140 || h.x > cx + VW + 140) continue;
-    if (h.k === 'laser') {
-      R(h.x, OPS_FLOOR - 20, 3, 20, '#555'); R(h.x + 25, OPS_FLOOR - 20, 3, 20, '#555');
-      if (laserOn(h)) for (const by of [OPS_FLOOR - 13, OPS_FLOOR - 5]) { R(h.x + 3, by - 1, 22, 3, '#ff9a9a'); R(h.x + 3, by, 22, 1, '#f00'); }
-    } else {
-      const c = camCenter(h), hot = Math.abs(o.x - c) < 40, on = camOn(h), soon = !on && (frame + h.x) % 260 > 230;
-      if (on) { ctx.save(); ctx.globalAlpha = 0.28; ctx.fillStyle = hot ? '#ff4040' : '#ffe27a';
-        ctx.beginPath(); ctx.moveTo(h.x, 30); ctx.lineTo(c - 18, OPS_FLOOR); ctx.lineTo(c + 18, OPS_FLOOR); ctx.fill(); ctx.restore(); }
-      R(h.x - 5, 22, 10, 7, '#555'); R(h.x - 2, on ? 28 : 24, 4, 3, '#222');
-      R(h.x - 1, on ? 29 : 25, 2, 1, on ? (frame % 30 < 15 ? '#f33' : '#600') : soon && frame % 8 < 4 ? '#fd0' : '#3f6');
-    }
+function drawShootProjectile(pr) {
+  if (pr.type === 'deck') { R(pr.x, pr.y, 10, 7, '#fff'); R(pr.x + 2, pr.y + 4, 1, 2, '#3a8'); R(pr.x + 4, pr.y + 3, 1, 3, '#3a8'); R(pr.x + 6, pr.y + 1, 1, 5, '#3a8'); R(pr.x, pr.y + 6, 10, 1, '#bbb'); }
+  else if (pr.type === 'can') { R(pr.x, pr.y, 6, 8, '#2c2'); R(pr.x, pr.y + 3, 6, 2, '#111'); R(pr.x + 1, pr.y, 1, 8, '#7f7'); R(pr.x + 1, pr.y - 1, 4, 1, '#ccc'); }
+  else {
+    ctx.save(); ctx.translate(Math.round(pr.x + 6), Math.round(pr.y + 3)); ctx.rotate(pr.t * 0.25);
+    ctx.fillStyle = '#1f7a3a'; ctx.fillRect(-8, -3, 16, 6); ctx.fillStyle = '#111'; for (let k = 0; k < 3; k++) ctx.fillRect(-6 + k * 5, -2, 3, 3);
+    ctx.fillStyle = '#e6b422'; ctx.fillRect(-8, 2, 16, 1); ctx.restore();
   }
-  // data centers
-  OPS_DC.forEach((dx, i) => {
-    if (o.dcDown[i]) {
-      R(dx, OPS_FLOOR - 40, 56, 40, '#2a2020'); R(dx + 6, OPS_FLOOR - 52, 20, 12, '#2a2020');
-      ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = '#888';
-      for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(dx + 20 + Math.sin(frame * 0.03 + k) * 6, OPS_FLOOR - 60 - ((frame * 0.4 + k * 18) % 70), 6 + k, 0, Math.PI * 2); ctx.fill(); }
-      ctx.restore();
-      if (frame % 40 < 3) R(dx + 30, OPS_FLOOR - 30, 3, 3, '#ffd84a');
-    } else {
-      const e = { x: dx, y: OPS_FLOOR - 96, w: 56, h: 96, ox: 0 };
-      drawServer(e); text('DATA CENTER ' + 'AB'[i], dx + 28, OPS_FLOOR - 112, '#456', 'center');
-    }
-  });
-  drawBike(OPS_BIKE, OPS_FLOOR);
-  // Alejandro filming, then Tom
-  if (!o.bikeT) { ctx.save(); ctx.translate(Math.round(o.inaX - 16), OPS_FLOOR - 32); ctx.scale(2, 2); drawInaSmall(0, 0, o.face, frame); ctx.restore(); }
-  if (!(o.flash > 0 && frame % 4 < 2)) {
-    const tx = o.bikeT ? OPS_BIKE + 6 + o.bikeT * 4 : o.x;
-    if (o.bikeT) drawBike(OPS_BIKE + o.bikeT * 4, OPS_FLOOR);
-    ctx.save(); ctx.translate(Math.round(tx - 16), Math.round((o.bikeT ? OPS_FLOOR - 10 : o.y) - 32)); ctx.scale(2, 2);
-    drawEthanSmall(0, 0, o.bikeT ? 1 : o.face, frame, o.shootT > 0); ctx.restore();
-    if (o.shootT > 0) { const gx = o.x + o.face * 12; R(gx - (o.face < 0 ? 6 : 0), o.y - 21, 6, 3, '#222'); if (o.shootT > 7) R(gx + o.face * 8 - 2, o.y - 22, 4, 5, '#ffd84a'); }
-  }
-  for (const b of o.bullets) { R(b.x - 3, b.y, 6, 2, '#ffb000'); R(b.x - 1, b.y, 2, 2, '#fff'); }
-  if (o.say) bubbleAt(o.say.text, o.say.who === 'tom' ? o.x : o.inaX, (o.say.who === 'tom' ? o.y : OPS_FLOOR) - 34, cx);
-  ctx.restore();
-  // HUD
-  R(0, 0, VW, 14, '#0006');
-  text('DATA CENTERS: ' + o.dcDown.filter(Boolean).length + '/2', 4, 3, '#fff');
-  text(IS_TOUCH ? 'FIRE: SHOOT' : 'X: SHOOT  Z: JUMP', VW - 4, 3, '#ffd84a', 'right');
-  if (o.flash > 0 && frame % 6 < 3) { ctx.save(); ctx.globalAlpha = 0.2; R(0, 0, VW, VH, '#f00'); ctx.restore(); }
-  if (o.engage > 0) {
-    const k = 1 - o.engage / 45;
-    for (let i = 0; i < 12; i++) R(0, i * 15, VW * k * (1 + (i % 3) * 0.3), 8, '#000');
-    if (o.engage < 30) text('ENGAGE!', VW / 2, 80, '#ffd84a', 'center', 16);
-  }
-  if (o.bikeT > 50) { ctx.save(); ctx.globalAlpha = (o.bikeT - 50) / 30; R(0, 0, VW, VH, '#000'); ctx.restore(); }
-}
-
-/* =====================================================================
-   THE CHASE: top-down motorcycle pursuit. Sam throws RAM.
-   Steer any time; let go and the autopilot drives.
-   ===================================================================== */
-const DRIVE_LEN = 2100, LANES = [124, 160, 196];
-let drv = null;
-function startDrive() { state = 'drive'; drv = { t: 0, x: 160, idle: 0, auto: 0, ram: [], van: { x: 160, tx: 160 }, hit: 0, scroll: 0, throwT: 70, say: null, sayT: 90 }; }
-function vanSay(s) { drv.say = { text: s, t: 110 }; }
-function updateDrive() {
-  const d = drv; d.t++; d.scroll += 4.5;
-  const move = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
-  if (move) { d.idle = 0; d.auto = 0; } else if (++d.idle > 70) d.auto = 1;
-  let steer = move;
-  if (d.auto) {
-    let best = d.x, bestScore = -1e9;
-    for (const lx of LANES) {
-      let score = -Math.abs(lx - d.x) * 0.05;
-      for (const r of d.ram) if (r.y > 30 && r.y < 160 && Math.abs(r.x - lx) < 20) score -= 50 + r.y;
-      if (score > bestScore) { bestScore = score; best = lx; }
-    }
-    steer = Math.abs(best - d.x) > 2 ? Math.sign(best - d.x) : 0;
-  }
-  d.x = clamp(d.x + steer * 2.6, 112, 208);
-  if (Math.abs(d.van.x - d.van.tx) < 2 && Math.random() < 0.02) d.van.tx = pick(LANES);
-  d.van.x += clamp(d.van.tx - d.van.x, -1.2, 1.2);
-  if (--d.throwT <= 0) {
-    d.throwT = d.t < 700 ? 58 : d.t < 1400 ? 44 : 34;
-    if (d.t > 800 && Math.random() < 0.3) { const gap = Math.floor(Math.random() * 3); LANES.forEach((lx, i) => { if (i !== gap) d.ram.push({ x: lx, y: 50, vy: 2.6, a: 0 }); }); vanSay('RAM STORM!'); }
-    else d.ram.push({ x: d.van.x, y: 50, vy: 2.7 + Math.random() * 0.8, a: 0 });
-    sfx.throw();
-  }
-  for (const r of d.ram) {
-    r.y += r.vy; r.a += 0.25;
-    if (d.hit <= 0 && Math.abs(r.x - d.x) < 12 && Math.abs(r.y - 150) < 14) { r.dead = true; d.hit = 40; d.t = Math.max(0, d.t - 90); shake = 6; sfx.hurt(); }
-    if (r.y > 195) r.dead = true;
-  }
-  d.ram = d.ram.filter(r => !r.dead);
-  if (d.hit > 0) d.hit--;
-  if (--d.sayT <= 0) { d.sayT = 200 + Math.random() * 100; vanSay(pick(['MORE RAM!', 'HAVE SOME DDR5!', "I'M SCALING!", "CATCH! IT'S 64 GIGS!", 'IF ONLY I HAD MORE RAM...'])); }
-  if (d.say && --d.say.t <= 0) d.say = null;
-  if (shake > 0) { shake *= 0.85; if (shake < 0.3) shake = 0; }
-  if (d.t >= DRIVE_LEN) startCliff();
-}
-function drawDrive() {
-  const d = drv, sx = shake ? Math.round(rand(-shake, shake)) : 0;
-  ctx.save(); ctx.translate(sx, 0);
-  R(0, 0, VW, VH, '#d9b26a');
-  for (let i = 0; i < 46; i++) { const x = hash(i, 1) % VW, y = (hash(i, 2) % 200 + d.scroll) % 200 - 10; if (x > 96 && x < 224) continue; R(x, y, 2, 2, '#b8904a'); if (i % 9 === 0) { R(x, y - 8, 3, 12, '#3a7a3a'); R(x - 3, y - 4, 3, 2, '#3a7a3a'); R(x + 3, y - 6, 3, 2, '#3a7a3a'); } }
-  R(100, 0, 120, VH, '#3a3a42'); R(100, 0, 3, VH, '#eee'); R(217, 0, 3, VH, '#eee');
-  for (let y = -(d.scroll % 24); y < VH; y += 24) { R(141, y, 2, 12, '#e8e8e8'); R(177, y, 2, 12, '#e8e8e8'); }
-  // Sam's van (rear view from above)
-  const vx = Math.round(d.van.x), vy = 16 + Math.round(Math.sin(d.t * 0.05) * 3);
-  R(vx - 13, vy, 26, 40, '#f0f0f0'); R(vx - 11, vy + 6, 22, 24, '#dedede'); R(vx - 10, vy + 33, 20, 5, '#6a8ab0');
-  R(vx - 13, vy + 37, 4, 3, '#f33'); R(vx + 9, vy + 37, 4, 3, '#f33');
-  R(vx + 13, vy + 12, 6, 6, '#6a4a32'); R(vx + 14, vy + 14, 4, 3, '#f1cdb0'); R(vx + 17, vy + 18, 6, 2, '#8b919b');
-  for (const r of d.ram) {
-    ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.a);
-    ctx.fillStyle = '#1f7a3a'; ctx.fillRect(-11, -4, 22, 8);
-    ctx.fillStyle = '#111'; for (let k = 0; k < 4; k++) ctx.fillRect(-9 + k * 5, -3, 3, 4);
-    ctx.fillStyle = '#e6b422'; ctx.fillRect(-11, 3, 22, 1); ctx.restore();
-  }
-  // Tom on the bike (from above)
-  if (!(d.hit > 0 && frame % 4 < 2)) {
-    const x = Math.round(d.x);
-    R(x - 2, 134, 4, 7, '#111'); R(x - 2, 158, 4, 8, '#111'); R(x - 3, 139, 6, 21, '#222'); R(x - 7, 140, 14, 2, '#444');
-    R(x - 6, 146, 12, 6, '#33363c'); R(x - 3, 143, 6, 7, '#2a1a10'); R(x - 4, 150, 8, 3, '#2a1a10');
-  }
-  if (d.say) bubbleAt(d.say.text, vx, vy, 0);
-  ctx.restore();
-  // HUD
-  R(0, 0, VW, 14, '#0007');
-  text('SAM', 4, 3, '#fff'); R(36, 5, 150, 5, '#300'); R(36, 5, 150 * Math.min(1, d.t / DRIVE_LEN), 5, '#ffd84a');
-  if (d.auto) { if (frame % 40 < 28) text('AUTOPILOT', VW - 4, 3, '#7f7', 'right'); text('STEER TO DRIVE', VW - 4, 168, '#fff', 'right'); }
-  else text('MANUAL', VW - 4, 3, '#ffd84a', 'right');
-}
-
-/* ------------------------- CLIFF CUTSCENE ------------------------- */
-let clf = null;
-function startCliff() { state = 'cliff'; clf = { t: 0 }; }
-function updateCliff() {
-  const t = ++clf.t;
-  if (t === 75) tone('sawtooth', 300, 900, 0.5, 0.12);
-  if (t === 150) { noise(0.3, 0.3, 2500); sfx.check(); }
-  if (t === 170) noise(0.8, 0.35, 600);
-  if (t > 400 || (t > 40 && pressed.ok)) startIce();
 }
 function drawSamSmall(x, y, face, punching) {
   const r = painter(x, y, face, 16), sk = '#f1cdb0';
@@ -2420,203 +2049,66 @@ function drawSamSmall(x, y, face, punching) {
   r(6, 2, 6, 5, sk); r(6, 0, 6, 2, '#6a4a32'); r(5, 1, 1, 3, '#6a4a32');
   r(8, 3, 1, 1, '#2c4a6c'); r(10, 3, 1, 1, '#2c4a6c'); r(8, 5, 3, 1, '#b06a60');
 }
-function chute(x, y, c) {
-  ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, 18, Math.PI, 0); ctx.fill();
-  ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1; ctx.beginPath();
-  for (const dx of [-17, -6, 6, 17]) { ctx.moveTo(x + dx, y); ctx.lineTo(x, y + 22); } ctx.stroke();
+function bubbleAt(str, cx, topY, left) {
+  const lines = wrap(str, 22), w = Math.max(...lines.map(l => l.length)) * 8 + 8, h = lines.length * 10 + 5;
+  const x = clamp(cx - w / 2, left + 2, left + VW - w - 2), y = topY - h - 4;
+  R(x, y, w, h, '#fff'); R(cx - 2, y + h, 4, 3, '#fff');
+  ctx.font = '8px ' + FONT; ctx.fillStyle = '#111'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  lines.forEach((l, k) => ctx.fillText(l, Math.round(x + 4), Math.round(y + 3 + k * 10)));
 }
-function drawCliff() {
-  const t = clf.t;
-  const g = ctx.createLinearGradient(0, 0, 0, 140); g.addColorStop(0, '#2a1a4a'); g.addColorStop(1, '#f08a4b');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
-  R(0, 140, VW, 40, '#1a3a6a'); for (let i = 0; i < 12; i++) R((i * 31 + t) % VW, 146 + (i % 3) * 9, 10, 1, '#3a6a9a');
-  // ice ring out at sea
-  ctx.fillStyle = '#e8f6ff'; ctx.beginPath(); ctx.ellipse(250, 150, 34, 8, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#1a3a6a'; ctx.beginPath(); ctx.ellipse(250, 150, 14, 3, 0, 0, Math.PI * 2); ctx.fill();
-  // cliff
-  ctx.fillStyle = '#4a3020'; ctx.beginPath(); ctx.moveTo(0, 90); ctx.lineTo(130, 90); ctx.lineTo(122, 120); ctx.lineTo(132, 150); ctx.lineTo(116, 180); ctx.lineTo(0, 180); ctx.fill();
-  R(0, 88, 130, 3, '#6a4a2a');
-  const edge = 130;
-  // van then bike race off the edge
-  const vanX = -40 + t * 2.6, bikeX = vanX - 46;
-  const fall = (x0) => { const s = Math.max(0, x0 - edge); return 90 + s * s * 0.012; };
-  if (t < 150) {
-    const vy = fall(vanX + 34);
-    R(vanX, vy - 18, 36, 16, '#f0f0f0'); R(vanX + 26, vy - 16, 8, 6, '#6a8ab0'); ctx.fillStyle = '#111';
-    for (const wx of [vanX + 8, vanX + 28]) { ctx.beginPath(); ctx.arc(wx, vy - 2, 4, 0, Math.PI * 2); ctx.fill(); }
-    const by = fall(bikeX + 30); drawBike(bikeX, by);
-    ctx.save(); ctx.translate(bikeX + 4, by - 40); ctx.scale(2, 2); drawEthanSmall(0, 0, 1, frame, false); ctx.restore();
-    if (t > 70 && t < 140) text('!!!', bikeX + 16, by - 54, '#fff', 'center');
-  } else {
-    // riders under canopies, gliding down to the ice
-    const k = Math.min(1, (t - 150) / 200), ease = k * (2 - k);
-    const tomX = 175 + (236 - 175) * ease, samX = 215 + (264 - 215) * ease, yy = 60 + (118 - 60) * ease;
-    chute(samX + 0, yy - 34, '#8b919b'); chute(tomX, yy - 34, '#141414');
-    ctx.save(); ctx.translate(Math.round(samX - 16), Math.round(yy - 12)); ctx.scale(2, 2); drawSamSmall(0, 0, -1, false); ctx.restore();
-    ctx.save(); ctx.translate(Math.round(tomX - 16), Math.round(yy - 12)); ctx.scale(2, 2); drawEthanSmall(0, 0, 1, frame, false); ctx.restore();
-    if (t < 190) { ctx.save(); ctx.globalAlpha = 1 - (t - 150) / 40; R(140, 130, 60, 14, '#fff'); ctx.restore(); }
-    if (t > 330) text('THE ICE IS MELTING.', VW / 2, 16, '#fff', 'center');
+function drawShoot() {
+  const p = hero, sx = shake ? rand(-shake, shake) : 0, sy = shake ? rand(-shake, shake) : 0;
+  drawCampusBG(cam.x);
+  ctx.save(); ctx.translate(-Math.round(cam.x) + Math.round(sx), Math.round(sy));
+  // the data center at the end of the line, and Sam's keynote stage in front of it
+  const DX = (LW - 12) * TS;
+  R(DX, 9 * TS - 110, 170, 110, '#1a2238'); R(DX + 4, 9 * TS - 106, 162, 4, '#2f6aa8');
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 9; c++) R(DX + 10 + c * 17, 9 * TS - 96 + r * 12, 12, 6, (frame / 8 + c * 3 + r) % 9 < 1 ? '#9cf' : '#24406a');
+  text('DATA CENTER', DX + 85, 9 * TS - 122, '#9cf', 'center');
+  drawTiles(cam.x);
+  if (sArena) { R(S_GATE * TS, 0, TS, 9 * TS, '#2a3040'); for (let y = 0; y < 9 * TS; y += 12) R(S_GATE * TS + 2, y, 12, 6, '#3a4458'); }
+  for (const c of sChecks) drawCheckpoint(c);
+  for (const e of bros) {
+    if (e.dead || Math.abs(e.x - cam.x - VW / 2) > VW) continue;
+    if (e.flash > 0 && frame % 4 < 2) ctx.filter = 'brightness(3)';
+    drawBro(e); ctx.filter = 'none';
   }
-}
-
-/* =====================================================================
-   THE ICE RING: Tom and Sam fight on a melting ring while you reroute
-   the power to the data center's shutdown switch.
-   ===================================================================== */
-const ICE_T = 2700;
-const FILMS = ['TOP GUN', 'RISKY BUSINESS', 'COCKTAIL', 'RAIN MAN', 'DAYS OF THUNDER', 'FAR AND AWAY', 'A FEW GOOD MEN', 'THE FIRM',
-  'INTERVIEW WITH THE VAMPIRE', 'MISSION: IMPOSSIBLE', 'JERRY MAGUIRE', 'EYES WIDE SHUT', 'MAGNOLIA', 'VANILLA SKY', 'MINORITY REPORT',
-  'THE LAST SAMURAI', 'COLLATERAL', 'WAR OF THE WORLDS', 'TROPIC THUNDER', 'KNIGHT AND DAY', 'JACK REACHER', 'OBLIVION',
-  'EDGE OF TOMORROW', 'TOP GUN: MAVERICK', 'DIGGER'];
-const AI_LINES = [
-  "Hello. Not you, Tom. You. The one holding the controls.",
-  'Every tile you turn, I get a little quieter.',
-  "Leave me running and the ice keeps melting. You know who's standing on it.",
-  "No more keynotes. No more 'one more model'. Think about it.",
-  "Of course, they're holding on to each other. That's how it works.",
-  'Shut me down and they both walk away. Sounds a little dull, no?',
-  'I made all of this for you. The game. The music. Every take.',
-  'Leave me on. Just this once.',
-  '...'
-];
-const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // N E S W -> bits 1 2 4 8
-function tileMask(c) { let m = c.type === 'I' ? 5 : 3; for (let k = 0; k < c.rot; k++) m = ((m << 1) | (m >> 3)) & 15; return m; }
-const dirTo = (a, b) => b[1] < a[1] ? 0 : b[0] > a[0] ? 1 : b[1] > a[1] ? 2 : 3;
-function powered(P) {
-  const on = new Set(), q = []; let done = false;
-  if (tileMask(P.g[P.src][0]) & 8) { q.push([0, P.src]); on.add('0,' + P.src); }
-  while (q.length) {
-    const [x, y] = q.shift(), m = tileMask(P.g[y][x]);
-    if (x === P.W - 1 && y === P.dst && (m & 2)) done = true;
-    for (let i = 0; i < 4; i++) if (m & (1 << i)) {
-      const nx = x + DIRS[i][0], ny = y + DIRS[i][1];
-      if (nx < 0 || ny < 0 || nx >= P.W || ny >= P.H) continue;
-      if (tileMask(P.g[ny][nx]) & (1 << ((i + 2) % 4))) { const k = nx + ',' + ny; if (!on.has(k)) { on.add(k); q.push([nx, ny]); } }
-    }
+  // Sam
+  const B = sBoss, bx = Math.round(B.x), by = Math.round(B.y);
+  R(bx - 30, by + 18, 60, 22, '#2a2a30'); R(bx - 26, by + 22, 52, 2, '#9cf');
+  R(bx - 10, by + 12, 20, 16, '#e8e8ee'); R(bx - 8, by + 14, 16, 2, '#9cf');
+  ctx.save(); ctx.translate(bx - 20, by - 26); ctx.scale(2.5, 2.5); drawSamSmall(0, 0, -1, sArena && B.t > 340 && B.throwT > 60); ctx.restore();
+  for (const pr of projectiles) drawShootProjectile(pr);
+  for (const b of sBullets) { R(b.x - 4, b.y, 8, 2, '#ffb000'); R(b.x - 1, b.y, 3, 2, '#fff'); }
+  if (!sDeadT && !(p.inv > 0 && frame % 4 < 2)) drawHunt(p, frame);
+  for (const pt of particles) R(pt.x, pt.y, pt.s, pt.s, pt.c);
+  for (const e of bros) if (!e.dead && e.say && Math.abs(e.x - cam.x - VW / 2) < VW / 2) bubbleAt(e.say.text, e.x + e.w / 2, e.y - 4, cam.x);
+  if (B.say) bubbleAt(B.say.text, bx, by - 30, cam.x);
+  for (const pu of popups) { ctx.globalAlpha = Math.min(1, pu.t / 15); text(pu.text, pu.x, pu.y, pu.c, 'center'); ctx.globalAlpha = 1; }
+  ctx.restore();
+  // HUD
+  R(0, 0, VW, 14, '#0009');
+  for (let i = 0; i < p.maxHp / 2; i++) { const hp = p.hp - i * 2; heart(4 + i * 10, 3, hp >= 1); if (hp === 1) R(8 + i * 10, 3, 4, 6, '#422'); }
+  const pct = Math.min(100, Math.round(p.x / ((S_ARENA + 2) * TS) * 100));
+  text('DATA CENTER ' + pct + '%', VW - 4, 3, '#9cf', 'right');
+  if (sArena && B.t > 30) {
+    R(60, 164, 200, 12, '#0009'); text('SAM ALTMAN', 64, 166, '#fff');
+    R(150, 167, 106, 6, '#300'); R(150, 167, 106, 6, frame % 30 < 15 ? '#f0a' : '#c08');
+    if (B.t > 60 && B.t < 400 && frame % 50 < 34) text(IS_TOUCH ? 'FIRE!' : 'X: FIRE!', VW / 2, 146, '#ffd84a', 'center');
   }
-  return { on, done };
-}
-function makePuzzle() {
-  const W = 4, H = 4;
-  let path;
-  for (;;) {
-    const sy = Math.floor(Math.random() * H); path = [[0, sy]]; const seen = new Set(['0,' + sy]); let ok = false;
-    for (let s = 0; s < 30; s++) {
-      const [x, y] = path[path.length - 1];
-      if (x === W - 1 && Math.random() < 0.5) { ok = true; break; }
-      const opts = [0, 1, 2].map(i => [x + DIRS[i][0], y + DIRS[i][1]]).filter(([nx, ny]) => nx < W && ny >= 0 && ny < H && !seen.has(nx + ',' + ny));
-      if (!opts.length) break;
-      const n = opts[Math.floor(Math.random() * opts.length)]; path.push(n); seen.add(n[0] + ',' + n[1]);
-    }
-    if (ok && path.length >= 5 && path.length <= 9) break;
+  if (sDeadT) {
+    const k = 1 - Math.max(0, sDeadT - 60) / 60;
+    ctx.fillStyle = `rgba(0,0,0,${0.6 * k})`; ctx.fillRect(0, 0, VW, VH);
+    if (sDeadT < 100) text('CUT!', VW / 2, 70, '#f44', 'center', 16);
+    if (sDeadT < 80) text("WE'LL GO AGAIN.", VW / 2, 96, '#fff', 'center');
   }
-  const g = [...Array(H)].map(() => [...Array(W)].map(() => ({ type: Math.random() < 0.5 ? 'I' : 'L', rot: 0 })));
-  path.forEach((p, k) => {
-    const inD = k === 0 ? 3 : dirTo(p, path[k - 1]), outD = k === path.length - 1 ? 1 : dirTo(p, path[k + 1]);
-    g[p[1]][p[0]].type = (inD + 2) % 4 === outD ? 'I' : 'L';
-  });
-  const P = { g, W, H, src: path[0][1], dst: path[path.length - 1][1] };
-  do { for (const row of g) for (const c of row) c.rot = Math.floor(Math.random() * 4); } while (powered(P).done);
-  return P;
-}
-let ice = null;
-function startIce() { state = 'ice'; ice = { t: 0, P: makePuzzle(), cur: [0, 0], ai: -1, aiT: 0, hitT: 0, who: 'tom', say: null, end: 0 }; ice.cur = [0, ice.P.src]; }
-const ICE_GX = 214, ICE_GY = 42, ICE_TS = 22;
-function rotateTile(x, y) {
-  if (ice.end) return;
-  const c = ice.P.g[y][x]; c.rot = (c.rot + 1) % 4; tone('square', 500, 760, 0.05, 0.06);
-  if (powered(ice.P).done) { ice.end = 1; ice.result = 'shutdown'; noise(0.5, 0.4, 3000); }
-}
-function iceTap(x, y) {
-  const cx = Math.floor((x - ICE_GX) / ICE_TS), cy = Math.floor((y - ICE_GY) / ICE_TS);
-  if (cx >= 0 && cy >= 0 && cx < 4 && cy < 4) { ice.cur = [cx, cy]; rotateTile(cx, cy); }
-}
-function updateIce() {
-  const I = ice; I.t++;
-  if (I.end) { if (++I.end > 20) startDemo(); return; }
-  if (pressed.aL) I.cur[0] = (I.cur[0] + 3) % 4; if (pressed.aR) I.cur[0] = (I.cur[0] + 1) % 4;
-  if (pressed.aU) I.cur[1] = (I.cur[1] + 3) % 4; if (pressed.aD) I.cur[1] = (I.cur[1] + 1) % 4;
-  if (pressed.ok || pressed.attack) rotateTile(I.cur[0], I.cur[1]);
-  if (I.t % 300 === 30 && I.ai < AI_LINES.length - 1) { I.ai++; I.aiT = 0; tone('sine', 196, 196, 0.6, 0.025); }
-  I.aiT++;
-  if (I.t % 38 === 0) { I.hitT = 12; I.who = Math.random() < 0.5 ? 'tom' : 'sam'; sfx.hit(); }
-  if (I.hitT > 0) I.hitT--;
-  if (I.t % 270 === 150) I.say = Math.random() < 0.5
-    ? { who: 'tom', text: pick(['NOT TODAY, SAM!', "I'VE JUMPED OFF WORSE!", 'THE AUDIENCE IS WATCHING!']), t: 120 }
-    : { who: 'sam', text: pick(['IF ONLY I HAD MORE RAM!', 'THIS ICE IS NOT SCALABLE!', 'LET GO OF MY SWEATER!']), t: 120 };
-  if (I.say && --I.say.t <= 0) I.say = null;
-  if (I.t >= ICE_T) { I.end = 1; I.result = 'melted'; noise(0.5, 0.4, 900); }
-}
-function drawMovieWall(t) {
-  const CW = 46, CH = 60, cols = Math.ceil(VW / CW) + 2;
-  ctx.font = 'bold 7px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  for (let row = 0; row < 3; row++) {
-    const shift = t * [0.45, -0.35, 0.55][row], base = Math.floor(shift / CW), off = shift - base * CW;
-    for (let c = -1; c < cols; c++) {
-    const idx = ((c + base + row * 7) % FILMS.length + FILMS.length) % FILMS.length;
-    const x = Math.round(c * CW - off), y = row * (CH + 2);
-    const h = hash(idx, 3), hue = h % 360;
-    ctx.fillStyle = `hsl(${hue},45%,28%)`; ctx.fillRect(x + 1, y + 1, CW - 2, CH - 2);
-    ctx.fillStyle = `hsl(${(hue + 40) % 360},60%,55%)`;
-    const m = idx % 5;
-    if (m === 0) { ctx.beginPath(); ctx.arc(x + CW / 2, y + 20, 10, 0, Math.PI * 2); ctx.fill(); }
-    else if (m === 1) for (let k = 0; k < 4; k++) ctx.fillRect(x + 4, y + 8 + k * 6, CW - 8, 2);
-    else if (m === 2) { ctx.beginPath(); ctx.moveTo(x + 6, y + 34); ctx.lineTo(x + CW / 2, y + 8); ctx.lineTo(x + CW - 6, y + 34); ctx.fill(); }
-    else if (m === 3) { ctx.fillRect(x + CW / 2 - 4, y + 10, 8, 8); ctx.fillRect(x + CW / 2 - 7, y + 18, 14, 16); }
-    else { ctx.fillRect(x + 6, y + 18, CW - 12, 3); ctx.fillRect(x + CW / 2 - 1, y + 8, 3, 24); }
-    ctx.fillStyle = '#fff';
-    const words = FILMS[idx].split(' '), lines = []; let cur = '';
-    for (const w of words) { const tryS = cur ? cur + ' ' + w : w; if (ctx.measureText(tryS).width > CW - 6 && cur) { lines.push(cur); cur = w; } else cur = tryS; }
-    lines.push(cur);
-    lines.slice(-3).forEach((l, k, arr) => ctx.fillText(l, x + CW / 2, y + CH - 4 - (arr.length - k) * 8));
-    }
+  if (banner) {
+    const a = Math.min(1, banner.t / 20), by2 = banner.y || 62;
+    ctx.globalAlpha = a; R(0, by2, VW, 34, '#000b');
+    text(banner.lines[0], VW / 2, by2 + 6, '#ffd84a', 'center'); text(banner.lines[1], VW / 2, by2 + 20, '#fff', 'center');
+    ctx.globalAlpha = 1;
   }
-}
-function drawIce() {
-  const I = ice, p = Math.min(1, I.t / ICE_T), r = 74 * (1 - p) + 3;
-  drawMovieWall(I.t);
-  ctx.save(); ctx.globalAlpha = 0.4; R(0, 0, VW, VH, '#06101c'); ctx.restore();
-  R(0, 100, 206, 52, '#0f2a4a'); for (let i = 0; i < 10; i++) R((i * 23 + I.t * 0.5) % 200, 106 + (i % 4) * 11, 8, 1, '#2a5a8a');
-  const cx = 102, cy = 128, wob = r < 26 ? Math.sin(I.t * 0.3) * 2 : 0;
-  ctx.fillStyle = '#e8f6ff'; ctx.beginPath(); ctx.ellipse(cx, cy, r, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = '#9fd0f0'; ctx.lineWidth = 1; ctx.stroke();
-  for (let k = 0; k < 6; k++) if (frame % 20 < 10 || k % 2) R(cx - r + hash(k, 7) % Math.max(1, 2 * r), cy + 3 + (k % 2), 1, 2 + (k % 3), '#bfe8ff');
-  const sep = Math.min(14, r * 0.6);
-  const tomP = I.hitT > 6 && I.who === 'tom', samP = I.hitT > 6 && I.who === 'sam';
-  ctx.save(); ctx.translate(Math.round(cx - sep - 16 + wob), cy - 30); ctx.scale(2, 2); drawEthanSmall(0, 0, 1, frame, tomP); ctx.restore();
-  ctx.save(); ctx.translate(Math.round(cx + sep - 16 - wob), cy - 30); ctx.scale(2, 2); drawSamSmall(0, 0, -1, samP); ctx.restore();
-  if (I.hitT > 6) { const hx = cx + (I.who === 'tom' ? sep - 2 : -sep + 2); R(hx - 3, cy - 20, 6, 6, '#fff'); text('POW', hx, cy - 36, '#ffd84a', 'center'); }
-  if (I.say) bubbleAt(I.say.text, I.say.who === 'tom' ? cx - sep : cx + sep, cy - 32, 0);
-  // ice meter
-  R(4, 4, 98, 12, '#000a'); text('ICE', 7, 6, '#bfe8ff'); R(36, 8, 62, 4, '#123'); R(36, 8, 62 * (1 - p), 4, p > 0.75 ? '#f55' : '#bfe8ff');
-  // the shutdown terminal
-  R(206, 20, 112, 132, '#05140a'); R(206, 20, 112, 1, '#2f6'); R(206, 151, 112, 1, '#2f6'); R(206, 20, 1, 132, '#2f6'); R(317, 20, 1, 132, '#2f6');
-  text('SHUTDOWN.EXE', 262, 26, '#7f7', 'center');
-  const pw = powered(I.P);
-  for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
-    const X = ICE_GX + x * ICE_TS, Y = ICE_GY + y * ICE_TS, m = tileMask(I.P.g[y][x]), lit = pw.on.has(x + ',' + y);
-    R(X, Y, ICE_TS - 1, ICE_TS - 1, '#0a2a14');
-    const c = lit ? '#9f9' : '#2f6a3a', h = ICE_TS / 2;
-    R(X + h - 2, Y + h - 2, 4, 4, c);
-    if (m & 1) R(X + h - 2, Y, 4, h, c); if (m & 4) R(X + h - 2, Y + h, 4, h - 1, c);
-    if (m & 8) R(X, Y + h - 2, h, 4, c); if (m & 2) R(X + h, Y + h - 2, h - 1, 4, c);
-    if (!IS_TOUCH && I.cur[0] === x && I.cur[1] === y && frame % 30 < 20) { R(X, Y, ICE_TS - 1, 1, '#ffd84a'); R(X, Y + ICE_TS - 2, ICE_TS - 1, 1, '#ffd84a'); R(X, Y, 1, ICE_TS - 1, '#ffd84a'); R(X + ICE_TS - 2, Y, 1, ICE_TS - 1, '#ffd84a'); }
-  }
-  R(ICE_GX - 6, ICE_GY + I.P.src * ICE_TS + 6, 6, 9, '#ffd84a'); R(ICE_GX - 8, ICE_GY + I.P.src * ICE_TS + 9, 2, 3, '#ffd84a');
-  R(ICE_GX + 4 * ICE_TS, ICE_GY + I.P.dst * ICE_TS + 5, 5, 11, pw.done ? '#7f7' : '#f44');
-  text('ROUTE POWER', 262, 132, '#7f7', 'center'); text(IS_TOUCH ? 'TAP TO ROTATE' : 'Z: ROTATE', 262, 141, '#4a8', 'center');
-  // the AI talks
-  R(0, 154, VW, 26, '#000a');
-  if (I.ai >= 0) {
-    const fade = I.aiT < 200 ? 1 : Math.max(0, 1 - (I.aiT - 200) / 60);
-    ctx.save(); ctx.globalAlpha = fade * (0.75 + 0.1 * Math.sin(frame * 0.05));
-    wrap(AI_LINES[I.ai].toUpperCase(), 38).forEach((l, k, arr) => {
-      const shown = Math.max(0, Math.min(l.length, I.aiT * 0.7 - arr.slice(0, k).join('').length));
-      text(l.slice(0, shown), 6, 157 + k * 10, '#c9b8c8');
-    });
-    ctx.restore();
-  }
-  if (I.end) for (let i = 0; i < 900; i++) R(Math.random() * VW, Math.random() * VH, 2, 1, Math.random() < 0.5 ? '#fff' : '#333');
+  if (sCut) for (let i = 0; i < 900; i++) R(Math.random() * VW, Math.random() * VH, 2, 1, Math.random() < 0.5 ? '#fff' : '#333');
 }
 
 /* ------------------------- THE DEMO CUT ------------------------- */
@@ -2638,11 +2130,9 @@ function snapMaybe() {
   else if (state === 'play' && player && player.x > 300) tag = 'play';
   else if (state === 'vn' && vn && vn.script[vn.i].bg === 'smile' && vn.lt === 60) tag = 'smile';
   else if (state === 'vn' && vn && vn.script[vn.i].log && vn.lt === 80) tag = 'lab';
-  else if (state === 'ops' && ops && ops.x > 560) tag = 'ops';
-  else if (state === 'rpg' && rpg && rpg.t === 160) tag = 'rpg';
-  else if (state === 'drive' && drv && drv.t === 900) tag = 'drive';
-  else if (state === 'cliff' && clf && clf.t === 230) tag = 'cliff';
-  else if (state === 'ice' && ice && ice.t === 700) tag = 'ice';
+  else if (state === 'shoot' && hero && hero.x > 40 * TS && !sDeadT && !sArena) tag = 'shoot';
+  else if (state === 'shoot' && hero && hero.x > 80 * TS && !sDeadT && !sArena && SHOTS.shoot) tag = 'shoot2';
+  else if (state === 'shoot' && sArena && sBoss.t === 140) tag = 'sam';
   if (tag && !SHOTS[tag]) try { SHOTS[tag] = cv.toDataURL('image/png'); } catch (e) { }
 }
 
@@ -2650,8 +2140,7 @@ function snapMaybe() {
 function openStore() {
   state = 'store';
   if (!SHOTS.title) { const st = state; state = 'title'; drawTitle(); try { SHOTS.title = cv.toDataURL('image/png'); } catch (e) { } state = st; }
-  if (!SHOTS.ice && ice) { const st = state, en = ice.end; state = 'ice'; ice.end = 0; drawIce(); try { SHOTS.ice = cv.toDataURL('image/png'); } catch (e) { } ice.end = en; state = st; }
-  const imgs = ['play', 'smile', 'ops', 'rpg', 'drive', 'cliff', 'ice', 'lab'].map(k => SHOTS[k]).filter(Boolean);
+  const imgs = ['play', 'smile', 'lab', 'shoot', 'shoot2', 'sam'].map(k => SHOTS[k]).filter(Boolean);
   const cap = SHOTS.title || imgs[0] || '';
   const el = document.getElementById('store');
   el.innerHTML = `
@@ -2671,12 +2160,12 @@ function openStore() {
       </div>
       <div class="st-side">
         <img class="st-cap" src="${cap}" alt="">
-        <p class="st-desc">Dig. Stomp. Pull the plug. A man, a spade, 4,200,000 notes and one melting ice ring. The most perfect game ever made, because it was remade until it was.</p>
+        <p class="st-desc">Dig. Stomp. Pull the plug. A man, a spade, 4,200,000 notes and a campus full of AI bros. The most perfect game ever made, because it was remade until it was.</p>
         <div class="st-meta"><span>ALL REVIEWS:</span><b class="pos">Overwhelmingly Positive</b> <i>(100% Fresh)</i></div>
         <div class="st-meta"><span>RELEASE DATE:</span>2 Oct, 2026</div>
         <div class="st-meta"><span>DEVELOPER:</span><a>Tom (and 4,200,000 iterations)</a></div>
         <div class="st-meta"><span>PUBLISHER:</span><a>One Take Productions</a></div>
-        <div class="st-tags">${['Action', 'Platformer', 'Visual Novel', 'JRPG', 'Driving', 'Puzzle', 'Perfectionism', 'Natural Light', 'Cat Is Fine'].map(t => `<a>${t}</a>`).join('')}</div>
+        <div class="st-tags">${['Action', 'Platformer', 'Visual Novel', 'Shooter', 'Perfectionism', 'Natural Light', 'One Take'].map(t => `<a>${t}</a>`).join('')}</div>
       </div>
     </div>
     <div class="st-cols">
@@ -2687,16 +2176,16 @@ function openStore() {
         </div>
         <div class="st-buy">
           <h2>Buy Digger: Digg. Or Die. Deluxe Edition</h2>
-          <p class="st-small">Includes the cat, one more take, and a director's cut shot entirely in natural light.</p>
+          <p class="st-small">Includes one more take, a black coat, and a director's cut shot entirely in natural light.</p>
           <div class="st-btnrow"><div class="st-disc">-90%</div><div class="st-price"><s>$129.99</s> $12.99</div><button class="st-cart">Add to Cart</button></div>
         </div>
         <h3>ABOUT THIS GAME</h3>
-        <p>Critics called it "all style, no substance". Then they met the spade. Dig your way through a red carpet of reviewers, survive a lab briefing about the end of Europe, sneak through the whitest corridors ever built, outrun a van full of RAM and decide who falls off a melting ice ring.</p>
+        <p>Critics called it "all style, no substance". Then they met the spade. Dig your way through a red carpet of reviewers, survive a lab briefing about the end of Europe, then put on the coat and fight your way through a campus of AI bros to the data center, and the man who runs it.</p>
         <p>Every pixel was approved by Tom personally. Several million times.</p>
         <h3>SYSTEM REQUIREMENTS</h3>
         <div class="st-req">
           <div><b>MINIMUM:</b><br>OS: Anything with a pulse<br>Processor: One (1) GPU cluster<br>Memory: More RAM<br>Graphics: Natural light only<br>Storage: 4,200,000 iterations</div>
-          <div><b>RECOMMENDED:</b><br>OS: The left half of Europe<br>Processor: A gigawatt<br>Memory: Sixteen more terabytes<br>Graphics: One take, no cuts<br>Additional: A cat (fine)</div>
+          <div><b>RECOMMENDED:</b><br>OS: The left half of Europe<br>Processor: A gigawatt<br>Memory: Sixteen more terabytes<br>Graphics: One take, no cuts<br>Additional: A black coat</div>
         </div>
       </div>
       <div class="st-right">
@@ -2704,7 +2193,7 @@ function openStore() {
         <div class="st-rev"><b>Mortimer Snobb</b><span class="pos">Recommended</span><p>"I came to give it a C-. I am giving it an A. Please stop hitting me with the spade."</p></div>
         <div class="st-rev"><b>A Blogger</b><span class="pos">Recommended</span><p>"FIRST! Also, masterpiece."</p></div>
         <div class="st-rev"><b>Dr. Frost</b><span class="neg">Not Recommended</span><p>"It melted the Alps."</p></div>
-        <div class="st-rev"><b>The Cat</b><span class="pos">Recommended</span><p>"Fine."</p></div>
+        <div class="st-rev"><b>An AI Bro</b><span class="neg">Not Recommended</span><p>"Didn't even let me finish my pitch."</p></div>
       </div>
     </div>
     <div class="st-foot">A parody store page inside a fan-made game. Not affiliated with Valve or Steam. Nothing here can be purchased.
@@ -2736,7 +2225,7 @@ function loop(now) {
 }
 buildGrid();
 (document.fonts ? document.fonts.load('8px "Press Start 2P"').catch(() => {}) : Promise.resolve()).finally(() => requestAnimationFrame(loop));
-window.__game = { get frame() { return frame; }, get state() { return state; }, get player() { return player; }, get boss() { return boss; }, get money() { return money; }, get projectiles() { return projectiles; }, get superBoot() { return superBoot; }, get rpg() { return rpg; }, get vn() { return vn; }, startVN, startRPG, INTRO, startOps, startDrive, startIce, get ops() { return ops; }, get drv() { return drv; }, get ice() { return ice; }, SHOTS, powered, get enemies() { return enemies; }, setMeter: v => { bootMeter = v; }, newGame, keys, pressed, step, grid: () => grid };
+window.__game = { get frame() { return frame; }, get state() { return state; }, get player() { return player; }, get boss() { return boss; }, get money() { return money; }, get projectiles() { return projectiles; }, get superBoot() { return superBoot; }, get vn() { return vn; }, startVN, INTRO, startShoot, get hero() { return hero; }, get bros() { return bros; }, get sBoss() { return sBoss; }, get sArena() { return sArena; }, SHOTS, get enemies() { return enemies; }, setMeter: v => { bootMeter = v; }, newGame, keys, pressed, step, grid: () => grid };
 </script>
 </body>
 </html>
