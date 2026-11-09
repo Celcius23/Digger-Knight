@@ -340,12 +340,11 @@ const SONGS = {
   cyborg: { bpm: 96, key: 38, scale: 'phryg', lead: 'sawtooth', form: ['A', 'B'], sec: {
     A: { prog: [0, 0, 1, 0], bass: 'pulse', drums: 'pound', lead: 'none', pad: 1 },
     B: { prog: [0, 1, 0, 6], bass: 'octave', drums: 'pound', lead: 'sparse', pad: 1 } } },
-  spy: { bpm: 168, key: 40, scale: 'harm', meter: 20, lead: 'sawtooth', form: ['I', 'A', 'A', 'B', 'A', 'C', 'B', 'D'], sec: {
-    I: { prog: [0, 0, 0, 0], bass: 'spy', drums: 'spyb', lead: 'none' },
-    A: { prog: [0, 0, 5, 4], bass: 'spy', drums: 'spy', lead: 'motif' },
-    B: { prog: [3, 3, 4, 4], bass: 'spy', drums: 'spy', lead: 'long', arp: 'fast' },
-    C: { prog: [5, 1, 4, 0], bass: 'spy2', drums: 'spy', lead: 'motif', pad: 1 },
-    D: { prog: [0, 1, 0, 4], bass: 'spy2', drums: 'spyb', lead: 'none', arp: 'fast' } } }
+  spy: { bpm: 152, key: 43, scale: 'minor', meter: 20, bass: 'piano', lead: 'piano', form: ['I', 'I', 'A', 'A', 'B', 'A', 'C', 'B'], sec: {
+    I: { prog: [0, 0, 0, 0], bass: 'ostinato', drums: 'none', lead: 'none' },
+    A: { prog: [0, 0, 5, 4], bass: 'ostinato', drums: 'none', lead: 'motif' },
+    B: { prog: [3, 3, 4, 4], bass: 'ostinato', drums: 'none', lead: 'long' },
+    C: { prog: [5, 1, 4, 0], bass: 'ostinato', drums: 'none', lead: 'sparse' } } }
 };
 
 function songFor() {
@@ -371,6 +370,17 @@ function musicIntensity() {
 
 // --- instruments ---
 function note(type, f, t, dur, vol) {
+  if (type === 'piano') {
+    const len = Math.max(0.35, dur * 1.6);
+    for (const [mul, v, wave] of [[1, vol, 'triangle'], [2, vol * 0.28, 'sine'], [3, vol * 0.08, 'sine']]) {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = wave; o.frequency.value = f * mul;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(v * 0.35, t + 0.12); g.gain.exponentialRampToValueAtTime(0.001, t + len);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + len + 0.02);
+    }
+    return;
+  }
   const o = actx.createOscillator(), g = actx.createGain();
   o.type = type; o.frequency.value = f;
   g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
@@ -397,8 +407,12 @@ function snare(t, v = 0.14) {
 }
 
 // --- pattern generators (return [{n: midi, d: steps, v: vol}] for this step) ---
-function bassAt(style, r, i, M, rnd, lastBar, next) {
+function bassAt(style, r, i, M, rnd, lastBar, next, bar = 0) {
   switch (style) {
+    case 'ostinato': {
+      const shape = bar % 2 ? { 0: 0, 2: 7, 6: 0, 9: 8, 10: 7, 14: 3, 17: 2 } : { 0: 0, 2: 7, 6: 0, 9: 3, 10: 5, 14: 0, 17: -2 };
+      return i in shape ? [{ n: r + shape[i], d: i === 6 || i === 14 ? 3 : 2 }] : [];
+    }
     case 'drive': if (i % 2) return []; if (i === M - 2 && rnd() < 0.6) return [{ n: next - 1, d: 2 }]; return [{ n: i % 8 === 6 ? r + 12 : r, d: 2 }];
     case 'octave': return i % 2 ? [] : [{ n: (i / 2) % 2 ? r + 12 : r, d: 2 }];
     case 'pulse': return i === 0 ? [{ n: r, d: M * 0.45 }] : i === M / 2 ? [{ n: rnd() < 0.5 ? r : r + 7, d: M * 0.4 }] : [];
@@ -473,10 +487,10 @@ function musStep(t) {
   const bk = S.key, r = deg(bk, sc, d), next = deg(bk, sc, nd), lk = S.key + 24, rnd = mus.barRnd;
   const inten = musicIntensity(), lastBar = mus.bar === bars - 1;
   const tt = S.swing && i % 2 ? t + st * 0.33 : t;
-  for (const b of bassAt(sec.bass, r, i, M, rnd, lastBar, next)) note(S.bass || 'triangle', N(b.n), tt, st * b.d * 0.95, 0.17);
+  for (const b of bassAt(sec.bass, r, i, M, rnd, lastBar, next, mus.bar)) note(S.bass || 'triangle', N(b.n), tt, st * b.d * 0.95, S.bass === 'piano' ? 0.15 : 0.17);
   drumsAt(sec.drums, i, M, lastBar && (mus.si % S.form.length) % 2 === 1, inten, tt, st);
   if (sec.lead !== 'none') for (const l of leadAt(sec.lead, sc, lk, d, i, M, mus.bar, bars, mus.pass, mus.motif, rnd))
-    note(S.lead || 'square', N(l.n + (inten > 1 && sec.lead === 'motif' ? 12 : 0)), tt, st * l.d, S.lead === 'triangle' ? 0.07 : 0.04);
+    note(S.lead || 'square', N(l.n + (inten > 1 && sec.lead === 'motif' ? 12 : 0)), tt, st * l.d, S.lead === 'piano' ? 0.09 : S.lead === 'triangle' ? 0.07 : 0.04);
   if (sec.arp && (sec.arp === 'fast' || i % 2 === 0)) { const tones = [0, 2, 4, 7]; const k = sec.arp === 'fast' ? i : i / 2; note('square', N(deg(lk - 12, sc, d + tones[k % 4])), tt, st * 0.8, 0.02); }
   if (sec.pad && i === 0) for (const o of [0, 2, 4]) note('sine', N(deg(lk - 12, sc, d + o)), t, st * M * 0.95, 0.025);
   if (++mus.step >= M) { mus.step = 0; if (++mus.bar >= bars) { mus.bar = 0; mus.si++; } }
