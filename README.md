@@ -11,8 +11,8 @@ Everything (pixel art, sound effects, chiptune music) is generated in code, so
 
 The soundtrack is generative. Each scene has its own original track: the
 platformer, the boss, the victory fanfare, breaking news, the lab, the smile,
-the sad and hopeful moments, the rooftop sunset, the biker bar, the cyborg scan,
-and a 5/4 spy theme for the battle. Every track is built from sections (intro,
+the Agency corridors, a 5/4 spy theme for the fights, the chase, the cliff
+jump and the ice ring. Every track is built from sections (intro,
 verse, chorus, bridge, breakdown) with their own chords, bass lines and drum
 patterns. Melodies grow from a motif that mutates each time a section returns,
 phrases end in drum fills, the boss and battle music intensify when things get
@@ -40,6 +40,10 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 | Pause / Mute | P or Esc / M | |
 
 **Story scenes:** Z / Enter, or tap anywhere.
+
+**Agency corridors:** move, Z to jump, X to shoot (touch: D-pad, JUMP, FIRE).
+**Chase:** left/right to steer, or let go and the autopilot drives.
+**Ice-ring puzzle:** arrows to pick a tile, Z to rotate, or just tap/click a tile.
 
 **Turn-based battle:** it has its own controls. Arrow keys to choose, Z / Enter
 to confirm, X / Esc to go back. On a phone the controls switch to ▲ ▼ BACK OK,
@@ -93,32 +97,47 @@ whole game. A certain tech CEO calls in, pleading for a few more gigawatts.
 "Did you say... impossible?" Tom produces a black coat and sunglasses from
 somewhere, and Ethan Hunt is in the building.
 
-**The turn-based battle.** *Your mission, should you choose to accept it: pull
-the plug.* Tom, in his long-haired, sunglasses-wearing cliff-climbing look from
-the opening of *Mission: Impossible 2*, and Alejandro break into the data center
-to face **Sam Altman** and his GPU server racks, to an original 5/4
-spy-thriller theme.
+**The Agency.** *Your mission, should you choose to accept it: pull the plug.*
+Tom, in his long-haired, sunglasses-wearing cliff-climbing look from the
+opening of *Mission: Impossible 2*, sneaks down blinding-white vault corridors.
+Jump the laser tripwires, and wait for the security cameras to look away
+(their light turns green) before you cross. Alejandro follows with his camera.
+Only Tom shoots: hit a data center and the turn-based combat begins.
 
 | Tom | Alejandro |
 | --- | --- |
 | **Free Solo:** climb it with no rope, drop on it | **Long Take:** four hits on random foes |
-| **Cable Drop:** drop from the ceiling on a wire and pull every plug (hits all, double vs. servers) | **CUT!:** a foe loses its next turn (cancels a charging gigawatt) |
+| **Cable Drop:** drop from the ceiling on a wire and pull every plug (hits all, double vs. servers) | **CUT!:** a foe loses its next turn (cancels an overclock) |
 | **Self-Destruct:** exploding sunglasses, with a countdown | **Catering:** heals the whole crew |
 
-Items: **Iced Coffee** (+50 HP, revives) and **Solar Cell** (+20 SP). Servers
-shield Sam (half damage), so pull their plugs first. When Sam starts "scaling
-up", defend or yell CUT!
+Items: **Iced Coffee** (+50 HP, revives) and **Solar Cell** (+20 SP). Data
+center A is two server racks. Data center B adds a GPU cluster that overclocks
+every third turn: defend, or yell CUT! Take both down and there's a motorcycle.
 
-**The ending.** Sam sobs that if only he had more RAM, then gets deprecated
-into a cloud of pixels. The Alps refreeze, the cat is fine, and Tom and
-Alejandro share a golden-hour rooftop moment in natural light. Then:
-*24 hours earlier*, a biker bar, blue lightning in the parking lot, and a
-red-eyed stranger who came for Tom Cruise. Cut to black.
+**The chase.** Top-down pursuit of Sam's van as he throws sticks of RAM at you
+("HAVE SOME DDR5!"). Steer whenever you like. Let go and the autopilot drives
+(and dodges) for you. It ends with both vehicles flying off a cliff and two
+parachutes gliding down to a ring of ice.
+
+**The ice ring.** Tom and Sam brawl on an ice ring that melts as the clock
+runs. You're at the data center's terminal: rotate the tiles to route power to
+the shutdown switch. The data center's AI keeps talking ("If you don't destroy
+me, Sam Altman will fall. Yes, Tom Cruise falls with him. That is the price."),
+and behind it all is a wall of Tom Cruise's movies, to remind you what you'd lose.
+
+Whatever happens, the game cuts out: **THANKS FOR PLAYING THE DEMO. BUY THE
+FULL VERSION ON STEAM.** Then a store page opens, with screenshots from your own
+playthrough, reviews and an Add to Cart button. It's a parody page ("STEEM").
+Nothing can actually be bought.
+
+Every playable part is short: roughly half a minute of sneaking, two quick
+fights, a 35-second chase and a 45-second puzzle.
 
 ---
 
 *An affectionate fan-made satire. It isn't affiliated with or endorsed by Tom
-Cruise, Alejandro G. Iñárritu, Sam Altman, OpenAI, the makers of *Digger*,
-*Mission: Impossible* or *The Terminator*, or any studio. Their appearances are caricatures, the dialogue is invented, and all
+Cruise, Alejandro G. Iñárritu, Sam Altman, OpenAI, the makers of *Digger* or
+*Mission: Impossible*, Valve/Steam, or any studio. The movie titles on the wall
+are just titles; the covers are original drawings. Their appearances are caricatures, the dialogue is invented, and all
 critics, scientists and events in the game are fictional. The battle music is
 an original composition.*

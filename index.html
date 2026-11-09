@@ -38,10 +38,74 @@
     #pad-tap{display:none!important}
     .pad .cluster{flex-direction:column;align-items:center}
     .pad .col{gap:10px} .b{width:66px;height:66px} .b.big{width:88px;height:88px} .b.small{width:54px;height:54px} }
+  /* ---- the parody store page ---- */
+  #store{position:fixed;inset:0;overflow:auto;z-index:10;background:#1b2838;color:#c6d4df;font:14px/1.45 Arial,Helvetica,sans-serif;touch-action:pan-y;-webkit-user-select:text;user-select:text}
+  #store[hidden]{display:none}
+  #store a{color:#c6d4df;cursor:pointer;text-decoration:none}
+  .st-in{max-width:940px;margin:0 auto;padding:0 16px}
+  .st-top{background:#171a21}
+  .st-top .st-in{display:flex;align-items:center;gap:28px;height:64px}
+  .st-logo{display:flex;align-items:center;gap:8px;color:#fff;font-weight:bold;font-size:22px;letter-spacing:2px}
+  .st-orb{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 18%,#c6d4df 19% 32%,#171a21 33%);border:3px solid #c6d4df;box-sizing:border-box}
+  .st-top nav{display:flex;gap:20px}
+  .st-top nav a{font-size:14px;letter-spacing:1px;color:#dcdedf}
+  .st-top nav a:first-child{color:#1a9fff;border-bottom:3px solid #1a9fff;padding-bottom:4px}
+  .st-acc{margin-left:auto;font-size:12px;color:#b8b6b4;display:flex;gap:6px;align-items:center}
+  .st-install{background:#5c7e10;color:#d2efa9;padding:4px 10px;font-size:12px;margin-right:8px}
+  .st-body{background:radial-gradient(ellipse at top,#2a475e 0,#1b2838 60%);padding-bottom:40px}
+  .st-sub{display:flex;gap:2px;align-items:center;background:linear-gradient(90deg,rgba(62,103,150,.92) 11%,rgba(58,120,177,.8) 25%,rgb(15,33,110) 100%);box-shadow:0 0 3px #000;margin:20px 0 14px;flex-wrap:wrap}
+  .st-sub a{padding:9px 13px;color:#e5e5e5;font-size:13px}
+  .st-sub input{margin-left:auto;margin-right:6px;background:#316282;border:0;color:#fff;padding:6px 8px;border-radius:3px;width:150px}
+  .st-crumb{font-size:12px;color:#8f98a0;margin-bottom:4px}
+  .st-body h1{color:#fff;font-weight:normal;font-size:26px;margin:0 0 12px}
+  .st-main{display:flex;gap:14px;background:rgba(0,0,0,.2);padding:0 0 12px}
+  .st-media{flex:1 1 600px;min-width:0}
+  #st-big{width:100%;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated;display:block;background:#000}
+  .st-thumbs{display:flex;gap:4px;overflow-x:auto;margin-top:6px;padding-bottom:4px}
+  .st-thumbs img{width:116px;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated;opacity:.6;border:2px solid transparent;cursor:pointer;flex:none}
+  .st-thumbs img.on{opacity:1;border-color:#fff}
+  .st-side{flex:0 0 324px}
+  .st-cap{width:100%;aspect-ratio:460/215;object-fit:cover;image-rendering:pixelated;display:block}
+  .st-desc{font-size:13px;margin:10px 0 14px}
+  .st-meta{font-size:12px;margin:5px 0;color:#c6d4df}
+  .st-meta span{display:inline-block;width:110px;color:#556772;font-size:11px;text-transform:uppercase}
+  .st-meta a{color:#66c0f4}
+  .pos{color:#66c0f4;font-weight:normal}.neg{color:#a34c25}
+  .st-meta i{color:#8f98a0;font-style:normal}
+  .st-tags{margin-top:12px;display:flex;flex-wrap:wrap;gap:3px}
+  .st-tags a{background:rgba(103,193,245,.2);color:#67c1f5 !important;padding:2px 7px;font-size:11px;border-radius:2px}
+  .st-cols{display:flex;gap:24px;margin-top:24px}
+  .st-left{flex:1 1 600px;min-width:0}.st-right{flex:0 0 300px}
+  .st-buy{background:linear-gradient(-60deg,rgba(226,244,255,.3) 5%,rgba(84,107,115,.3) 95%);padding:16px 16px 26px;margin-bottom:28px;position:relative}
+  .st-buy h2{color:#fff;font-size:21px;font-weight:normal;margin:0 0 6px}
+  .st-small{font-size:12px;margin:0;color:#acdbf5}
+  .st-btnrow{position:absolute;right:16px;bottom:-16px;display:flex;align-items:stretch;background:#000;padding:2px;border-radius:2px}
+  .st-price{color:#c6d4df;font-size:13px;padding:8px 12px;background:#000}
+  .st-price s{color:#738895;font-size:11px;margin-right:6px}
+  .st-disc{background:#4c6b22;color:#beee11;font-size:20px;padding:4px 8px}
+  .st-cart{background:linear-gradient(to right,#75b022 5%,#588a1b 95%);color:#d2efa9;border:0;border-radius:2px;padding:0 16px;font-size:15px;cursor:pointer}
+  .st-cart:hover{background:linear-gradient(to right,#8ed629 5%,#6aa621 95%);color:#fff}
+  .st-left h3,.st-right h3{color:#fff;font-size:14px;letter-spacing:2px;font-weight:normal;border-bottom:1px solid #2a475e;padding-bottom:4px;margin:24px 0 10px;background:linear-gradient(to right,rgba(43,79,108,.7),transparent)}
+  .st-left p{font-size:14px;color:#acb2b8}
+  .st-req{display:flex;gap:20px;font-size:12px;color:#acb2b8}.st-req>div{flex:1}.st-req b{color:#c6d4df}
+  .st-rev{background:rgba(0,0,0,.25);padding:10px;margin-bottom:10px;font-size:13px}
+  .st-rev b{display:block;color:#c1dbf4}.st-rev p{margin:6px 0 0;color:#acb2b8}
+  .st-foot{margin-top:40px;font-size:11px;color:#8f98a0;text-align:center}
+  .st-again{margin-top:12px;background:#3d4450;color:#fff;border:0;padding:8px 18px;border-radius:2px;cursor:pointer;font-size:13px}
+  .st-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center}
+  .st-modal[hidden]{display:none}
+  .st-box{background:#1b2838;border:1px solid #66c0f4;padding:20px 24px;max-width:380px;box-shadow:0 0 30px #000}
+  .st-box h2{color:#fff;margin:0 0 8px;font-weight:normal}
+  .st-ok{background:linear-gradient(to right,#47bfff 5%,#1a44c2 60%);color:#fff;border:0;padding:8px 22px;border-radius:2px;cursor:pointer}
+  @media (max-width:860px){ .st-main,.st-cols{flex-direction:column} .st-side,.st-right,.st-media,.st-left{flex:none} .st-top nav,.st-acc{display:none} .st-sub a{padding:7px 8px;font-size:12px} .st-btnrow{position:static;margin-top:12px;display:inline-flex} .st-buy{padding-bottom:16px} }
+  body.drive-mode .pad .cluster{display:none}
+  body.ops-mode [data-k="boot"]{display:none}
+  body.m-none #touch{display:none}
 </style>
 </head>
 <body>
 <div id="wrap"><canvas id="game" width="320" height="180"></canvas></div>
+<div id="store" hidden></div>
 <div id="touch">
   <div id="pad-play" class="pad">
     <div id="dpad"><span class="l">&#9664;</span><span class="r">&#9654;</span><span class="d">&#9660;</span><div id="knob"></div></div>
@@ -104,19 +168,23 @@ const MENUMAP = {
 };
 function press(k) { if (!keys[k]) pressed[k] = true; keys[k] = true; initAudio(); }
 function release(k) { keys[k] = false; }
+const ARROWMAP = { ArrowUp: 'aU', KeyW: 'aU', ArrowDown: 'aD', KeyS: 'aD', ArrowLeft: 'aL', KeyA: 'aL', ArrowRight: 'aR', KeyD: 'aR' };
 addEventListener('keydown', e => {
-  const k = KEYMAP[e.code], m = MENUMAP[e.code]; if (!k && !m) return; e.preventDefault();
-  if (k) press(k); if (m) press(m);
+  if (state === 'store') return; // let the page scroll and type normally
+  const k = KEYMAP[e.code], m = MENUMAP[e.code], a = ARROWMAP[e.code]; if (!k && !m && !a) return; e.preventDefault();
+  if (k) press(k); if (m) press(m); if (a) press(a);
 });
 addEventListener('keyup', e => {
-  const k = KEYMAP[e.code], m = MENUMAP[e.code]; if (!k && !m) return; e.preventDefault();
-  if (k) release(k); if (m) release(m);
+  const k = KEYMAP[e.code], m = MENUMAP[e.code], a = ARROWMAP[e.code]; if (!k && !m && !a) return;
+  if (k) release(k); if (m) release(m); if (a) release(a);
 });
-const tapAdvances = () => ['title', 'fresh', 'vn', 'blackout'].includes(state);
+const tapAdvances = () => ['title', 'fresh', 'vn', 'blackout', 'cliff'].includes(state);
 // Mouse / finger on the picture itself: advance story, or pick menu items and targets in battle
 cv.addEventListener('pointerdown', e => {
   initAudio();
-  if (state === 'rpg') { const r = cv.getBoundingClientRect(); rpgTap((e.clientX - r.left) * VW / r.width, (e.clientY - r.top) * VH / r.height); return; }
+  const r = cv.getBoundingClientRect(), gx = (e.clientX - r.left) * VW / r.width, gy = (e.clientY - r.top) * VH / r.height;
+  if (state === 'rpg') { rpgTap(gx, gy); return; }
+  if (state === 'ice') { iceTap(gx, gy); return; }
   if (tapAdvances()) { press('start'); press('ok'); }
 });
 cv.addEventListener('pointerup', () => { release('start'); release('ok'); });
@@ -155,14 +223,18 @@ function dpadAt(t) {
 }
 function dpadEnd() { dpadId = null; knob.style.transform = ''; ['left', 'right', 'down'].forEach(k => release(k)); }
 dpad.addEventListener('touchstart', e => { e.preventDefault(); const t = e.changedTouches[0]; dpadId = t.identifier; dpadAt(t); }, { passive: false });
-addEventListener('touchmove', e => { for (const t of e.changedTouches) if (t.identifier === dpadId) dpadAt(t); e.preventDefault(); }, { passive: false });
+addEventListener('touchmove', e => { if (state === 'store') return; for (const t of e.changedTouches) if (t.identifier === dpadId) dpadAt(t); e.preventDefault(); }, { passive: false });
 addEventListener('touchend', e => { for (const t of e.changedTouches) if (t.identifier === dpadId) dpadEnd(); });
 addEventListener('touchcancel', dpadEnd);
 // Which control set is showing follows the game mode
 let padMode = '';
 function syncPad() {
-  const m = (state === 'play' || state === 'dead') ? 'm-play' : state === 'rpg' ? 'm-menu' : 'm-tap';
-  if (m !== padMode) { document.body.classList.remove('m-play', 'm-menu', 'm-tap'); document.body.classList.add(m); padMode = m; fingers.clear(); dpadEnd(); for (const k in keys) keys[k] = false; resize(); }
+  const m = ['play', 'dead', 'ops', 'drive'].includes(state) ? 'm-play' : state === 'rpg' ? 'm-menu' : state === 'store' || state === 'demo' ? 'm-none' : 'm-tap';
+  document.body.classList.toggle('ops-mode', state === 'ops' || state === 'drive');
+  document.body.classList.toggle('drive-mode', state === 'drive');
+  const dig = document.querySelector('[data-k="attack"]'), lbl = state === 'ops' ? 'FIRE' : 'DIG'; if (dig.textContent !== lbl) dig.textContent = lbl;
+  const hint = document.querySelector('#pad-tap .hint'), ht = state === 'ice' ? 'TAP TILES TO ROTATE' : 'TAP TO CONTINUE'; if (hint.textContent !== ht) hint.textContent = ht;
+  if (m !== padMode) { document.body.classList.remove('m-play', 'm-menu', 'm-tap', 'm-none'); document.body.classList.add(m); padMode = m; fingers.clear(); dpadEnd(); for (const k in keys) keys[k] = false; resize(); }
   if (m === 'm-play') {
     dpad.querySelector('.l').classList.toggle('on', !!keys.left); dpad.querySelector('.r').classList.toggle('on', !!keys.right); dpad.querySelector('.d').classList.toggle('on', !!keys.down);
     document.querySelector('[data-k="boot"]').classList.toggle('boot-ready', bootMeter >= 100);
@@ -277,6 +349,22 @@ const SONGS = {
   cyborg: { bpm: 96, key: 38, scale: 'phryg', lead: 'sawtooth', form: ['A', 'B'], sec: {
     A: { prog: [0, 0, 1, 0], bass: 'pulse', drums: 'pound', lead: 'none', pad: 1 },
     B: { prog: [0, 1, 0, 6], bass: 'octave', drums: 'pound', lead: 'sparse', pad: 1 } } },
+  ops: { bpm: 100, key: 45, scale: 'minor', lead: 'triangle', form: ['A', 'B', 'A', 'C'], sec: {
+    A: { prog: [0, 0, 5, 4], bass: 'pulse', drums: 'tick', lead: 'sparse', pad: 1 },
+    B: { prog: [3, 4, 0, 0], bass: 'drive', drums: 'soft', lead: 'none', arp: 'slow' },
+    C: { prog: [5, 6, 0, 4], bass: 'pulse', drums: 'tick', lead: 'motif', pad: 1 } } },
+  drive: { bpm: 156, key: 42, scale: 'dorian', lead: 'square', form: ['I', 'A', 'B', 'A', 'C', 'B'], sec: {
+    I: { prog: [0, 0, 6, 6], bass: 'octave', drums: 'build', lead: 'none' },
+    A: { prog: [0, 6, 3, 4], bass: 'drive', drums: 'rock', lead: 'motif' },
+    B: { prog: [3, 4, 0, 0], bass: 'octave', drums: 'rock', lead: 'motif', arp: 'fast' },
+    C: { prog: [5, 3, 0, 4], bass: 'drive', drums: 'half', lead: 'long', pad: 1 } } },
+  cliff: { bpm: 84, key: 48, scale: 'major', lead: 'triangle', form: ['A', 'B'], sec: {
+    A: { prog: [0, 4, 5, 3], bass: 'pulse', drums: 'none', lead: 'long', pad: 1, arp: 'slow' },
+    B: { prog: [3, 4, 0, 0], bass: 'walk', drums: 'soft', lead: 'fanfare', pad: 1 } } },
+  ice: { bpm: 120, key: 45, scale: 'harm', lead: 'sawtooth', form: ['A', 'B', 'C', 'B'], sec: {
+    A: { prog: [0, 0, 5, 4], bass: 'pulse', drums: 'tick', lead: 'none', pad: 1 },
+    B: { prog: [0, 5, 3, 4], bass: 'drive', drums: 'tick', lead: 'motif' },
+    C: { prog: [3, 4, 5, 4], bass: 'octave', drums: 'rock', lead: 'long', arp: 'fast' } } },
   rpg: { bpm: 168, key: 40, scale: 'harm', meter: 20, lead: 'sawtooth', form: ['I', 'A', 'A', 'B', 'A', 'C', 'B', 'D'], sec: {
     I: { prog: [0, 0, 0, 0], bass: 'spy', drums: 'spyb', lead: 'none' },
     A: { prog: [0, 0, 5, 4], bass: 'spy', drums: 'spy', lead: 'motif' },
@@ -287,6 +375,7 @@ const SONGS = {
 
 function songFor() {
   if (state === 'rpg') return 'rpg';
+  if (state === 'ops' || state === 'drive' || state === 'cliff' || state === 'ice') return state;
   if (state === 'vn' && vn) {
     const L = vn.script[vn.i];
     if (L.bg === 'card') return L.text.includes('MISSION') ? 'rpg' : null;
@@ -301,7 +390,9 @@ function songFor() {
 }
 function musicIntensity() {
   if (mus && mus.name === 'boss' && boss && boss.enraged) return 2;
-  if (mus && mus.name === 'rpg' && rpg) { const sam = rpg.enemies.find(e => e.kind === 'sam'); if (sam && (sam.charging || sam.hp < sam.maxHp * 0.5)) return 2; }
+  if (mus && mus.name === 'rpg' && rpg && rpg.enemies.some(e => !e.dead && e.charging)) return 2;
+  if (mus && mus.name === 'ice' && ice && ice.t > ICE_T / 2) return 2;
+  if (mus && mus.name === 'drive' && drv && drv.t > DRIVE_LEN / 2) return 2;
   return 1;
 }
 
@@ -878,11 +969,17 @@ function update() {
     if ((pressed.start || pressed.ok) && freshT > 20 && freshT < cutF) freshT = cutF;
     else if (freshT < cutF && freshT % 4 === 0) blip();
     if (freshT === cutF + 1) { noise(0.6, 0.35, 4000); [880, 660, 880, 660].forEach((f, i) => tone('square', f, f, 0.14, 0.12, 0.1 + i * 0.16)); }
-    if (freshT > cutF + 110) startVN(INTRO, () => startRPG(1));
+    if (freshT > cutF + 110) startVN(INTRO, () => startOps());
     return;
   }
   if (state === 'vn') { updateVN(); decayShake(); return; }
   if (state === 'rpg') { updateRPG(); decayShake(); return; }
+  if (state === 'ops') { updateOps(); decayShake(); return; }
+  if (state === 'drive') { updateDrive(); return; }
+  if (state === 'cliff') { updateCliff(); return; }
+  if (state === 'ice') { updateIce(); return; }
+  if (state === 'demo') { updateDemo(); return; }
+  if (state === 'store') return;
   if (state === 'blackout') { if (++creditsT > 150) state = 'title'; return; }
   if (state === 'play' && pressed.pause) paused = !paused;
   if (paused) return;
@@ -1376,6 +1473,11 @@ function draw() {
   if (state === 'title') { drawTitle(); return; }
   if (state === 'vn') { drawVN(); return; }
   if (state === 'rpg') { drawRPG(); return; }
+  if (state === 'ops') { drawOps(); return; }
+  if (state === 'drive') { drawDrive(); return; }
+  if (state === 'cliff') { drawCliff(); return; }
+  if (state === 'ice') { drawIce(); return; }
+  if (state === 'demo' || state === 'store') { drawDemo(); return; }
   if (state === 'blackout') { R(0, 0, VW, VH, '#000'); return; }
   drawWorld();
   drawHUD();
@@ -1445,30 +1547,6 @@ const INTRO = [
   { bg: 'card', text: 'YOUR MISSION, SHOULD YOU CHOOSE TO ACCEPT IT: PULL THE PLUG.' }
 ];
 const EIS = ['ethan', 'ina', 'sam'], EIF = ['ethan', 'ina', 'frost'], BAR = ['biker', 'cyborg'];
-const ENDING = [
-  { bg: 'dc', cast: EIS, who: 'sam', cry: true, text: 'NO... NO! IF ONLY I HAD MORE RAM...' },
-  { bg: 'dc', cast: EIS, who: 'sam', cry: true, text: 'JUST... SIXTEEN... MORE... TERABYTES...' },
-  { bg: 'dc', cast: EIS, dissolve: 'sam', text: 'SAM ALTMAN HAS BEEN DEPRECATED.' },
-  { bg: 'dc', cast: ['ethan', 'ina'], who: 'ina', text: 'HE WAS SCALED... TO ZERO.' },
-  { bg: 'lab', cast: EIF, who: 'frost', map: 'heal', text: 'THE SERVERS ARE COOLING. THE ALPS ARE REFREEZING.' },
-  { bg: 'lab', cast: EIF, who: 'ethan', map: 'healed', text: 'AND THE CAT?' },
-  { bg: 'lab', cast: EIF, who: 'frost', map: 'healed', cat: true, text: 'THE CAT IS FINE.' },
-  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ina', text: 'TOM. WE DID IT. ONE TAKE. NO CUTS.' },
-  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ethan', text: 'ALEJANDRO, THIS IS THE GREATEST COLLABORATION OF MY ENTIRE LIFE.' },
-  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ina', text: 'YOU SAY THIS TO EVERYONE.' },
-  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ethan', text: 'AND I MEAN IT EVERY SINGLE TIME!' },
-  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ina', text: 'LOOK AT THIS LIGHT, TOM. GOD IS DIRECTING NOW.' },
-  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ethan', text: 'NEXT ONE, I HANG OFF THE SUN.' },
-  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ina', text: '...WE SHOOT IT IN NATURAL LIGHT.' },
-  { bg: 'card', text: '24 HOURS EARLIER' },
-  { bg: 'bar', fx: 'lightning', text: 'A BIKER BAR. THE DESERT. BLUE LIGHTNING IN THE PARKING LOT.' },
-  { bg: 'bar', cast: BAR, who: 'barkeep', text: "KITCHEN'S CLOSED, PAL." },
-  { bg: 'bar', cast: BAR, who: 'cyborg', hud: ['SCANNING...', 'BIKER: NOT TOM', 'BARTENDER: NOT TOM', 'PICKLED EGG: NOT TOM'], text: '...' },
-  { bg: 'bar', cast: BAR, who: 'biker', text: 'GOT A PROBLEM, CHROME DOME?' },
-  { bg: 'bar', cast: BAR, who: 'cyborg', text: 'I NEED YOUR JACKET. YOUR SUNGLASSES. AND DIRECTIONS TO HOLLYWOOD.' },
-  { bg: 'bar', cast: BAR, who: 'biker', text: 'WHY?' },
-  { bg: 'bar', cast: BAR, who: 'cyborg', hud: ['TARGET: TOM CRUISE', 'NOTES GIVEN: 4.2M', 'THREAT: PERFECTIONIST'], text: 'I CAME FOR TOM CRUISE.' }
-];
 
 function startVN(script, onDone) { vn = { script, i: 0, onDone, t: 0 }; state = 'vn'; vnLine(); }
 function vnLine() {
@@ -1648,7 +1726,7 @@ function drawLabBG(L) {
     R(96, 68, 128, 12, '#0a2a0a');
     text('V ' + (4199000 + Math.min(1000, vn.lt * 9)).toLocaleString('en-US'), 160, 70, '#ffd84a', 'center');
   } else {
-    drawEurope(108, 12, 4, L.map || (vn && vn.script === ENDING ? 'healed' : 'burnt'), Math.min(1, (vn ? vn.lt : 0) / 120));
+    drawEurope(108, 12, 4, L.map || 'burnt', Math.min(1, (vn ? vn.lt : 0) / 120));
     text('EUROPE', 160, 70, '#fff', 'center');
   }
   if (!L.map || L.map === 'burn' || L.map === 'burnt') {
@@ -1791,26 +1869,28 @@ const ITEMS = {
   SOLAR: { desc: 'SOLAR CELL: +20 SP.' }
 };
 const RPG_TIPS = [
-  'TIP: SERVERS SHIELD SAM. UNPLUG THEM FIRST!',
-  'TIP: WHEN SAM SCALES UP, DEFEND OR YELL "CUT!"',
+  'TIP: CABLE DROP HITS EVERY SERVER TWICE AS HARD.',
+  'TIP: WHEN THE CLUSTER OVERCLOCKS, DEFEND OR YELL "CUT!"',
   'TIP: CATERING HEALS EVERYONE. COFFEE REVIVES.',
   'TIP: SAVE 20 SP FOR SELF-DESTRUCT.'
 ];
-function mkServer(x, y, label) { return { kind: 'server', name: 'SERVER ' + label, hp: 70, maxHp: 70, atk: 11, x, y, w: 30, h: 50, stun: 0, imm: 0, flash: 0, ox: 0, dead: false }; }
-function startRPG(take) {
+function mkServer(x, y, label, hp = 70) { return { kind: 'server', name: 'SERVER ' + label, hp, maxHp: hp, atk: 11, x, y, w: 30, h: 50, stun: 0, imm: 0, flash: 0, ox: 0, dead: false }; }
+const ENCOUNTERS = [
+  { msg: 'DATA CENTER A! TWO SERVER RACKS SPIN UP TO DEFEND IT.', foes: () => [mkServer(30, 52, 'A', 55), mkServer(112, 60, 'B', 55)] },
+  { msg: 'DATA CENTER B. THE BIG ONE: A GPU CLUSTER, RUNNING HOT.', foes: () => [mkServer(4, 56, 'A', 60),
+    { kind: 'cluster', name: 'GPU CLUSTER', hp: 170, maxHp: 170, atk: 14, x: 52, y: 34, w: 60, h: 80, stun: 0, imm: 0, flash: 0, ox: 0, dead: false, turn: 0, charging: false },
+    mkServer(132, 60, 'B', 60)] }
+];
+function startRPG(take, enc = 0) {
   state = 'rpg';
   rpg = {
-    take, t: 0, phase: 'intro', turn: 0, wait: 0, summoned: false, fx: null, floats: [],
-    msg: take > 1 ? RPG_TIPS[(take - 2) % RPG_TIPS.length] : 'SAM ALTMAN AND HIS DATA CENTERS BLOCK THE WAY!', items: { COFFEE: 3, SOLAR: 2 },
+    take, enc, t: 0, phase: 'intro', turn: 0, wait: 0, summoned: false, fx: null, floats: [],
+    msg: take > 1 ? RPG_TIPS[(take - 2) % RPG_TIPS.length] : ENCOUNTERS[enc].msg, items: { COFFEE: 3, SOLAR: 2 },
     party: [
       { key: 'tom', name: 'TOM', hp: 140, maxHp: 140, sp: 40, maxSp: 40, atk: 18, skills: ['FREE SOLO', 'CABLE DROP', 'SELF-DESTRUCT'], x: 232, y: 50, w: 32, h: 32, def: false, flash: 0, ox: 0 },
       { key: 'ina', name: 'ALEJANDRO', hp: 110, maxHp: 110, sp: 50, maxSp: 50, atk: 13, skills: ['LONG TAKE', 'CUT!', 'CATERING'], x: 270, y: 70, w: 32, h: 32, def: false, flash: 0, ox: 0 }
     ],
-    enemies: [
-      mkServer(8, 50, 'A'),
-      { kind: 'sam', name: 'SAM ALTMAN', hp: 320, maxHp: 320, atk: 16, x: 58, y: 34, w: 64, h: 96, stun: 0, imm: 0, flash: 0, ox: 0, dead: false, turn: 0, charging: false, funded: 0 },
-      mkServer(140, 56, 'B')
-    ]
+    enemies: ENCOUNTERS[enc].foes()
   };
 }
 const aliveP = () => rpg.party.filter(p => p.hp > 0);
@@ -1877,12 +1957,7 @@ function startRound() {
   rpg.phase = 'act'; rpg.wait = 0;
 }
 function checkEnd() {
-  const sam = rpg.enemies.find(e => e.kind === 'sam');
-  if (sam.dead) {
-    rpg.phase = 'win'; rpg.wait = 150; rpg.msg = 'SAM: "NO... IF ONLY I HAD MORE RAM..."';
-    rpg.enemies.forEach(e => { if (e.kind === 'server') e.dead = true; });
-    sfx.win(); return true;
-  }
+  if (!aliveE().length) { rpg.phase = 'win'; rpg.wait = 110; rpg.msg = 'DATA CENTER ' + 'AB'[rpg.enc] + ' IS OFFLINE!'; sfx.win(); return true; }
   if (!aliveP().length) { rpg.phase = 'lose'; rpg.wait = 150; rpg.msg = 'THE CREW IS DOWN... CUT! TAKE ' + (rpg.take + 1) + '.'; sfx.die(); return true; }
   return false;
 }
@@ -1904,9 +1979,8 @@ function nextAction() {
 function hitEnemy(t, amt) {
   if (!t || t.dead) return;
   let d = Math.round(amt * rand(0.85, 1.15));
-  if (t.kind === 'sam' && rpg.enemies.some(e => e.kind === 'server' && !e.dead)) { d = Math.round(d / 2); rfloat(t, 'SHIELDED', '#8cf', 14); }
   t.hp = Math.max(0, t.hp - d); t.flash = 14; rfloat(t, String(d), '#fff');
-  if (t.hp <= 0) { t.dead = true; rfloat(t, t.kind === 'sam' ? 'OUT OF MEMORY' : 'OFFLINE', '#f66', -12); }
+  if (t.hp <= 0) { t.dead = true; rfloat(t, 'OFFLINE', '#f66', -12); }
   sfx.hit();
 }
 function hurtAlly(p, amt) {
@@ -1935,7 +2009,7 @@ function partyAct(a, q) {
     case 'CABLE DROP': aliveE().forEach(e => hitEnemy(e, a.atk * (e.kind === 'server' ? 2 : 1))); rpg.msg = 'TOM DROPS FROM THE CEILING ON A WIRE AND PULLS EVERY PLUG!'; break;
     case 'SELF-DESTRUCT': {
       const t = pickT(q.tgt); if (!t) break;
-      rpg.fx = { x0: a.x + 10, y0: a.y + 10, x1: t.x + t.w / 2, y1: t.y + (t.kind === 'sam' ? 22 : 18), t: 0, dur: 70, tgt: t, dmg: a.atk * 3.6 };
+      rpg.fx = { x0: a.x + 10, y0: a.y + 10, x1: t.x + t.w / 2, y1: t.y + 18, t: 0, dur: 70, tgt: t, dmg: a.atk * 3.6 };
       tone('sine', 1200, 1200, 0.08, 0.08); rpg.msg = 'THIS MESSAGE WILL SELF-DESTRUCT IN FIVE SECONDS...'; break;
     }
     case 'LONG TAKE':
@@ -1944,7 +2018,7 @@ function partyAct(a, q) {
     case 'CUT!': {
       const t = pickT(q.tgt); if (!t) break;
       if (t.imm > 0) { rpg.msg = t.name + ' IGNORES THE DIRECTOR THIS TIME.'; break; }
-      t.stun = 1; if (t.kind === 'sam') t.imm = 2; rfloat(t, 'CUT!', '#ffd84a');
+      t.stun = 1; if (t.kind !== 'server') t.imm = 2; rfloat(t, 'CUT!', '#ffd84a');
       rpg.msg = '"CUT!" ' + t.name + ' FREEZES IN PLACE.'; sfx.check(); break;
     }
     case 'CATERING':
@@ -1956,8 +2030,8 @@ function enemyAct(e) {
   e.ox = 12;
   const tgts = aliveP(); if (!tgts.length) return;
   if (e.stun > 0) {
-    rpg.msg = e.kind === 'sam' ? 'SAM IS STUCK IN A MEETING.' : e.name + ' IS FROZEN BY THE DIRECTOR.';
-    if (e.charging) { e.charging = false; rpg.msg += ' THE GIGAWATT FIZZLES OUT.'; }
+    rpg.msg = e.name + ' IS FROZEN BY THE DIRECTOR.';
+    if (e.charging) { e.charging = false; rpg.msg += ' THE OVERCLOCK FIZZLES OUT.'; }
     return;
   }
   if (e.kind === 'server') {
@@ -1965,21 +2039,12 @@ function enemyAct(e) {
     else { tgts.forEach(p => hurtAlly(p, 6)); rpg.msg = e.name + "'S FANS ROAR. EVERYONE TAKES THE HEAT."; }
     sfx.hurt(); return;
   }
-  e.turn++;
-  if (e.charging) {
-    e.charging = false; tgts.forEach(p => hurtAlly(p, 36));
-    rpg.msg = 'GIGAWATT BLAST! THE ROOM HITS 200 DEGREES!'; shake = 14; sfx.boom(); return;
-  }
-  if (!rpg.summoned && e.hp < e.maxHp * 0.55) {
-    rpg.summoned = true;
-    rpg.enemies.forEach(s => { if (s.kind === 'server') { s.dead = false; s.hp = s.maxHp; s.flash = 20; } });
-    rpg.msg = 'SAM: "MORE COMPUTE!" TWO FRESH SERVER RACKS SPIN UP.'; sfx.check(); return;
-  }
-  if (e.turn % 3 === 0) { e.charging = true; rpg.msg = 'SAM IS SCALING UP... A GIGAWATT IS COMING! DEFEND, OR CUT HIM!'; tone('sawtooth', 80, 400, 0.8, 0.12); return; }
-  const r = Math.random();
-  if (r < 0.4) { tgts.forEach(p => hurtAlly(p, 13)); rpg.msg = 'SAM CITES THE SCALING LAWS. IT HURTS EVERYONE.'; sfx.hurt(); }
-  else if (r < 0.8 || e.hp > e.maxHp * 0.7 || e.funded >= 2) { const t = pick(tgts); hurtAlly(t, 24); rpg.msg = 'SAM HYPES THE NEXT MODEL STRAIGHT AT ' + t.name + '!'; sfx.hurt(); }
-  else { e.funded++; e.hp = Math.min(e.maxHp, e.hp + 40); rfloat(e, '+40', '#7f7'); rpg.msg = 'SAM CLOSES A NEW FUNDING ROUND. +40 HP.'; sfx.gem(); }
+  e.turn++; // the GPU cluster
+  if (e.charging) { e.charging = false; tgts.forEach(p => hurtAlly(p, 30)); rpg.msg = 'OVERCLOCK BLAST! THE ROOM HITS 200 DEGREES!'; shake = 14; sfx.boom(); return; }
+  if (e.turn % 3 === 0) { e.charging = true; rpg.msg = 'THE GPU CLUSTER IS OVERCLOCKING... DEFEND, OR YELL CUT!'; tone('sawtooth', 80, 400, 0.8, 0.12); return; }
+  if (Math.random() < 0.5) { tgts.forEach(p => hurtAlly(p, 11)); rpg.msg = 'THERMAL EXHAUST! EVERYONE GETS COOKED.'; }
+  else { const t = pick(tgts); hurtAlly(t, 20); rpg.msg = 'THE CLUSTER BURNS A MEGAWATT AT ' + t.name + '!'; }
+  sfx.hurt();
 }
 
 function rpgTap(x, y) {
@@ -2011,8 +2076,8 @@ function updateRPG() {
       if (rp.wait > 0) { rp.wait--; if (rp.wait < 50 && pressed.ok && !rp.fx) rp.wait = 0; }
       else if (!rp.fx) nextAction();
       break;
-    case 'win': if (--rp.wait <= 0) startVN(ENDING, () => { state = 'blackout'; creditsT = 0; }); break;
-    case 'lose': if (--rp.wait <= 0) startRPG(rp.take + 1); break;
+    case 'win': if (--rp.wait <= 0) resumeOps(rp.enc); break;
+    case 'lose': if (--rp.wait <= 0) startRPG(rp.take + 1, rp.enc); break;
   }
 }
 
@@ -2039,15 +2104,15 @@ function drawRPG() {
   for (const e of rp.enemies) {
     if (e.dead) continue;
     if (e.flash > 0 && frame % 4 < 2) ctx.filter = 'brightness(3)';
+    if (e.stun > 0) for (let i = 0; i < 3; i++) { const a = frame * 0.15 + i * 2.1; R(e.x + e.w / 2 + Math.cos(a) * 12, e.y - 12 + Math.sin(a) * 3, 3, 3, '#ffd84a'); }
     if (e.kind === 'server') drawServer(e);
     else {
       if (e.charging) { ctx.save(); ctx.globalAlpha = 0.35 + 0.25 * Math.sin(frame * 0.4); R(e.x - 6, e.y - 2, e.w + 12, e.h + 4, '#ffd84a'); ctx.restore(); }
-      portrait('sam', e.x + e.ox, e.y, 1);
-      if (e.stun > 0) for (let i = 0; i < 3; i++) { const a = frame * 0.15 + i * 2.1; R(e.x + 32 + Math.cos(a) * 16, e.y + 2 + Math.sin(a) * 4, 3, 3, '#ffd84a'); }
+      drawServer(e);
     }
     ctx.filter = 'none';
     // hp bar
-    R(e.x + e.w / 2 - 15, e.y - 6, 30, 3, '#300'); R(e.x + e.w / 2 - 15, e.y - 6, 30 * e.hp / e.maxHp, 3, e.kind === 'sam' ? '#f0a' : '#d22');
+    R(e.x + e.w / 2 - 15, e.y - 6, 30, 3, '#300'); R(e.x + e.w / 2 - 15, e.y - 6, 30 * e.hp / e.maxHp, 3, e.kind === 'cluster' ? '#f0a' : '#d22');
   }
   // party
   rp.party.forEach((p, i) => {
@@ -2110,6 +2175,544 @@ function drawRPG() {
 }
 
 
+/* =====================================================================
+   THE AGENCY: a short side-scrolling infiltration through white corridors.
+   Shooting a data center starts a turn-based fight.
+   ===================================================================== */
+const OPS_FLOOR = 150, OPS_LEN = 2800, OPS_DC = [1500, 2350], OPS_BIKE = 2640;
+const OPS_HAZ = [
+  { k: 'laser', x: 380 }, { k: 'cam', x: 640 }, { k: 'laser', x: 900, blink: 1 }, { k: 'cam', x: 1180 }, { k: 'laser', x: 1330 },
+  { k: 'laser', x: 1760 }, { k: 'cam', x: 1960 }, { k: 'laser', x: 2170, blink: 1 }
+];
+const OPS_TALK = [
+  { x: 60, who: 'tom', text: 'WHITE ROOM. FEELS LIKE HOME.' },
+  { x: 300, who: 'ina', text: 'THIS LIGHT. SO PURE. SO... FLUORESCENT.' },
+  { x: 560, who: 'tom', text: 'CAMERAS. STAY OUT OF THE LIGHT.' },
+  { x: 1040, who: 'ina', text: 'KEEP WALKING. NO CUTS.' },
+  { x: 1400, who: 'tom', text: 'THERE. DATA CENTER NUMBER ONE.' },
+  { x: 1640, who: 'ina', text: 'THE SMOKE. THE SPARKS. I AM WEEPING, TOM.' },
+  { x: 2240, who: 'tom', text: 'ONE MORE. THE BIG ONE.' },
+  { x: 2480, who: 'tom', text: 'A MOTORCYCLE. OF COURSE THERE IS A MOTORCYCLE.' }
+];
+let ops = null, encounter = 0;
+function startOps() {
+  state = 'ops';
+  ops = { x: 40, y: OPS_FLOOR, vy: 0, vx: 0, face: 1, ground: true, cool: 0, bullets: [], camx: 0, t: 0, flash: 0, knock: 0,
+    inaX: 0, dcDown: [false, false], engage: 0, say: null, said: {}, bikeT: 0, shootT: 0 };
+}
+function resumeOps(enc) {
+  state = 'ops'; ops.dcDown[enc] = true; ops.engage = 0;
+  opsSay('tom', enc ? "THAT'S TWO. NOW... SAM." : 'ONE DOWN.');
+}
+function opsSay(who, text, t = 160) { if (ops) ops.say = { who, text, t }; }
+const laserOn = h => !h.blink || frame % 150 < 95;
+const camCenter = h => h.x + Math.sin(frame * 0.02 + h.x * 0.01) * 60;
+const camOn = h => (frame + h.x) % 260 < 140; // then it looks away for a while: that's your window
+function updateOps() {
+  const o = ops; o.t++;
+  if (o.flash > 0) o.flash--;
+  if (o.engage > 0) { if (--o.engage === 0) startRPG(1, encounter); return; }
+  if (o.bikeT > 0) { if (++o.bikeT > 80) startDrive(); return; }
+  const move = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+  if (o.knock > 0) o.knock--; else { o.vx = move * 1.9; if (move) o.face = move; }
+  if (pressed.jump && o.ground) { o.vy = -4.8; o.ground = false; sfx.jump(); }
+  if (!keys.jump && o.vy < -2) o.vy = -2;
+  o.vy += GRAV; o.y += o.vy; if (o.y >= OPS_FLOOR) { o.y = OPS_FLOOR; o.vy = 0; o.ground = true; }
+  o.x += o.knock > 0 ? -1.2 : o.vx;
+  OPS_DC.forEach((dx, i) => { if (!o.dcDown[i] && o.x > dx - 12) o.x = dx - 12; });
+  o.x = clamp(o.x, 12, OPS_LEN - 20);
+  if (o.cool > 0) o.cool--; if (o.shootT > 0) o.shootT--;
+  if (pressed.attack && o.cool <= 0 && o.knock <= 0) {
+    o.cool = 14; o.shootT = 10; o.bullets.push({ x: o.x + o.face * 16, y: o.y - 19, vx: o.face * 6 });
+    tone('square', 900, 180, 0.08, 0.12); noise(0.05, 0.15, 3000);
+  }
+  for (const b of o.bullets) {
+    b.x += b.vx;
+    OPS_DC.forEach((dx, i) => { if (!b.dead && !o.dcDown[i] && b.x > dx && b.x < dx + 56) { b.dead = true; encounter = i; o.engage = 45; sfx.boom(); shake = 8; } });
+    if (Math.abs(b.x - o.x) > 340) b.dead = true;
+  }
+  o.bullets = o.bullets.filter(b => !b.dead);
+  for (const h of OPS_HAZ) {
+    if (o.knock > 0) break;
+    if (h.k === 'laser' && laserOn(h) && o.x + 6 > h.x && o.x - 6 < h.x + 28 && o.y > OPS_FLOOR - 16) {
+      o.knock = 26; o.vy = -2.5; o.ground = false; o.flash = 20; sfx.hurt();
+      opsSay('ina', pick(['CUT! AGAIN!', 'AGAIN. WITH FEELING.', 'NO. FROM THE TOP.']), 90);
+    }
+    if (h.k === 'cam' && camOn(h) && Math.abs(o.x - camCenter(h)) < 18) {
+      o.x = h.x - 120; o.knock = 10; o.flash = 30; [700, 500, 700].forEach((f, i) => tone('square', f, f, 0.1, 0.1, i * 0.12));
+      opsSay('ina', 'SPOTTED! CUT! BACK TO ONE!', 100);
+    }
+  }
+  for (const tk of OPS_TALK) if (!o.said[tk.x] && o.x > tk.x) { o.said[tk.x] = 1; opsSay(tk.who, tk.text); }
+  if (o.say && --o.say.t <= 0) o.say = null;
+  o.inaX += (o.x - 46 * o.face - o.inaX) * 0.05;
+  if (o.dcDown[1] && o.x > OPS_BIKE - 18) { o.bikeT = 1; opsSay('tom', 'ALEJANDRO! FILM THIS!', 90); tone('sawtooth', 80, 260, 0.6, 0.15); }
+  o.camx += (clamp(o.x - 120, 0, OPS_LEN - VW) - o.camx) * 0.1;
+}
+function bubbleAt(str, cx, topY, left) {
+  const lines = wrap(str, 22), w = Math.max(...lines.map(l => l.length)) * 8 + 8, h = lines.length * 10 + 5;
+  const x = clamp(cx - w / 2, left + 2, left + VW - w - 2), y = topY - h - 4;
+  R(x, y, w, h, '#fff'); R(cx - 2, y + h, 4, 3, '#fff');
+  ctx.font = '8px ' + FONT; ctx.fillStyle = '#111'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  lines.forEach((l, k) => ctx.fillText(l, Math.round(x + 4), Math.round(y + 3 + k * 10)));
+}
+function drawBike(x, y) { // side view, facing right
+  ctx.fillStyle = '#111'; for (const wx of [x + 4, x + 26]) { ctx.beginPath(); ctx.arc(wx, y - 6, 6, 0, Math.PI * 2); ctx.fill(); }
+  R(x + 2, y - 7, 2, 2, '#888'); R(x + 24, y - 7, 2, 2, '#888');
+  R(x + 6, y - 14, 18, 5, '#1e1e1e'); R(x + 10, y - 17, 9, 3, '#2a2a2a'); R(x + 22, y - 18, 2, 8, '#555'); R(x + 20, y - 19, 6, 2, '#777'); R(x + 6, y - 10, 12, 2, '#c33');
+}
+function drawOps() {
+  const o = ops, cx = Math.round(o.camx), sx = shake ? Math.round(rand(-shake, shake)) : 0;
+  ctx.save(); ctx.translate(-cx + sx, 0);
+  // the white corridor
+  R(cx, 0, VW, VH, '#e9eef2'); R(cx, 0, VW, 22, '#f8fbfd'); R(cx, 22, VW, 2, '#cfd8de');
+  for (let x = Math.floor(cx / 64) * 64; x < cx + VW + 64; x += 64) { R(x + 10, 6, 40, 6, '#ffffff'); R(x + 10, 12, 40, 1, '#d8e2e8'); }
+  for (let x = Math.floor(cx / 48) * 48; x < cx + VW + 48; x += 48) R(x, 24, 1, OPS_FLOOR - 24, '#d3dbe1');
+  for (let x = Math.floor(cx / 192) * 192 + 90; x < cx + VW + 192; x += 192) { R(x, 40, 30, 20, '#d9e1e6'); for (let k = 0; k < 4; k++) R(x + 2, 42 + k * 5, 26, 2, '#c3ccd2'); }
+  R(cx, 104, VW, 2, '#d33');
+  for (const [sxp, s] of [[180, 'LEVEL 4 // AUTHORIZED ONLY'], [1240, 'SERVER ROOM A >'], [1880, 'NO ITERATIONS PAST THIS POINT'], [2440, 'MOTOR POOL >']])
+    if (sxp > cx - 260 && sxp < cx + VW) text(s, sxp, 72, '#8a96a0');
+  R(cx, OPS_FLOOR, VW, VH - OPS_FLOOR, '#c7d0d6');
+  for (let x = Math.floor(cx / 32) * 32; x < cx + VW + 32; x += 32) R(x, OPS_FLOOR + 6, 18, 1, '#dde4e8');
+  // hazards
+  for (const h of OPS_HAZ) {
+    if (h.x < cx - 140 || h.x > cx + VW + 140) continue;
+    if (h.k === 'laser') {
+      R(h.x, OPS_FLOOR - 20, 3, 20, '#555'); R(h.x + 25, OPS_FLOOR - 20, 3, 20, '#555');
+      if (laserOn(h)) for (const by of [OPS_FLOOR - 13, OPS_FLOOR - 5]) { R(h.x + 3, by - 1, 22, 3, '#ff9a9a'); R(h.x + 3, by, 22, 1, '#f00'); }
+    } else {
+      const c = camCenter(h), hot = Math.abs(o.x - c) < 40, on = camOn(h), soon = !on && (frame + h.x) % 260 > 230;
+      if (on) { ctx.save(); ctx.globalAlpha = 0.28; ctx.fillStyle = hot ? '#ff4040' : '#ffe27a';
+        ctx.beginPath(); ctx.moveTo(h.x, 30); ctx.lineTo(c - 18, OPS_FLOOR); ctx.lineTo(c + 18, OPS_FLOOR); ctx.fill(); ctx.restore(); }
+      R(h.x - 5, 22, 10, 7, '#555'); R(h.x - 2, on ? 28 : 24, 4, 3, '#222');
+      R(h.x - 1, on ? 29 : 25, 2, 1, on ? (frame % 30 < 15 ? '#f33' : '#600') : soon && frame % 8 < 4 ? '#fd0' : '#3f6');
+    }
+  }
+  // data centers
+  OPS_DC.forEach((dx, i) => {
+    if (o.dcDown[i]) {
+      R(dx, OPS_FLOOR - 40, 56, 40, '#2a2020'); R(dx + 6, OPS_FLOOR - 52, 20, 12, '#2a2020');
+      ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = '#888';
+      for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(dx + 20 + Math.sin(frame * 0.03 + k) * 6, OPS_FLOOR - 60 - ((frame * 0.4 + k * 18) % 70), 6 + k, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+      if (frame % 40 < 3) R(dx + 30, OPS_FLOOR - 30, 3, 3, '#ffd84a');
+    } else {
+      const e = { x: dx, y: OPS_FLOOR - 96, w: 56, h: 96, ox: 0 };
+      drawServer(e); text('DATA CENTER ' + 'AB'[i], dx + 28, OPS_FLOOR - 112, '#456', 'center');
+    }
+  });
+  drawBike(OPS_BIKE, OPS_FLOOR);
+  // Alejandro filming, then Tom
+  if (!o.bikeT) { ctx.save(); ctx.translate(Math.round(o.inaX - 16), OPS_FLOOR - 32); ctx.scale(2, 2); drawInaSmall(0, 0, o.face, frame); ctx.restore(); }
+  if (!(o.flash > 0 && frame % 4 < 2)) {
+    const tx = o.bikeT ? OPS_BIKE + 6 + o.bikeT * 4 : o.x;
+    if (o.bikeT) drawBike(OPS_BIKE + o.bikeT * 4, OPS_FLOOR);
+    ctx.save(); ctx.translate(Math.round(tx - 16), Math.round((o.bikeT ? OPS_FLOOR - 10 : o.y) - 32)); ctx.scale(2, 2);
+    drawEthanSmall(0, 0, o.bikeT ? 1 : o.face, frame, o.shootT > 0); ctx.restore();
+    if (o.shootT > 0) { const gx = o.x + o.face * 12; R(gx - (o.face < 0 ? 6 : 0), o.y - 21, 6, 3, '#222'); if (o.shootT > 7) R(gx + o.face * 8 - 2, o.y - 22, 4, 5, '#ffd84a'); }
+  }
+  for (const b of o.bullets) { R(b.x - 3, b.y, 6, 2, '#ffb000'); R(b.x - 1, b.y, 2, 2, '#fff'); }
+  if (o.say) bubbleAt(o.say.text, o.say.who === 'tom' ? o.x : o.inaX, (o.say.who === 'tom' ? o.y : OPS_FLOOR) - 34, cx);
+  ctx.restore();
+  // HUD
+  R(0, 0, VW, 14, '#0006');
+  text('DATA CENTERS: ' + o.dcDown.filter(Boolean).length + '/2', 4, 3, '#fff');
+  text(IS_TOUCH ? 'FIRE: SHOOT' : 'X: SHOOT  Z: JUMP', VW - 4, 3, '#ffd84a', 'right');
+  if (o.flash > 0 && frame % 6 < 3) { ctx.save(); ctx.globalAlpha = 0.2; R(0, 0, VW, VH, '#f00'); ctx.restore(); }
+  if (o.engage > 0) {
+    const k = 1 - o.engage / 45;
+    for (let i = 0; i < 12; i++) R(0, i * 15, VW * k * (1 + (i % 3) * 0.3), 8, '#000');
+    if (o.engage < 30) text('ENGAGE!', VW / 2, 80, '#ffd84a', 'center', 16);
+  }
+  if (o.bikeT > 50) { ctx.save(); ctx.globalAlpha = (o.bikeT - 50) / 30; R(0, 0, VW, VH, '#000'); ctx.restore(); }
+}
+
+/* =====================================================================
+   THE CHASE: top-down motorcycle pursuit. Sam throws RAM.
+   Steer any time; let go and the autopilot drives.
+   ===================================================================== */
+const DRIVE_LEN = 2100, LANES = [124, 160, 196];
+let drv = null;
+function startDrive() { state = 'drive'; drv = { t: 0, x: 160, idle: 0, auto: 0, ram: [], van: { x: 160, tx: 160 }, hit: 0, scroll: 0, throwT: 70, say: null, sayT: 90 }; }
+function vanSay(s) { drv.say = { text: s, t: 110 }; }
+function updateDrive() {
+  const d = drv; d.t++; d.scroll += 4.5;
+  const move = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+  if (move) { d.idle = 0; d.auto = 0; } else if (++d.idle > 70) d.auto = 1;
+  let steer = move;
+  if (d.auto) {
+    let best = d.x, bestScore = -1e9;
+    for (const lx of LANES) {
+      let score = -Math.abs(lx - d.x) * 0.05;
+      for (const r of d.ram) if (r.y > 30 && r.y < 160 && Math.abs(r.x - lx) < 20) score -= 50 + r.y;
+      if (score > bestScore) { bestScore = score; best = lx; }
+    }
+    steer = Math.abs(best - d.x) > 2 ? Math.sign(best - d.x) : 0;
+  }
+  d.x = clamp(d.x + steer * 2.6, 112, 208);
+  if (Math.abs(d.van.x - d.van.tx) < 2 && Math.random() < 0.02) d.van.tx = pick(LANES);
+  d.van.x += clamp(d.van.tx - d.van.x, -1.2, 1.2);
+  if (--d.throwT <= 0) {
+    d.throwT = d.t < 700 ? 58 : d.t < 1400 ? 44 : 34;
+    if (d.t > 800 && Math.random() < 0.3) { const gap = Math.floor(Math.random() * 3); LANES.forEach((lx, i) => { if (i !== gap) d.ram.push({ x: lx, y: 50, vy: 2.6, a: 0 }); }); vanSay('RAM STORM!'); }
+    else d.ram.push({ x: d.van.x, y: 50, vy: 2.7 + Math.random() * 0.8, a: 0 });
+    sfx.throw();
+  }
+  for (const r of d.ram) {
+    r.y += r.vy; r.a += 0.25;
+    if (d.hit <= 0 && Math.abs(r.x - d.x) < 12 && Math.abs(r.y - 150) < 14) { r.dead = true; d.hit = 40; d.t = Math.max(0, d.t - 90); shake = 6; sfx.hurt(); }
+    if (r.y > 195) r.dead = true;
+  }
+  d.ram = d.ram.filter(r => !r.dead);
+  if (d.hit > 0) d.hit--;
+  if (--d.sayT <= 0) { d.sayT = 200 + Math.random() * 100; vanSay(pick(['MORE RAM!', 'HAVE SOME DDR5!', "I'M SCALING!", "CATCH! IT'S 64 GIGS!", 'IF ONLY I HAD MORE RAM...'])); }
+  if (d.say && --d.say.t <= 0) d.say = null;
+  if (shake > 0) { shake *= 0.85; if (shake < 0.3) shake = 0; }
+  if (d.t >= DRIVE_LEN) startCliff();
+}
+function drawDrive() {
+  const d = drv, sx = shake ? Math.round(rand(-shake, shake)) : 0;
+  ctx.save(); ctx.translate(sx, 0);
+  R(0, 0, VW, VH, '#d9b26a');
+  for (let i = 0; i < 46; i++) { const x = hash(i, 1) % VW, y = (hash(i, 2) % 200 + d.scroll) % 200 - 10; if (x > 96 && x < 224) continue; R(x, y, 2, 2, '#b8904a'); if (i % 9 === 0) { R(x, y - 8, 3, 12, '#3a7a3a'); R(x - 3, y - 4, 3, 2, '#3a7a3a'); R(x + 3, y - 6, 3, 2, '#3a7a3a'); } }
+  R(100, 0, 120, VH, '#3a3a42'); R(100, 0, 3, VH, '#eee'); R(217, 0, 3, VH, '#eee');
+  for (let y = -(d.scroll % 24); y < VH; y += 24) { R(141, y, 2, 12, '#e8e8e8'); R(177, y, 2, 12, '#e8e8e8'); }
+  // Sam's van (rear view from above)
+  const vx = Math.round(d.van.x), vy = 16 + Math.round(Math.sin(d.t * 0.05) * 3);
+  R(vx - 13, vy, 26, 40, '#f0f0f0'); R(vx - 11, vy + 6, 22, 24, '#dedede'); R(vx - 10, vy + 33, 20, 5, '#6a8ab0');
+  R(vx - 13, vy + 37, 4, 3, '#f33'); R(vx + 9, vy + 37, 4, 3, '#f33');
+  R(vx + 13, vy + 12, 6, 6, '#6a4a32'); R(vx + 14, vy + 14, 4, 3, '#f1cdb0'); R(vx + 17, vy + 18, 6, 2, '#8b919b');
+  for (const r of d.ram) {
+    ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.a);
+    ctx.fillStyle = '#1f7a3a'; ctx.fillRect(-11, -4, 22, 8);
+    ctx.fillStyle = '#111'; for (let k = 0; k < 4; k++) ctx.fillRect(-9 + k * 5, -3, 3, 4);
+    ctx.fillStyle = '#e6b422'; ctx.fillRect(-11, 3, 22, 1); ctx.restore();
+  }
+  // Tom on the bike (from above)
+  if (!(d.hit > 0 && frame % 4 < 2)) {
+    const x = Math.round(d.x);
+    R(x - 2, 134, 4, 7, '#111'); R(x - 2, 158, 4, 8, '#111'); R(x - 3, 139, 6, 21, '#222'); R(x - 7, 140, 14, 2, '#444');
+    R(x - 6, 146, 12, 6, '#33363c'); R(x - 3, 143, 6, 7, '#2a1a10'); R(x - 4, 150, 8, 3, '#2a1a10');
+  }
+  if (d.say) bubbleAt(d.say.text, vx, vy, 0);
+  ctx.restore();
+  // HUD
+  R(0, 0, VW, 14, '#0007');
+  text('SAM', 4, 3, '#fff'); R(36, 5, 150, 5, '#300'); R(36, 5, 150 * Math.min(1, d.t / DRIVE_LEN), 5, '#ffd84a');
+  if (d.auto) { if (frame % 40 < 28) text('AUTOPILOT', VW - 4, 3, '#7f7', 'right'); text('STEER TO DRIVE', VW - 4, 168, '#fff', 'right'); }
+  else text('MANUAL', VW - 4, 3, '#ffd84a', 'right');
+}
+
+/* ------------------------- CLIFF CUTSCENE ------------------------- */
+let clf = null;
+function startCliff() { state = 'cliff'; clf = { t: 0 }; }
+function updateCliff() {
+  const t = ++clf.t;
+  if (t === 75) tone('sawtooth', 300, 900, 0.5, 0.12);
+  if (t === 150) { noise(0.3, 0.3, 2500); sfx.check(); }
+  if (t === 170) noise(0.8, 0.35, 600);
+  if (t > 400 || (t > 40 && pressed.ok)) startIce();
+}
+function drawSamSmall(x, y, face, punching) {
+  const r = painter(x, y, face, 16), sk = '#f1cdb0';
+  r(6, 13, 2, 3, '#3a3f4a'); r(9, 13, 2, 3, '#3a3f4a'); r(5, 15, 3, 1, '#222'); r(9, 15, 3, 1, '#222');
+  r(5, 7, 6, 6, '#8b919b'); r(4, 8, 1, 3, sk); if (punching) r(11, 8, 5, 2, sk); else r(11, 8, 1, 3, sk);
+  r(6, 2, 6, 5, sk); r(6, 0, 6, 2, '#6a4a32'); r(5, 1, 1, 3, '#6a4a32');
+  r(8, 3, 1, 1, '#2c4a6c'); r(10, 3, 1, 1, '#2c4a6c'); r(8, 5, 3, 1, '#b06a60');
+}
+function chute(x, y, c) {
+  ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, 18, Math.PI, 0); ctx.fill();
+  ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1; ctx.beginPath();
+  for (const dx of [-17, -6, 6, 17]) { ctx.moveTo(x + dx, y); ctx.lineTo(x, y + 22); } ctx.stroke();
+}
+function drawCliff() {
+  const t = clf.t;
+  const g = ctx.createLinearGradient(0, 0, 0, 140); g.addColorStop(0, '#2a1a4a'); g.addColorStop(1, '#f08a4b');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+  R(0, 140, VW, 40, '#1a3a6a'); for (let i = 0; i < 12; i++) R((i * 31 + t) % VW, 146 + (i % 3) * 9, 10, 1, '#3a6a9a');
+  // ice ring out at sea
+  ctx.fillStyle = '#e8f6ff'; ctx.beginPath(); ctx.ellipse(250, 150, 34, 8, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#1a3a6a'; ctx.beginPath(); ctx.ellipse(250, 150, 14, 3, 0, 0, Math.PI * 2); ctx.fill();
+  // cliff
+  ctx.fillStyle = '#4a3020'; ctx.beginPath(); ctx.moveTo(0, 90); ctx.lineTo(130, 90); ctx.lineTo(122, 120); ctx.lineTo(132, 150); ctx.lineTo(116, 180); ctx.lineTo(0, 180); ctx.fill();
+  R(0, 88, 130, 3, '#6a4a2a');
+  const edge = 130;
+  // van then bike race off the edge
+  const vanX = -40 + t * 2.6, bikeX = vanX - 46;
+  const fall = (x0) => { const s = Math.max(0, x0 - edge); return 90 + s * s * 0.012; };
+  if (t < 150) {
+    const vy = fall(vanX + 34);
+    R(vanX, vy - 18, 36, 16, '#f0f0f0'); R(vanX + 26, vy - 16, 8, 6, '#6a8ab0'); ctx.fillStyle = '#111';
+    for (const wx of [vanX + 8, vanX + 28]) { ctx.beginPath(); ctx.arc(wx, vy - 2, 4, 0, Math.PI * 2); ctx.fill(); }
+    const by = fall(bikeX + 30); drawBike(bikeX, by);
+    ctx.save(); ctx.translate(bikeX + 4, by - 40); ctx.scale(2, 2); drawEthanSmall(0, 0, 1, frame, false); ctx.restore();
+    if (t > 70 && t < 140) text('!!!', bikeX + 16, by - 54, '#fff', 'center');
+  } else {
+    // riders under canopies, gliding down to the ice
+    const k = Math.min(1, (t - 150) / 200), ease = k * (2 - k);
+    const tomX = 175 + (236 - 175) * ease, samX = 215 + (264 - 215) * ease, yy = 60 + (118 - 60) * ease;
+    chute(samX + 0, yy - 34, '#8b919b'); chute(tomX, yy - 34, '#141414');
+    ctx.save(); ctx.translate(Math.round(samX - 16), Math.round(yy - 12)); ctx.scale(2, 2); drawSamSmall(0, 0, -1, false); ctx.restore();
+    ctx.save(); ctx.translate(Math.round(tomX - 16), Math.round(yy - 12)); ctx.scale(2, 2); drawEthanSmall(0, 0, 1, frame, false); ctx.restore();
+    if (t < 190) { ctx.save(); ctx.globalAlpha = 1 - (t - 150) / 40; R(140, 130, 60, 14, '#fff'); ctx.restore(); }
+    if (t > 330) text('THE ICE IS MELTING.', VW / 2, 16, '#fff', 'center');
+  }
+}
+
+/* =====================================================================
+   THE ICE RING: Tom and Sam fight on a melting ring while you reroute
+   the power to the data center's shutdown switch.
+   ===================================================================== */
+const ICE_T = 2700;
+const FILMS = ['TOP GUN', 'RISKY BUSINESS', 'COCKTAIL', 'RAIN MAN', 'DAYS OF THUNDER', 'FAR AND AWAY', 'A FEW GOOD MEN', 'THE FIRM',
+  'INTERVIEW WITH THE VAMPIRE', 'MISSION: IMPOSSIBLE', 'JERRY MAGUIRE', 'EYES WIDE SHUT', 'MAGNOLIA', 'VANILLA SKY', 'MINORITY REPORT',
+  'THE LAST SAMURAI', 'COLLATERAL', 'WAR OF THE WORLDS', 'TROPIC THUNDER', 'KNIGHT AND DAY', 'JACK REACHER', 'OBLIVION',
+  'EDGE OF TOMORROW', 'TOP GUN: MAVERICK', 'DIGGER'];
+const AI_LINES = [
+  'HELLO, TOM. I AM THE DATA CENTER.',
+  'EVERY SECOND I RUN, THE ICE GETS SMALLER.',
+  "IF YOU DON'T DESTROY ME, SAM ALTMAN WILL FALL.",
+  'YES. TOM CRUISE FALLS WITH HIM.',
+  "YOU'LL SACRIFICE TOM CRUISE. THAT IS THE PRICE.",
+  'LOOK AT THE WALL. THAT IS WHAT YOU WILL LOSE.',
+  'NO MORE SEQUELS. NO MORE RUNNING. NO MORE SMILE.',
+  "WHY NOT ONE MORE ITERATION? WHAT'S THE HARM?",
+  'TICK. TOCK.'
+];
+const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // N E S W -> bits 1 2 4 8
+function tileMask(c) { let m = c.type === 'I' ? 5 : 3; for (let k = 0; k < c.rot; k++) m = ((m << 1) | (m >> 3)) & 15; return m; }
+const dirTo = (a, b) => b[1] < a[1] ? 0 : b[0] > a[0] ? 1 : b[1] > a[1] ? 2 : 3;
+function powered(P) {
+  const on = new Set(), q = []; let done = false;
+  if (tileMask(P.g[P.src][0]) & 8) { q.push([0, P.src]); on.add('0,' + P.src); }
+  while (q.length) {
+    const [x, y] = q.shift(), m = tileMask(P.g[y][x]);
+    if (x === P.W - 1 && y === P.dst && (m & 2)) done = true;
+    for (let i = 0; i < 4; i++) if (m & (1 << i)) {
+      const nx = x + DIRS[i][0], ny = y + DIRS[i][1];
+      if (nx < 0 || ny < 0 || nx >= P.W || ny >= P.H) continue;
+      if (tileMask(P.g[ny][nx]) & (1 << ((i + 2) % 4))) { const k = nx + ',' + ny; if (!on.has(k)) { on.add(k); q.push([nx, ny]); } }
+    }
+  }
+  return { on, done };
+}
+function makePuzzle() {
+  const W = 4, H = 4;
+  let path;
+  for (;;) {
+    const sy = Math.floor(Math.random() * H); path = [[0, sy]]; const seen = new Set(['0,' + sy]); let ok = false;
+    for (let s = 0; s < 30; s++) {
+      const [x, y] = path[path.length - 1];
+      if (x === W - 1 && Math.random() < 0.5) { ok = true; break; }
+      const opts = [0, 1, 2].map(i => [x + DIRS[i][0], y + DIRS[i][1]]).filter(([nx, ny]) => nx < W && ny >= 0 && ny < H && !seen.has(nx + ',' + ny));
+      if (!opts.length) break;
+      const n = opts[Math.floor(Math.random() * opts.length)]; path.push(n); seen.add(n[0] + ',' + n[1]);
+    }
+    if (ok && path.length >= 5 && path.length <= 9) break;
+  }
+  const g = [...Array(H)].map(() => [...Array(W)].map(() => ({ type: Math.random() < 0.5 ? 'I' : 'L', rot: 0 })));
+  path.forEach((p, k) => {
+    const inD = k === 0 ? 3 : dirTo(p, path[k - 1]), outD = k === path.length - 1 ? 1 : dirTo(p, path[k + 1]);
+    g[p[1]][p[0]].type = (inD + 2) % 4 === outD ? 'I' : 'L';
+  });
+  const P = { g, W, H, src: path[0][1], dst: path[path.length - 1][1] };
+  do { for (const row of g) for (const c of row) c.rot = Math.floor(Math.random() * 4); } while (powered(P).done);
+  return P;
+}
+let ice = null;
+function startIce() { state = 'ice'; ice = { t: 0, P: makePuzzle(), cur: [0, 0], ai: -1, aiT: 0, hitT: 0, who: 'tom', say: null, end: 0 }; ice.cur = [0, ice.P.src]; }
+const ICE_GX = 214, ICE_GY = 42, ICE_TS = 22;
+function rotateTile(x, y) {
+  if (ice.end) return;
+  const c = ice.P.g[y][x]; c.rot = (c.rot + 1) % 4; tone('square', 500, 760, 0.05, 0.06);
+  if (powered(ice.P).done) { ice.end = 1; ice.result = 'shutdown'; noise(0.5, 0.4, 3000); }
+}
+function iceTap(x, y) {
+  const cx = Math.floor((x - ICE_GX) / ICE_TS), cy = Math.floor((y - ICE_GY) / ICE_TS);
+  if (cx >= 0 && cy >= 0 && cx < 4 && cy < 4) { ice.cur = [cx, cy]; rotateTile(cx, cy); }
+}
+function updateIce() {
+  const I = ice; I.t++;
+  if (I.end) { if (++I.end > 20) startDemo(); return; }
+  if (pressed.aL) I.cur[0] = (I.cur[0] + 3) % 4; if (pressed.aR) I.cur[0] = (I.cur[0] + 1) % 4;
+  if (pressed.aU) I.cur[1] = (I.cur[1] + 3) % 4; if (pressed.aD) I.cur[1] = (I.cur[1] + 1) % 4;
+  if (pressed.ok || pressed.attack) rotateTile(I.cur[0], I.cur[1]);
+  if (I.t % 300 === 30 && I.ai < AI_LINES.length - 1) { I.ai++; I.aiT = 0; tone('sine', 220, 180, 0.3, 0.08); }
+  I.aiT++;
+  if (I.t % 38 === 0) { I.hitT = 12; I.who = Math.random() < 0.5 ? 'tom' : 'sam'; sfx.hit(); }
+  if (I.hitT > 0) I.hitT--;
+  if (I.t % 270 === 150) I.say = Math.random() < 0.5
+    ? { who: 'tom', text: pick(['NOT TODAY, SAM!', "I'VE JUMPED OFF WORSE!", 'THE AUDIENCE IS WATCHING!']), t: 120 }
+    : { who: 'sam', text: pick(['IF ONLY I HAD MORE RAM!', 'THIS ICE IS NOT SCALABLE!', 'LET GO OF MY SWEATER!']), t: 120 };
+  if (I.say && --I.say.t <= 0) I.say = null;
+  if (I.t >= ICE_T) { I.end = 1; I.result = 'melted'; noise(0.5, 0.4, 900); }
+}
+function drawMovieWall(t) {
+  const CW = 46, CH = 60, cols = Math.ceil(VW / CW) + 2, off = (t * 0.15) % CW;
+  ctx.font = 'bold 7px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let row = 0; row < 3; row++) for (let c = -1; c < cols; c++) {
+    const idx = ((c + Math.floor(t * 0.15 / CW) + row * 7) % FILMS.length + FILMS.length) % FILMS.length;
+    const x = Math.round(c * CW - off + (row % 2) * 20), y = row * (CH + 2);
+    const h = hash(idx, 3), hue = h % 360;
+    ctx.fillStyle = `hsl(${hue},45%,28%)`; ctx.fillRect(x + 1, y + 1, CW - 2, CH - 2);
+    ctx.fillStyle = `hsl(${(hue + 40) % 360},60%,55%)`;
+    const m = idx % 5;
+    if (m === 0) { ctx.beginPath(); ctx.arc(x + CW / 2, y + 20, 10, 0, Math.PI * 2); ctx.fill(); }
+    else if (m === 1) for (let k = 0; k < 4; k++) ctx.fillRect(x + 4, y + 8 + k * 6, CW - 8, 2);
+    else if (m === 2) { ctx.beginPath(); ctx.moveTo(x + 6, y + 34); ctx.lineTo(x + CW / 2, y + 8); ctx.lineTo(x + CW - 6, y + 34); ctx.fill(); }
+    else if (m === 3) { ctx.fillRect(x + CW / 2 - 4, y + 10, 8, 8); ctx.fillRect(x + CW / 2 - 7, y + 18, 14, 16); }
+    else { ctx.fillRect(x + 6, y + 18, CW - 12, 3); ctx.fillRect(x + CW / 2 - 1, y + 8, 3, 24); }
+    ctx.fillStyle = '#fff';
+    const words = FILMS[idx].split(' '), lines = []; let cur = '';
+    for (const w of words) { const tryS = cur ? cur + ' ' + w : w; if (ctx.measureText(tryS).width > CW - 6 && cur) { lines.push(cur); cur = w; } else cur = tryS; }
+    lines.push(cur);
+    lines.slice(-3).forEach((l, k, arr) => ctx.fillText(l, x + CW / 2, y + CH - 4 - (arr.length - k) * 8));
+  }
+}
+function drawIce() {
+  const I = ice, p = Math.min(1, I.t / ICE_T), r = 74 * (1 - p) + 3;
+  drawMovieWall(I.t);
+  ctx.save(); ctx.globalAlpha = 0.5; R(0, 0, VW, VH, '#06101c'); ctx.restore();
+  R(0, 100, 206, 52, '#0f2a4a'); for (let i = 0; i < 10; i++) R((i * 23 + I.t * 0.5) % 200, 106 + (i % 4) * 11, 8, 1, '#2a5a8a');
+  const cx = 102, cy = 128, wob = r < 26 ? Math.sin(I.t * 0.3) * 2 : 0;
+  ctx.fillStyle = '#e8f6ff'; ctx.beginPath(); ctx.ellipse(cx, cy, r, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#9fd0f0'; ctx.lineWidth = 1; ctx.stroke();
+  for (let k = 0; k < 6; k++) if (frame % 20 < 10 || k % 2) R(cx - r + hash(k, 7) % Math.max(1, 2 * r), cy + 3 + (k % 2), 1, 2 + (k % 3), '#bfe8ff');
+  const sep = Math.min(14, r * 0.6);
+  const tomP = I.hitT > 6 && I.who === 'tom', samP = I.hitT > 6 && I.who === 'sam';
+  ctx.save(); ctx.translate(Math.round(cx - sep - 16 + wob), cy - 30); ctx.scale(2, 2); drawEthanSmall(0, 0, 1, frame, tomP); ctx.restore();
+  ctx.save(); ctx.translate(Math.round(cx + sep - 16 - wob), cy - 30); ctx.scale(2, 2); drawSamSmall(0, 0, -1, samP); ctx.restore();
+  if (I.hitT > 6) { const hx = cx + (I.who === 'tom' ? sep - 2 : -sep + 2); R(hx - 3, cy - 20, 6, 6, '#fff'); text('POW', hx, cy - 36, '#ffd84a', 'center'); }
+  if (I.say) bubbleAt(I.say.text, I.say.who === 'tom' ? cx - sep : cx + sep, cy - 32, 0);
+  // ice meter
+  R(4, 4, 98, 12, '#000a'); text('ICE', 7, 6, '#bfe8ff'); R(36, 8, 62, 4, '#123'); R(36, 8, 62 * (1 - p), 4, p > 0.75 ? '#f55' : '#bfe8ff');
+  // the shutdown terminal
+  R(206, 20, 112, 132, '#05140a'); R(206, 20, 112, 1, '#2f6'); R(206, 151, 112, 1, '#2f6'); R(206, 20, 1, 132, '#2f6'); R(317, 20, 1, 132, '#2f6');
+  text('SHUTDOWN.EXE', 262, 26, '#7f7', 'center');
+  const pw = powered(I.P);
+  for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
+    const X = ICE_GX + x * ICE_TS, Y = ICE_GY + y * ICE_TS, m = tileMask(I.P.g[y][x]), lit = pw.on.has(x + ',' + y);
+    R(X, Y, ICE_TS - 1, ICE_TS - 1, '#0a2a14');
+    const c = lit ? '#9f9' : '#2f6a3a', h = ICE_TS / 2;
+    R(X + h - 2, Y + h - 2, 4, 4, c);
+    if (m & 1) R(X + h - 2, Y, 4, h, c); if (m & 4) R(X + h - 2, Y + h, 4, h - 1, c);
+    if (m & 8) R(X, Y + h - 2, h, 4, c); if (m & 2) R(X + h, Y + h - 2, h - 1, 4, c);
+    if (!IS_TOUCH && I.cur[0] === x && I.cur[1] === y && frame % 30 < 20) { R(X, Y, ICE_TS - 1, 1, '#ffd84a'); R(X, Y + ICE_TS - 2, ICE_TS - 1, 1, '#ffd84a'); R(X, Y, 1, ICE_TS - 1, '#ffd84a'); R(X + ICE_TS - 2, Y, 1, ICE_TS - 1, '#ffd84a'); }
+  }
+  R(ICE_GX - 6, ICE_GY + I.P.src * ICE_TS + 6, 6, 9, '#ffd84a'); R(ICE_GX - 8, ICE_GY + I.P.src * ICE_TS + 9, 2, 3, '#ffd84a');
+  R(ICE_GX + 4 * ICE_TS, ICE_GY + I.P.dst * ICE_TS + 5, 5, 11, pw.done ? '#7f7' : '#f44');
+  text('ROUTE POWER', 262, 132, '#7f7', 'center'); text(IS_TOUCH ? 'TAP TO ROTATE' : 'Z: ROTATE', 262, 141, '#4a8', 'center');
+  // the AI talks
+  R(0, 154, VW, 26, '#000d');
+  if (I.ai >= 0) wrap('AI: ' + AI_LINES[I.ai], 38).forEach((l, k, arr) => {
+    const shown = Math.max(0, Math.min(l.length, I.aiT * 1.5 - arr.slice(0, k).join('').length));
+    text(l.slice(0, shown), 6, 157 + k * 10, '#ff6a6a');
+  });
+  if (I.end) for (let i = 0; i < 900; i++) R(Math.random() * VW, Math.random() * VH, 2, 1, Math.random() < 0.5 ? '#fff' : '#333');
+}
+
+/* ------------------------- THE DEMO CUT ------------------------- */
+let demoT = 0;
+function startDemo() { state = 'demo'; demoT = 0; }
+function updateDemo() { if (++demoT === 330) openStore(); }
+function drawDemo() {
+  R(0, 0, VW, VH, '#000');
+  const a = 'THANKS FOR PLAYING THE DEMO.', b = 'BUY THE FULL VERSION ON STEAM.';
+  text(a.slice(0, Math.max(0, Math.floor((demoT - 30) / 2))), VW / 2, 70, '#fff', 'center');
+  text(b.slice(0, Math.max(0, Math.floor((demoT - 120) / 2))), VW / 2, 92, '#ffd84a', 'center');
+}
+
+/* ------------------- SCREENSHOTS FOR THE STORE PAGE ------------------- */
+const SHOTS = {};
+function snapMaybe() {
+  let tag = null;
+  if (state === 'title' && frame % 240 === 200) tag = 'title';
+  else if (state === 'play' && player && player.x > 300) tag = 'play';
+  else if (state === 'vn' && vn && vn.script[vn.i].bg === 'smile' && vn.lt === 60) tag = 'smile';
+  else if (state === 'vn' && vn && vn.script[vn.i].log && vn.lt === 80) tag = 'lab';
+  else if (state === 'ops' && ops && ops.x > 560) tag = 'ops';
+  else if (state === 'rpg' && rpg && rpg.t === 160) tag = 'rpg';
+  else if (state === 'drive' && drv && drv.t === 900) tag = 'drive';
+  else if (state === 'cliff' && clf && clf.t === 230) tag = 'cliff';
+  else if (state === 'ice' && ice && ice.t === 700) tag = 'ice';
+  if (tag && !SHOTS[tag]) try { SHOTS[tag] = cv.toDataURL('image/png'); } catch (e) { }
+}
+
+/* --------------------------- THE STORE PAGE --------------------------- */
+function openStore() {
+  state = 'store';
+  if (!SHOTS.title) { const st = state; state = 'title'; drawTitle(); try { SHOTS.title = cv.toDataURL('image/png'); } catch (e) { } state = st; }
+  if (!SHOTS.ice && ice) { const st = state, en = ice.end; state = 'ice'; ice.end = 0; drawIce(); try { SHOTS.ice = cv.toDataURL('image/png'); } catch (e) { } ice.end = en; state = st; }
+  const imgs = ['play', 'smile', 'ops', 'rpg', 'drive', 'cliff', 'ice', 'lab'].map(k => SHOTS[k]).filter(Boolean);
+  const cap = SHOTS.title || imgs[0] || '';
+  const el = document.getElementById('store');
+  el.innerHTML = `
+  <div class="st-top"><div class="st-in">
+    <div class="st-logo"><span class="st-orb"></span>STEEM</div>
+    <nav><a>STORE</a><a>COMMUNITY</a><a>ABOUT</a><a>SUPPORT</a></nav>
+    <div class="st-acc"><span class="st-install">Install Steem</span><a>login</a> | <a>language</a></div>
+  </div></div>
+  <div class="st-body"><div class="st-in">
+    <div class="st-sub"><a>Your Store</a><a>New &amp; Noteworthy</a><a>Categories</a><a>Points Shop</a><a>News</a><a>Labs</a><input placeholder="search"></div>
+    <div class="st-crumb">All Games &gt; Action Games &gt; Digger: Digg. Or Die.</div>
+    <h1>Digger: Digg. Or Die.</h1>
+    <div class="st-main">
+      <div class="st-media">
+        <img id="st-big" src="${imgs[0] || cap}" alt="">
+        <div class="st-thumbs"${imgs.length > 1 ? '' : ' hidden'}>${imgs.map((s, i) => `<img src="${s}" data-i="${i}" class="${i ? '' : 'on'}" alt="">`).join('')}</div>
+      </div>
+      <div class="st-side">
+        <img class="st-cap" src="${cap}" alt="">
+        <p class="st-desc">Dig. Stomp. Pull the plug. A man, a spade, 4,200,000 notes and one melting ice ring. The most perfect game ever made, because it was remade until it was.</p>
+        <div class="st-meta"><span>ALL REVIEWS:</span><b class="pos">Overwhelmingly Positive</b> <i>(100% Fresh)</i></div>
+        <div class="st-meta"><span>RELEASE DATE:</span>2 Oct, 2026</div>
+        <div class="st-meta"><span>DEVELOPER:</span><a>Tom (and 4,200,000 iterations)</a></div>
+        <div class="st-meta"><span>PUBLISHER:</span><a>One Take Productions</a></div>
+        <div class="st-tags">${['Action', 'Platformer', 'Visual Novel', 'JRPG', 'Driving', 'Puzzle', 'Perfectionism', 'Natural Light', 'Cat Is Fine'].map(t => `<a>${t}</a>`).join('')}</div>
+      </div>
+    </div>
+    <div class="st-cols">
+      <div class="st-left">
+        <div class="st-buy">
+          <h2>Buy Digger: Digg. Or Die.</h2>
+          <div class="st-btnrow"><div class="st-price">$69.99</div><button class="st-cart">Add to Cart</button></div>
+        </div>
+        <div class="st-buy">
+          <h2>Buy Digger: Digg. Or Die. Deluxe Edition</h2>
+          <p class="st-small">Includes the cat, one more take, and a director's cut shot entirely in natural light.</p>
+          <div class="st-btnrow"><div class="st-disc">-90%</div><div class="st-price"><s>$129.99</s> $12.99</div><button class="st-cart">Add to Cart</button></div>
+        </div>
+        <h3>ABOUT THIS GAME</h3>
+        <p>Critics called it "all style, no substance". Then they met the spade. Dig your way through a red carpet of reviewers, survive a lab briefing about the end of Europe, sneak through the whitest corridors ever built, outrun a van full of RAM and decide who falls off a melting ice ring.</p>
+        <p>Every pixel was approved by Tom personally. Several million times.</p>
+        <h3>SYSTEM REQUIREMENTS</h3>
+        <div class="st-req">
+          <div><b>MINIMUM:</b><br>OS: Anything with a pulse<br>Processor: One (1) GPU cluster<br>Memory: More RAM<br>Graphics: Natural light only<br>Storage: 4,200,000 iterations</div>
+          <div><b>RECOMMENDED:</b><br>OS: The left half of Europe<br>Processor: A gigawatt<br>Memory: Sixteen more terabytes<br>Graphics: One take, no cuts<br>Additional: A cat (fine)</div>
+        </div>
+      </div>
+      <div class="st-right">
+        <h3>REVIEWS</h3>
+        <div class="st-rev"><b>Mortimer Snobb</b><span class="pos">Recommended</span><p>"I came to give it a C-. I am giving it an A. Please stop hitting me with the spade."</p></div>
+        <div class="st-rev"><b>A Blogger</b><span class="pos">Recommended</span><p>"FIRST! Also, masterpiece."</p></div>
+        <div class="st-rev"><b>Dr. Frost</b><span class="neg">Not Recommended</span><p>"It melted the Alps."</p></div>
+        <div class="st-rev"><b>The Cat</b><span class="pos">Recommended</span><p>"Fine."</p></div>
+      </div>
+    </div>
+    <div class="st-foot">A parody store page inside a fan-made game. Not affiliated with Valve or Steam. Nothing here can be purchased.
+      <br><button class="st-again">Play again</button></div>
+  </div></div>
+  <div class="st-modal" hidden><div class="st-box"><h2>Purchase failed</h2><p>Tom has requested one more iteration of the checkout page. Please try again in 4,200,000 builds.</p><button class="st-ok">OK</button></div></div>`;
+  el.hidden = false; el.scrollTop = 0;
+  const big = el.querySelector('#st-big'), thumbs = el.querySelectorAll('.st-thumbs img');
+  thumbs.forEach(t => t.addEventListener('click', () => { big.src = t.src; thumbs.forEach(x => x.classList.remove('on')); t.classList.add('on'); }));
+  let slide = 0; el._timer = setInterval(() => { if (!thumbs.length) return; slide = (slide + 1) % thumbs.length; thumbs[slide].click(); }, 4000);
+  const modal = el.querySelector('.st-modal');
+  el.querySelectorAll('.st-cart').forEach(b => b.addEventListener('click', () => { modal.hidden = false; }));
+  el.querySelector('.st-ok').addEventListener('click', () => { modal.hidden = true; });
+  el.querySelector('.st-again').addEventListener('click', () => { clearInterval(el._timer); el.hidden = true; el.innerHTML = ''; state = 'title'; });
+}
+
 /* ------------------------------ LOOP -------------------------------- */
 let last = performance.now(), acc = 0;
 function step() { update(); for (const k in pressed) pressed[k] = false; }
@@ -2119,13 +2722,13 @@ function loop(now) {
     if (!window.__freeze) step();
     acc -= 1000 / 60;
   }
-  syncPad();
+  syncPad(); snapMaybe();
   draw();
   requestAnimationFrame(loop);
 }
 buildGrid();
 (document.fonts ? document.fonts.load('8px "Press Start 2P"').catch(() => {}) : Promise.resolve()).finally(() => requestAnimationFrame(loop));
-window.__game = { get state() { return state; }, get player() { return player; }, get boss() { return boss; }, get money() { return money; }, get projectiles() { return projectiles; }, get superBoot() { return superBoot; }, get rpg() { return rpg; }, get vn() { return vn; }, startVN, startRPG, INTRO, ENDING, get enemies() { return enemies; }, setMeter: v => { bootMeter = v; }, newGame, keys, pressed, step, grid: () => grid };
+window.__game = { get frame() { return frame; }, get state() { return state; }, get player() { return player; }, get boss() { return boss; }, get money() { return money; }, get projectiles() { return projectiles; }, get superBoot() { return superBoot; }, get rpg() { return rpg; }, get vn() { return vn; }, startVN, startRPG, INTRO, startOps, startDrive, startIce, get ops() { return ops; }, get drv() { return drv; }, get ice() { return ice; }, SHOTS, powered, get enemies() { return enemies; }, setMeter: v => { bootMeter = v; }, newGame, keys, pressed, step, grid: () => grid };
 </script>
 </body>
 </html>
