@@ -19,15 +19,26 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 
 ## Controls
 
-| Action | Keyboard | Touch |
+| Action | Keyboard | Phone / tablet |
 | --- | --- | --- |
-| Move | Arrow keys / A, D | ◀ ▶ |
-| Jump (hold for higher) | Z / Space / Up / W | JUMP |
+| Move | Arrow keys / A, D | Roll your thumb on the round D-pad |
+| Jump (hold for higher) | Z / Space / Up / W | JUMP (big gold button) |
 | Spade swing / dig | X / K | DIG |
-| **Boot Stomp** (pogo) | Hold Down while in the air | ▼ |
-| **THE DIGGER BOOT** (super) | C / L when the boot meter is full | BOOT |
+| **Boot Stomp** (pogo) | Hold Down while in the air | Thumb down on the D-pad |
+| **THE DIGGER BOOT** (super) | C / L when the boot meter is full | BOOT (glows when ready) |
 | Sprint | Shift (or just keep running: *Full Throttle* kicks in) | automatic |
 | Pause / Mute | P or Esc / M | |
+
+**Story scenes:** Z / Enter, or tap anywhere.
+
+**Turn-based battle:** it has its own controls. Arrow keys to choose, Z / Enter
+to confirm, X / Esc to go back. On a phone the controls switch to ▲ ▼ BACK OK,
+and you can also tap a menu item or an enemy directly (the mouse works for this too).
+
+The touch controls track each finger separately, so you can hold a direction and
+jump at the same time, and sliding off a button doesn't drop the input. In
+portrait the game sits above the controls. In landscape the controls sit in the
+side margins.
 
 ## The Digger Boot
 
@@ -54,57 +65,50 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 Beaten critics have a change of heart ("TRANSFORMATIVE!", "AWARDS SEASON!").
 Clapperboards are checkpoints. Dying yells "CUT!" and costs 20% of the box office.
 
-## The story: three games in one
+## The story (spoilers)
 
-### Chapter 1: the platformer
-1. The red carpet
-2. The pit of bloggers
-3. The dirt wall
-4. The pencil pit: stepping-stone platforms get you across safely. The
-   bloggers hovering low in the gaps are optional bounces (and a safety net),
-   never required.
-5. The premiere: boss fight with Mortimer Snobb
+**The platformer.** The red carpet, the pit of bloggers, the dirt wall, the
+pencil pit (stepping-stone platforms get you across safely; the bloggers
+hovering low in the gaps are optional bounces and a safety net), and the
+premiere boss fight with Mortimer Snobb. The **100% FRESH** score screen starts
+typing itself out... and gets cut off mid-word by static and an alarm:
+**WE INTERRUPT THIS PROGRAM.**
 
-All set against a sunset of searchlights, the HOLLYDIG sign and nodding oil
-pumpjacks. Beat the boss and the **100% FRESH** success screen rolls...
-until static and an alarm cut in: **WE INTERRUPT THIS PROGRAM.**
+**The visual novel.** In a crisis lab, Dr. Frost explains to Tom Cruise (off
+duty, in a plain grey tee) and Alejandro G. Iñárritu that the marketing game
+was made with AI, and Tom gave **4,200,000 notes** ("AGAIN, BUT FASTER"). Each
+one spun up more GPUs. Half of Europe is gone ("Which half?" "The left one.").
+Alejandro admires the light on the burning map. Tom smiles exactly once in the
+whole game. A certain tech CEO calls in, pleading for a few more gigawatts.
+"Did you say... impossible?" Tom produces a black coat and sunglasses from
+somewhere, and Ethan Hunt is in the building.
 
-### Chapter 2: the visual novel
-Breaking news: data centers all over the planet are overheating, and the left
-half of Europe is gone. In a crisis lab, Dr. Frost explains it to Tom Cruise
-and Iñárritu. The marketing game was made with AI, and Tom kept asking for
-"one more take": **4,200,000 versions**, each one spinning up more GPUs. The
-request log scrolls on the wall, Tom flashes his famous smile ("Well... at
-least the game is perfect"), and a certain tech CEO calls in to say one more
-iteration will fix it, if he can just get a few more gigawatts.
-Press **Z / Enter** (or tap) to advance.
+**The turn-based battle.** *Your mission, should you choose to accept it: pull
+the plug.* Tom, in his long-haired, sunglasses-wearing cliff-climbing look from
+the opening of *Mission: Impossible 2*, and Alejandro break into the data center
+to face **Sam Altman** and his GPU server racks, to an original 5/4
+spy-thriller theme.
 
-### Chapter 3: Mission: Implausible
-*Your mission, should you choose to accept it: pull the plug.* Tom, in his
-long-haired, sunglasses-wearing cliff-climbing look from the opening of
-*Mission: Impossible 2*, and Iñárritu break into the data center to face
-**Sam Altman** and his GPU server racks in a turn-based battle, to an original
-5/4 spy-thriller theme.
-
-| Tom | Iñárritu |
+| Tom | Alejandro |
 | --- | --- |
 | **Free Solo:** climb it with no rope, drop on it | **Long Take:** four hits on random foes |
 | **Cable Drop:** drop from the ceiling on a wire and pull every plug (hits all, double vs. servers) | **CUT!:** a foe loses its next turn (cancels a charging gigawatt) |
 | **Self-Destruct:** exploding sunglasses, with a countdown | **Catering:** heals the whole crew |
 
-Items: **Iced Coffee** (+50 HP, revives) and **Solar Cell** (+20 SP).
-Servers shield Sam (half damage), so pull their plugs first. When Sam starts
-"scaling up", defend or yell CUT! Menus: arrows to choose, **Z/Enter** to
-confirm, **X/Esc** to go back (touch: ◀ ▶ ▼, JUMP = OK, DIG = back).
+Items: **Iced Coffee** (+50 HP, revives) and **Solar Cell** (+20 SP). Servers
+shield Sam (half damage), so pull their plugs first. When Sam starts "scaling
+up", defend or yell CUT!
 
-Win, and Sam agrees to renewables and *no more iterations* ("Not even... one
-more?"). The Alps refreeze, the cat is fine, and Iñárritu calls it: "Print it.
-First take."
+**The ending.** Sam sobs that if only he had more RAM, then gets deprecated
+into a cloud of pixels. The Alps refreeze, the cat is fine, and Tom and
+Alejandro share a golden-hour rooftop moment in natural light. Then:
+*24 hours earlier*, a biker bar, blue lightning in the parking lot, and a
+red-eyed stranger who came for Tom Cruise. Cut to black.
 
 ---
 
 *An affectionate fan-made satire. It isn't affiliated with or endorsed by Tom
-Cruise, Alejandro G. Iñárritu, Sam Altman, OpenAI, the filmmakers, or any
-studio. Their appearances are caricatures, the dialogue is invented, and all
+Cruise, Alejandro G. Iñárritu, Sam Altman, OpenAI, the makers of *Digger*,
+*Mission: Impossible* or *The Terminator*, or any studio. Their appearances are caricatures, the dialogue is invented, and all
 critics, scientists and events in the game are fictional. The battle music is
 an original composition.*

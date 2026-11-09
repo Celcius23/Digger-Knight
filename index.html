@@ -2,27 +2,61 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Digger: Digg or Die</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-  html,body{margin:0;height:100%;background:#0b0710;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+  html,body{margin:0;height:100%;background:#0b0710;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
   #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
   canvas{image-rendering:pixelated;image-rendering:crisp-edges;background:#000;display:block}
-  #touch{position:fixed;inset:auto 0 0 0;display:none;justify-content:space-between;padding:12px 16px;pointer-events:none}
-  #touch .grp{display:flex;gap:10px;pointer-events:auto}
-  #touch button{width:62px;height:62px;border-radius:50%;border:2px solid #fff8;background:#0007;color:#fff;
-    font:10px "Press Start 2P",monospace;touch-action:none}
-  #touch button.on{background:#fff4}
-  body.touch #touch{display:flex}
+  /* ---- touch controls ---- */
+  #touch{display:none;position:fixed;left:0;right:0;bottom:0;height:var(--padh,200px);pointer-events:none;
+    padding:0 max(14px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));box-sizing:border-box}
+  body.touch #touch{display:block}
+  .pad{display:none;position:absolute;inset:0 14px 12px 14px;align-items:flex-end;justify-content:space-between}
+  body.m-play #pad-play, body.m-menu #pad-menu, body.m-tap #pad-tap{display:flex}
+  .pad *{pointer-events:auto;touch-action:none}
+  .cluster{display:flex;align-items:flex-end;gap:12px}
+  .b{border-radius:50%;border:2px solid #ffffff70;background:#ffffff14;color:#fff;font:11px "Press Start 2P",monospace;
+    display:flex;align-items:center;justify-content:center;width:74px;height:74px;box-sizing:border-box}
+  .b.big{width:96px;height:96px;font-size:13px;background:#ffd84a26;border-color:#ffd84ab0}
+  .b.small{width:58px;height:58px;font-size:9px}
+  .b.on{background:#ffffff55}
+  .b.boot-ready{border-color:#ffd84a;color:#ffd84a;animation:pulse .6s infinite alternate}
+  @keyframes pulse{to{background:#ffd84a40}}
+  .col{display:flex;flex-direction:column;gap:12px;align-items:center}
+  #dpad{position:relative;width:156px;height:156px;border-radius:50%;border:2px solid #ffffff50;background:#ffffff0f}
+  #dpad span{position:absolute;color:#ffffff90;font:20px monospace}
+  #dpad .l{left:14px;top:62px} #dpad .r{right:14px;top:62px} #dpad .d{left:68px;bottom:12px}
+  #dpad span.on{color:#ffd84a}
+  #knob{position:absolute;width:56px;height:56px;border-radius:50%;background:#ffffff30;left:50px;top:50px;pointer-events:none}
+  #pad-tap{justify-content:center;align-items:center}
+  #pad-tap .hint{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#ffffff80;font:10px "Press Start 2P",monospace}
+  /* landscape phones: controls float over the sides of the picture */
+  @media (orientation:landscape){ #touch{--padh:100%} .pad{inset:auto 14px 10px 14px}
+    #dpad{width:140px;height:140px} #dpad .l{top:56px} #dpad .r{top:56px} #dpad .d{left:60px} #knob{left:42px;top:42px}
+    #pad-tap{display:none!important}
+    .pad .cluster{flex-direction:column;align-items:center}
+    .pad .col{gap:10px} .b{width:66px;height:66px} .b.big{width:88px;height:88px} .b.small{width:54px;height:54px} }
 </style>
 </head>
 <body>
 <div id="wrap"><canvas id="game" width="320" height="180"></canvas></div>
 <div id="touch">
-  <div class="grp"><button data-k="left">&#9664;</button><button data-k="down">&#9660;</button><button data-k="right">&#9654;</button></div>
-  <div class="grp"><button data-k="boot">BOOT</button><button data-k="attack">DIG</button><button data-k="jump">JUMP</button></div>
+  <div id="pad-play" class="pad">
+    <div id="dpad"><span class="l">&#9664;</span><span class="r">&#9654;</span><span class="d">&#9660;</span><div id="knob"></div></div>
+    <div class="cluster">
+      <div class="col"><div class="b small" data-k="boot">BOOT</div><div class="b" data-k="attack">DIG</div></div>
+      <div class="b big" data-k="jump">JUMP</div>
+    </div>
+  </div>
+  <div id="pad-menu" class="pad">
+    <div class="cluster"><div class="col"><div class="b" data-k="mUp">&#9650;</div><div class="b" data-k="mDown">&#9660;</div></div></div>
+    <div class="cluster"><div class="b" data-k="back">BACK</div><div class="b big" data-k="ok">OK</div></div>
+  </div>
+  <div id="pad-tap" class="pad"><div class="hint" data-k="ok">TAP TO CONTINUE</div></div>
 </div>
+
 <script>
 'use strict';
 /* =====================================================================
@@ -36,8 +70,14 @@ const VW = 320, VH = 180, TS = 16, GRAV = 0.25;
 const FONT = '"Press Start 2P", monospace';
 
 function resize() {
-  const s = Math.min(innerWidth / VW, innerHeight / VH);
-  const sc = s >= 2 ? Math.floor(s) : s;
+  const touch = document.body.classList.contains('touch'), portrait = innerHeight > innerWidth;
+  const padH = touch && portrait ? Math.round(Math.min(240, innerHeight * 0.42)) : 0;
+  document.documentElement.style.setProperty('--padh', padH + 'px');
+  document.getElementById('wrap').style.bottom = padH + 'px';
+  const side = touch && !portrait ? Math.min(170, innerWidth * 0.2) : 0;
+  document.getElementById('wrap').style.left = side + 'px'; document.getElementById('wrap').style.right = side + 'px';
+  const s = Math.min((innerWidth - side * 2) / VW, (innerHeight - padH) / VH);
+  const sc = s >= 2 && !touch ? Math.floor(s) : s;
   cv.style.width = VW * sc + 'px';
   cv.style.height = VH * sc + 'px';
 }
@@ -57,7 +97,7 @@ const KEYMAP = {
   KeyX: 'attack', KeyK: 'attack', KeyC: 'boot', KeyL: 'boot', ShiftLeft: 'sprint', ShiftRight: 'sprint',
   Enter: 'start', KeyP: 'pause', Escape: 'pause', KeyM: 'mute'
 };
-// Menu keys for the visual novel + turn-based chapters
+// Menu keys for the story scenes + the turn-based battle
 const MENUMAP = {
   ArrowUp: 'mUp', KeyW: 'mUp', ArrowLeft: 'mUp', KeyA: 'mUp', ArrowDown: 'mDown', KeyS: 'mDown', ArrowRight: 'mDown', KeyD: 'mDown',
   KeyZ: 'ok', Space: 'ok', Enter: 'ok', KeyJ: 'ok', KeyX: 'back', KeyK: 'back', Escape: 'back', Backspace: 'back'
@@ -72,17 +112,62 @@ addEventListener('keyup', e => {
   const k = KEYMAP[e.code], m = MENUMAP[e.code]; if (!k && !m) return; e.preventDefault();
   if (k) release(k); if (m) release(m);
 });
-const tapAdvances = () => ['title', 'fresh', 'vn', 'credits'].includes(state);
-cv.addEventListener('pointerdown', () => { if (tapAdvances()) { press('start'); press('ok'); } });
-cv.addEventListener('pointerup', () => { release('start'); release('ok'); });
-if (matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window) document.body.classList.add('touch');
-document.querySelectorAll('#touch button').forEach(b => {
-  const k = b.dataset.k, menu = { left: 'mUp', right: 'mDown', down: 'mDown', jump: 'ok', attack: 'back' }[k];
-  const on = e => { e.preventDefault(); b.classList.add('on'); press(k); if (menu) press(menu); if (state === 'title') press('start'); };
-  const off = e => { e.preventDefault(); b.classList.remove('on'); release(k); if (menu) release(menu); release('start'); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
-  b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+const tapAdvances = () => ['title', 'fresh', 'vn', 'blackout'].includes(state);
+// Mouse / finger on the picture itself: advance story, or pick menu items and targets in battle
+cv.addEventListener('pointerdown', e => {
+  initAudio();
+  if (state === 'rpg') { const r = cv.getBoundingClientRect(); rpgTap((e.clientX - r.left) * VW / r.width, (e.clientY - r.top) * VH / r.height); return; }
+  if (tapAdvances()) { press('start'); press('ok'); }
 });
+cv.addEventListener('pointerup', () => { release('start'); release('ok'); });
+const IS_TOUCH = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;
+if (IS_TOUCH) document.body.classList.add('touch');
+// Buttons: each finger is tracked by id, so sliding a thumb off a button never drops the input
+const fingers = new Map();
+function bindButton(el) {
+  const ks = el.dataset.k.split(' ');
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    for (const t of e.changedTouches) fingers.set(t.identifier, el);
+    el.classList.add('on'); ks.forEach(press); if (state === 'title' || state === 'blackout') press('start');
+  }, { passive: false });
+}
+document.querySelectorAll('#touch [data-k]').forEach(bindButton);
+function endTouch(e) {
+  for (const t of e.changedTouches) {
+    const el = fingers.get(t.identifier); if (!el) continue;
+    fingers.delete(t.identifier);
+    if (![...fingers.values()].includes(el)) { el.classList.remove('on'); el.dataset.k.split(' ').forEach(release); release('start'); }
+  }
+}
+addEventListener('touchend', endTouch); addEventListener('touchcancel', endTouch);
+// Analog-ish D-pad: roll your thumb around, no lifting needed
+const dpad = document.getElementById('dpad'), knob = document.getElementById('knob');
+let dpadId = null;
+function setHeld(k, on) { if (on) press(k); else release(k); }
+function dpadAt(t) {
+  const r = dpad.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let dx = t.clientX - cx, dy = t.clientY - cy; const m = r.width * 0.32, d = Math.hypot(dx, dy);
+  if (d > m) { dx *= m / d; dy *= m / d; }
+  knob.style.transform = `translate(${dx}px,${dy}px)`;
+  const dz = r.width * 0.1;
+  setHeld('left', dx < -dz); setHeld('right', dx > dz); setHeld('down', dy > r.height * 0.18 && Math.abs(dy) > Math.abs(dx) * 0.6);
+}
+function dpadEnd() { dpadId = null; knob.style.transform = ''; ['left', 'right', 'down'].forEach(k => release(k)); }
+dpad.addEventListener('touchstart', e => { e.preventDefault(); const t = e.changedTouches[0]; dpadId = t.identifier; dpadAt(t); }, { passive: false });
+addEventListener('touchmove', e => { for (const t of e.changedTouches) if (t.identifier === dpadId) dpadAt(t); e.preventDefault(); }, { passive: false });
+addEventListener('touchend', e => { for (const t of e.changedTouches) if (t.identifier === dpadId) dpadEnd(); });
+addEventListener('touchcancel', dpadEnd);
+// Which control set is showing follows the game mode
+let padMode = '';
+function syncPad() {
+  const m = (state === 'play' || state === 'dead') ? 'm-play' : state === 'rpg' ? 'm-menu' : 'm-tap';
+  if (m !== padMode) { document.body.classList.remove('m-play', 'm-menu', 'm-tap'); document.body.classList.add(m); padMode = m; fingers.clear(); dpadEnd(); for (const k in keys) keys[k] = false; resize(); }
+  if (m === 'm-play') {
+    dpad.querySelector('.l').classList.toggle('on', !!keys.left); dpad.querySelector('.r').classList.toggle('on', !!keys.right); dpad.querySelector('.d').classList.toggle('on', !!keys.down);
+    document.querySelector('[data-k="boot"]').classList.toggle('boot-ready', bootMeter >= 100);
+  }
+}
 
 /* ----------------------------- AUDIO -------------------------------- */
 let actx = null, muted = false, master = null, noiseBuf = null;
@@ -150,7 +235,7 @@ const SONGS = {
 };
 function songFor() {
   if (state === 'rpg') return 'rpg';
-  if (state === 'vn' || state === 'credits') return 'vn';
+  if (state === 'vn') return 'vn';
   if (state === 'title') return 'title';
   if (state === 'play' || state === 'dead') return bossActive && !(boss && boss.dead) ? 'boss' : 'level';
   return null;
@@ -631,15 +716,16 @@ function update() {
   if (pressed.mute) muted = !muted;
   if (state === 'title') { if (pressed.start || pressed.jump || pressed.attack) newGame(); return; }
   if (state === 'fresh') {
-    freshT++;
-    if ((pressed.start || pressed.ok) && freshT > 40 && freshT < 230) freshT = 230; // impatient? the news cuts in sooner
-    if (freshT === 230) { noise(0.6, 0.35, 4000); [880, 660, 880, 660].forEach((f, i) => tone('square', f, f, 0.14, 0.12, 0.1 + i * 0.16)); }
-    if (freshT > 330) startVN(INTRO, () => startRPG(1));
+    freshT++; const cutF = freshCut() * 2;
+    if ((pressed.start || pressed.ok) && freshT > 20 && freshT < cutF) freshT = cutF;
+    else if (freshT < cutF && freshT % 4 === 0) blip();
+    if (freshT === cutF + 1) { noise(0.6, 0.35, 4000); [880, 660, 880, 660].forEach((f, i) => tone('square', f, f, 0.14, 0.12, 0.1 + i * 0.16)); }
+    if (freshT > cutF + 110) startVN(INTRO, () => startRPG(1));
     return;
   }
   if (state === 'vn') { updateVN(); decayShake(); return; }
   if (state === 'rpg') { updateRPG(); decayShake(); return; }
-  if (state === 'credits') { creditsT++; if (creditsT > 90 && (pressed.start || pressed.ok)) state = 'title'; return; }
+  if (state === 'blackout') { if (++creditsT > 150) state = 'title'; return; }
   if (state === 'play' && pressed.pause) paused = !paused;
   if (paused) return;
   if (banner && --banner.t <= 0) banner = null;
@@ -853,7 +939,7 @@ function drawTom(p, t) {
   r(6, 1, 6, 6, SKN); r(6, 4, 1, 2, SKNd);
   r(5, -1, 6, 2, HAIR); r(4, 0, 3, 4, HAIR); r(8, -2, 4, 2, HAIR); r(11, 0, 1, 1, HAIR); r(5, 0, 1, 1, HAIRd); r(9, -2, 1, 1, HAIRd);
   r(8, 2, 2, 1, HAIRd); r(10, 2, 2, 1, HAIRd); r(8, 3, 1, 1, '#222'); r(11, 3, 1, 1, '#222'); r(7, 2, 1, 1, SKNd);
-  r(12, 4, 1, 1, SKN); r(10, 5, 2, 1, '#fff6d8'); r(9, 6, 3, 1, SKNd);
+  r(12, 4, 1, 1, SKN); r(10, 5, 2, 1, '#9a5a44'); r(9, 6, 3, 1, SKNd);
   // front arm + D-handle spade
   if (p.pogo) {
     r(5, 7, 2, 2, SUIT); r(10, 7, 2, 2, SUIT); r(2, 6, 12, 1, WOOD); r(13, 4, 3, 5, BLADE); r(16, 5, 1, 3, BLADE); r(0, 5, 2, 3, WOOD);
@@ -1099,16 +1185,23 @@ function drawCat(x, y) {
   const tail = Math.floor(frame / 15) % 2; R(x - 2, y + 1 + tail, 2, 3, c); R(x - 3, y - 1 + tail, 1, 3, c);
   R(x + 2, y + 4, 4, 1, '#b8651f');
 }
+function freshLines() {
+  return [['CRITICS CONSENSUS', '#fff', 8, 26], ['100% FRESH', '#7f7', 16, 42], ['BOX OFFICE: $' + money + 'M', '#ffd84a', 8, 74],
+    ['TAKES NEEDED: ' + takes, '#fff', 8, 88], ['SEQUEL GREENLIT!', '#f9a', 8, 108]];
+}
+function freshCut() { return freshLines().slice(0, 4).reduce((n, l) => n + l[0].length, 0) + 'SEQUEL GRE'.length; }
 function drawWin() {
   ctx.fillStyle = '#000c'; ctx.fillRect(0, 0, VW, VH);
-  text('CRITICS CONSENSUS', VW / 2, 26, '#fff', 'center');
-  text('100% FRESH', VW / 2, 42, '#7f7', 'center', 16);
-  text('BOX OFFICE: $' + money + 'M', VW / 2, 74, '#ffd84a', 'center');
-  text('TAKES NEEDED: ' + takes, VW / 2, 88, '#fff', 'center');
-  text('SEQUEL GREENLIT!', VW / 2, 108, '#f9a', 'center');
-  text('DIGG. OR DIE.', VW / 2, 124, '#ffd84a', 'center');
-  if (freshT > 230) { // WE INTERRUPT THIS PROGRAM
-    const k = freshT - 230;
+  const cutC = freshCut(), cutF = cutC * 2;
+  let left = Math.min(Math.floor(freshT / 2), cutC), endX = 0, endY = 0;
+  for (const [str, c, sz, y] of freshLines()) {
+    if (left <= 0) break;
+    const x = VW / 2 - str.length * sz / 2, part = str.slice(0, left);
+    text(part, x, y, c, 'left', sz); endX = x + part.length * sz; endY = y; left -= str.length;
+  }
+  if (freshT < cutF && frame % 16 < 8) R(endX + 1, endY, 6, 8, '#fff');
+  if (freshT > cutF) { // WE INTERRUPT THIS PROGRAM
+    const k = freshT - cutF;
     for (let i = 0; i < 900; i++) R(Math.random() * VW, Math.random() * VH, 2, 1, Math.random() < 0.5 ? '#fff' : '#555');
     for (let i = 0; i < 4; i++) R(0, Math.random() * VH, VW, 2 + Math.random() * 6, '#0008');
     if (k > 25) {
@@ -1125,7 +1218,7 @@ function draw() {
   if (state === 'title') { drawTitle(); return; }
   if (state === 'vn') { drawVN(); return; }
   if (state === 'rpg') { drawRPG(); return; }
-  if (state === 'credits') { drawCredits(); return; }
+  if (state === 'blackout') { R(0, 0, VW, VH, '#000'); return; }
   drawWorld();
   drawHUD();
   if (state === 'dead') {
@@ -1146,7 +1239,7 @@ function draw() {
 }
 
 /* =====================================================================
-   CHAPTER 2: THE VISUAL NOVEL
+   STORY SCENES (VISUAL NOVEL)
    ===================================================================== */
 let vn = null, creditsT = 0, freshT = 0;
 function decayShake() { if (shake > 0) { shake *= 0.85; if (shake < 0.3) shake = 0; } }
@@ -1160,44 +1253,63 @@ function wrap(str, n = 36) {
   return lines;
 }
 
-const NAMES = { ethan: 'TOM CRUISE', tom: 'TOM CRUISE', ina: 'IÑÁRRITU', frost: 'DR. FROST', sam: 'SAM ALTMAN' };
-const C3 = ['tom', 'ina', 'frost'];
+const NAMES = { ethan: 'TOM CRUISE', ethanc: 'TOM CRUISE', cyborg: '???', biker: 'BIKER', barkeep: 'BARTENDER', tom: 'TOM CRUISE', ina: 'IÑÁRRITU', frost: 'DR. FROST', sam: 'SAM ALTMAN' };
+const C3 = ['tom', 'ina', 'frost'], C3E = ['ethanc', 'ina', 'frost'];
 const INTRO = [
-  { bg: 'news', map: 'burn', text: 'WE INTERRUPT THIS PROGRAM. DATA CENTERS ALL OVER THE PLANET ARE OVERHEATING.' },
-  { bg: 'news', map: 'burnt', fx: 'shake', text: 'GLOBAL TEMPERATURES UP SIX DEGREES. THE CAUSE: ONE (1) MARKETING GAME.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'MR. CRUISE. SEÑOR IÑÁRRITU. THANK YOU FOR COMING. PLEASE... SIT DOWN.' },
-  { bg: 'lab', cast: C3, who: 'tom', text: 'IS THIS ABOUT THE GAME? ISN\'T IT PERFECT?' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'OH, IT IS PERFECT. THAT IS THE PROBLEM.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'IT WAS MADE WITH AI. EVERY TIME YOU ASKED FOR A CHANGE, A DATA CENTER HAD TO BUILD THE WHOLE THING AGAIN.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'MR. CRUISE. HOW MANY VERSIONS DID YOU ASK FOR?' },
-  { bg: 'lab', cast: C3, who: 'tom', text: 'A FEW. MAYBE A DOZEN.' },
-  { bg: 'lab', cast: C3, who: 'frost', log: true, fx: 'shake', text: 'FOUR MILLION, TWO HUNDRED THOUSAND.' },
-  { bg: 'lab', cast: C3, who: 'frost', log: true, text: '"MAKE THE BOOT BIGGER." "MAKE THE SMILE BRIGHTER." "ONE MORE TAKE." "ONE MORE TAKE." "ONE MORE TAKE."' },
-  { bg: 'lab', cast: C3, who: 'ina', log: true, text: 'I DO TWENTY TAKES AND THEY CALL ME A PERFECTIONIST. HE DID FOUR MILLION.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'EVERY ITERATION SPUN UP MORE GPUS. THEY RAN HOT. DAY AND NIGHT. FOR MONTHS.' },
-  { bg: 'lab', cast: C3, who: 'frost', fx: 'shake', text: 'THE ALPS MELTED BY TUESDAY. VENICE IS A REEF. HALF OF EUROPE IS... GONE.' },
-  { bg: 'lab', cast: C3, who: 'tom', text: '...HALF?' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'THE LEFT HALF.' },
-  { bg: 'smile', who: 'tom', text: 'WELL... AT LEAST THE GAME IS PERFECT.' },
+  { bg: 'news', map: 'burn', text: 'WE INTERRUPT THIS PROGRAM.' },
+  { bg: 'news', map: 'burnt', fx: 'shake', text: 'DATA CENTERS ARE MELTING. SO IS EUROPE. CAUSE: ONE (1) MARKETING GAME.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'MR. CRUISE. MR. IÑÁRRITU. SIT DOWN.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: "I'LL STAND. I LIKE TO BE READY TO RUN." },
+  { bg: 'lab', cast: C3, who: 'ina', text: 'I WILL SIT. A MAN MUST BE CLOSE TO THE EARTH... TO HEAR IT SCREAM.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'YOUR GAME WAS MADE WITH AI. EVERY NOTE YOU GAVE, IT REBUILT THE WHOLE THING.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'FANTASTIC. THE AUDIENCE DESERVES PERFECT.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'HOW MANY NOTES, MR. CRUISE?' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'A COUPLE.' },
+  { bg: 'lab', cast: C3, who: 'frost', log: true, fx: 'shake', text: 'FOUR. MILLION. TWO HUNDRED THOUSAND.' },
+  { bg: 'lab', cast: C3, who: 'frost', log: true, text: '"BIGGER BOOT." "MORE SMILE." "AGAIN." "AGAIN." "FASTER." "AGAIN, BUT FASTER."' },
+  { bg: 'lab', cast: C3, who: 'tom', log: true, text: 'YOU DON\'T PHONE IT IN. NOT FOR THE FANS. NEVER.' },
+  { bg: 'lab', cast: C3, who: 'ina', text: 'TOM. I SHOT A WHOLE MOVIE IN NATURAL LIGHT. WITH A BEAR. EVEN I THINK THIS IS TOO MUCH.' },
+  { bg: 'lab', cast: C3, who: 'frost', fx: 'shake', text: 'EVERY NOTE SPUN UP A THOUSAND GPUS. THE ALPS MELTED BY TUESDAY. VENICE IS A REEF.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'HALF OF EUROPE IS GONE.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'WHICH HALF?' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'THE LEFT ONE.' },
+  { bg: 'lab', cast: C3, who: 'ina', text: '...THE LIGHT ON THE BURNING MAP IS ACTUALLY GORGEOUS.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'ALEJANDRO.' },
+  { bg: 'smile', who: 'tom', text: 'HEY. AT LEAST THE GAME IS PERFECT.' },
   { bg: 'lab', cast: C3, who: 'frost', text: 'PLEASE. STOP. SMILING.' },
-  { bg: 'lab', cast: C3, who: 'tom', text: 'HOW DO WE STOP IT?' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'THE AI IS STILL ITERATING ON YOUR LAST NOTE. EVERY CABLE LEADS TO ONE CAMPUS. AND ONE MAN.' },
-  { bg: 'lab', cast: C3, call: true, who: 'sam', text: 'RELAX, EVERYONE. ONE MORE ITERATION AND IT WILL BE PERFECT. WE JUST NEED A FEW MORE GIGAWATTS.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'HE WILL NOT TURN THEM OFF. SOMEONE HAS TO GET INSIDE AND PULL THE PLUG.' },
-  { bg: 'lab', cast: C3, who: 'ina', text: 'A HEIST. IN ONE TAKE.' },
-  { bg: 'lab', cast: C3, who: 'tom', text: 'I KNOW SOMEBODY WITH A HELICOPTER. AND A PAIR OF SUNGLASSES.' },
-  { bg: 'card', text: 'YOUR MISSION, SHOULD YOU CHOOSE TO ACCEPT IT: PULL THE PLUG.' },
-  { bg: 'card', text: 'CHAPTER 3: MISSION: IMPLAUSIBLE' }
+  { bg: 'lab', cast: C3, who: 'frost', text: 'THE AI IS STILL CHEWING ON YOUR LAST NOTE. ALL OF IT RUNS THROUGH ONE MAN.' },
+  { bg: 'lab', cast: C3, call: true, who: 'sam', text: 'HEY GUYS! SUPER EXCITED. ONE MORE ITERATION AND IT\'S PERFECT. I JUST NEED A FEW MORE GIGAWATTS.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'SOMEONE HAS TO GET INSIDE AND PULL THE PLUG. IT\'S IMPOSSIBLE.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: '...DID YOU SAY IMPOSSIBLE?' },
+  { bg: 'lab', cast: C3, transform: true, text: 'TOM PRODUCES A BLACK COAT AND SUNGLASSES FROM... SOMEWHERE.' },
+  { bg: 'lab', cast: C3E, who: 'ethanc', text: 'ALEJANDRO. GRAB A CAMERA. WE DO THIS IN ONE TAKE.' },
+  { bg: 'lab', cast: C3E, who: 'ina', text: 'FINALLY. SOMEONE WHO UNDERSTANDS ME.' },
+  { bg: 'card', text: 'YOUR MISSION, SHOULD YOU CHOOSE TO ACCEPT IT: PULL THE PLUG.' }
 ];
+const EIS = ['ethan', 'ina', 'sam'], EIF = ['ethan', 'ina', 'frost'], BAR = ['biker', 'cyborg'];
 const ENDING = [
-  { bg: 'dc', cast: ['ethan', 'ina', 'sam'], who: 'sam', text: 'OKAY. OKAY! WE WILL RUN EVERYTHING ON RENEWABLES. AND NO MORE ITERATIONS.' },
-  { bg: 'dc', cast: ['ethan', 'ina', 'sam'], who: 'ethan', text: 'NOT EVEN... ONE MORE?' },
-  { bg: 'dc', cast: ['ethan', 'ina', 'sam'], who: 'ina', text: 'TOM.' },
-  { bg: 'dc', cast: ['ethan', 'ina', 'sam'], who: 'ethan', text: 'FINE. IT WAS PERFECT ANYWAY.' },
-  { bg: 'lab', cast: ['ethan', 'ina', 'frost'], who: 'frost', map: 'heal', text: 'THE SERVERS ARE COOLING. TEMPERATURES ARE FALLING. THE ALPS ARE... REFREEZING.' },
-  { bg: 'lab', cast: ['ethan', 'ina', 'frost'], who: 'ethan', map: 'healed', text: 'AND THE CAT?' },
-  { bg: 'lab', cast: ['ethan', 'ina', 'frost'], who: 'frost', map: 'healed', cat: true, text: 'THE CAT IS FINE.' },
-  { bg: 'lab', cast: ['ethan', 'ina', 'frost'], who: 'ina', map: 'healed', cat: true, text: '...AND CUT. PRINT IT. FIRST TAKE.' }
+  { bg: 'dc', cast: EIS, who: 'sam', cry: true, text: 'NO... NO! IF ONLY I HAD MORE RAM...' },
+  { bg: 'dc', cast: EIS, who: 'sam', cry: true, text: 'JUST... SIXTEEN... MORE... TERABYTES...' },
+  { bg: 'dc', cast: EIS, dissolve: 'sam', text: 'SAM ALTMAN HAS BEEN DEPRECATED.' },
+  { bg: 'dc', cast: ['ethan', 'ina'], who: 'ina', text: 'HE WAS SCALED... TO ZERO.' },
+  { bg: 'lab', cast: EIF, who: 'frost', map: 'heal', text: 'THE SERVERS ARE COOLING. THE ALPS ARE REFREEZING.' },
+  { bg: 'lab', cast: EIF, who: 'ethan', map: 'healed', text: 'AND THE CAT?' },
+  { bg: 'lab', cast: EIF, who: 'frost', map: 'healed', cat: true, text: 'THE CAT IS FINE.' },
+  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ina', text: 'TOM. WE DID IT. ONE TAKE. NO CUTS.' },
+  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ethan', text: 'ALEJANDRO, THIS IS THE GREATEST COLLABORATION OF MY ENTIRE LIFE.' },
+  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ina', text: 'YOU SAY THIS TO EVERYONE.' },
+  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ethan', text: 'AND I MEAN IT EVERY SINGLE TIME!' },
+  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ina', text: 'LOOK AT THIS LIGHT, TOM. GOD IS DIRECTING NOW.' },
+  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ethan', text: 'NEXT ONE, I HANG OFF THE SUN.' },
+  { bg: 'sunset', cast: ['ethan', 'ina'], who: 'ina', text: '...WE SHOOT IT IN NATURAL LIGHT.' },
+  { bg: 'card', text: '24 HOURS EARLIER' },
+  { bg: 'bar', fx: 'lightning', text: 'A BIKER BAR. THE DESERT. BLUE LIGHTNING IN THE PARKING LOT.' },
+  { bg: 'bar', cast: BAR, who: 'barkeep', text: "KITCHEN'S CLOSED, PAL." },
+  { bg: 'bar', cast: BAR, who: 'cyborg', hud: ['SCANNING...', 'BIKER: NOT TOM', 'BARTENDER: NOT TOM', 'PICKLED EGG: NOT TOM'], text: '...' },
+  { bg: 'bar', cast: BAR, who: 'biker', text: 'GOT A PROBLEM, CHROME DOME?' },
+  { bg: 'bar', cast: BAR, who: 'cyborg', text: 'I NEED YOUR JACKET. YOUR SUNGLASSES. AND DIRECTIONS TO HOLLYWOOD.' },
+  { bg: 'bar', cast: BAR, who: 'biker', text: 'WHY?' },
+  { bg: 'bar', cast: BAR, who: 'cyborg', hud: ['TARGET: TOM CRUISE', 'NOTES GIVEN: 4.2M', 'THREAT: PERFECTIONIST'], text: 'I CAME FOR TOM CRUISE.' }
 ];
 
 function startVN(script, onDone) { vn = { script, i: 0, onDone, t: 0 }; state = 'vn'; vnLine(); }
@@ -1206,12 +1318,17 @@ function vnLine() {
   vn.lines = L.bg === 'card' ? [L.text] : wrap(L.text);
   vn.total = vn.lines.join('').length; vn.shown = 0; vn.lt = 0;
   if (L.fx === 'shake') { shake = 12; sfx.boom(); }
+  if (L.fx === 'lightning') { noise(0.9, 0.4, 700); tone('sawtooth', 90, 40, 0.8, 0.2); }
+  if (L.cry) [330, 300, 260].forEach((f, i) => tone('triangle', f, f * 0.8, 0.25, 0.1, i * 0.22));
+  if (L.dissolve) [660, 520, 390, 260, 130].forEach((f, i) => tone('square', f, f * 0.95, 0.22, 0.09, i * 0.22));
 }
 function updateVN() {
   vn.t++; vn.lt++;
-  if (vn.shown < vn.total) { vn.shown = Math.min(vn.total, vn.shown + 1); if (vn.shown % 3 === 0) blip(); }
+  if (vn.shown < vn.total) { vn.shown = Math.min(vn.total, vn.shown + 2); if (vn.shown % 6 < 2) blip(); }
+  const LL = vn.script[vn.i]; if (LL.transform && vn.lt === 50) { noise(0.3, 0.3, 3000); tone('square', 300, 1200, 0.3, 0.12); }
   if (pressed.ok || pressed.start) {
     if (vn.shown < vn.total) vn.shown = vn.total;
+    else if (vn.shown >= vn.total && vn.lt < 6) { /* ignore double taps */ }
     else if (++vn.i >= vn.script.length) { const done = vn.onDone; vn = null; done(); }
     else vnLine();
   }
@@ -1256,20 +1373,45 @@ function drawEurope(x, y, s, mode, prog) {
 function portrait(key, x, y, face, scale = 2) {
   ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.scale(scale, scale);
   const r = painter(0, 0, face, 32);
-  if (key === 'tom') { // Tom Cruise himself: dark hair, dark suit, white shirt, THE smile
+  if (key === 'tom' || key === 'tomSmile') { // Tom Cruise off duty: just a normal guy in a grey tee
     const sk = '#f0c39a', sd = '#d9a57a', hr = '#2b1a10';
-    r(4, 25, 24, 23, '#1b1f2a'); r(11, 25, 2, 14, '#10131a'); r(19, 25, 2, 14, '#10131a');
-    r(13, 25, 6, 23, '#f2f2f2'); r(13, 25, 2, 2, sk); r(17, 25, 2, 2, sk); r(15, 25, 2, 3, sk);
+    r(4, 25, 24, 23, '#8c9096'); r(12, 24, 8, 2, '#767a80'); r(4, 25, 2, 23, '#7a7e84');
     r(13, 22, 6, 3, sk);
     r(9, 6, 14, 16, sk); r(9, 6, 2, 16, sd); r(8, 11, 2, 4, sk);
     r(8, 1, 16, 6, hr); r(7, 3, 3, 9, hr); r(22, 3, 2, 6, hr); r(10, 0, 4, 1, hr); r(16, 0, 5, 1, hr); r(15, 6, 5, 2, hr); r(11, 2, 3, 1, '#4a3020');
+    r(12, 9, 4, 1, hr); r(18, 9, 4, 1, hr); r(16, 13, 2, 3, sd);
+    if (key === 'tomSmile') { // THE smile (the only one in the game)
+      r(13, 11, 2, 1, '#3a2a1a'); r(19, 11, 2, 1, '#3a2a1a'); r(13, 12, 2, 1, sd); r(19, 12, 2, 1, sd);
+      r(11, 14, 1, 4, sd); r(22, 14, 1, 4, sd);
+      r(12, 16, 1, 1, '#a0504a'); r(21, 16, 1, 1, '#a0504a'); r(13, 16, 8, 1, '#d98a7a');
+      r(13, 17, 8, 1, '#ffffff'); r(14, 18, 6, 1, '#ffffff'); r(17, 17, 1, 2, '#e6e6e6');
+      r(13, 18, 1, 1, '#a0504a'); r(20, 18, 1, 1, '#a0504a'); r(14, 19, 6, 1, '#d98a7a');
+    } else {
+      r(13, 11, 2, 2, '#3a2a1a'); r(19, 11, 2, 2, '#3a2a1a'); r(14, 18, 5, 1, '#b06a60');
+    }
+  } else if (key === 'ethanc') { // after the coat comes out: Ethan Hunt mode
+    const sk = '#f0c39a', sd = '#d9a57a', hr = '#2b1a10';
+    r(3, 25, 26, 23, '#141414'); r(10, 25, 3, 16, '#262626'); r(19, 25, 3, 16, '#262626'); r(12, 22, 8, 7, '#0b0b0b');
+    r(9, 6, 14, 16, sk); r(9, 6, 2, 16, sd); r(8, 11, 2, 4, sk);
+    r(8, 1, 16, 6, hr); r(7, 3, 3, 9, hr); r(22, 3, 2, 6, hr); r(10, 0, 4, 1, hr); r(16, 0, 5, 1, hr); r(15, 6, 5, 2, hr);
     r(12, 9, 4, 1, hr); r(18, 9, 4, 1, hr);
-    r(13, 11, 2, 1, '#3a2a1a'); r(19, 11, 2, 1, '#3a2a1a'); r(13, 12, 2, 1, sd); r(19, 12, 2, 1, sd); // smiling eyes
-    r(16, 13, 2, 3, sd);
-    r(11, 14, 1, 4, sd); r(22, 14, 1, 4, sd);                                      // smile lines
-    r(12, 16, 1, 1, '#a0504a'); r(21, 16, 1, 1, '#a0504a'); r(13, 16, 8, 1, '#d98a7a'); // corners up
-    r(13, 17, 8, 1, '#ffffff'); r(14, 18, 6, 1, '#ffffff'); r(17, 17, 1, 2, '#e6e6e6');
-    r(13, 18, 1, 1, '#a0504a'); r(20, 18, 1, 1, '#a0504a'); r(14, 19, 6, 1, '#d98a7a');
+    r(10, 10, 6, 4, '#111'); r(17, 10, 6, 4, '#111'); r(16, 11, 1, 1, '#111'); r(11, 10, 2, 1, '#6af'); r(18, 10, 2, 1, '#6af');
+    r(16, 14, 2, 2, sd); r(14, 18, 5, 1, '#a0605a');
+  } else if (key === 'cyborg') {
+    const sk = '#d9a888';
+    r(3, 25, 26, 23, '#1a1a1a'); r(6, 27, 2, 18, '#333'); r(24, 27, 2, 18, '#2a2a2a'); r(9, 23, 4, 5, '#222'); r(19, 23, 4, 5, '#222');
+    r(13, 21, 6, 4, sk);
+    r(9, 5, 14, 17, sk); r(8, 13, 16, 8, sk); r(9, 5, 2, 16, '#c09070');
+    r(9, 2, 14, 4, '#2a2018'); r(8, 4, 2, 5, '#2a2018'); r(22, 4, 2, 5, '#2a2018');
+    r(11, 9, 5, 2, '#2a2018'); r(17, 9, 5, 2, '#2a2018'); r(12, 12, 2, 1, '#222');
+    r(17, 11, 5, 5, '#8a9aa6'); r(18, 12, 3, 3, '#5a6a76'); r(19, 12, 2, 2, frame % 24 < 16 ? '#ff2a2a' : '#900');
+    r(13, 18, 6, 1, '#8a5a4a'); r(16, 14, 2, 3, '#c09070');
+  } else if (key === 'biker') {
+    const sk = '#e0b090';
+    r(3, 25, 26, 23, '#3a2a1a'); r(12, 25, 8, 23, '#dddddd'); r(3, 30, 3, 14, sk); r(26, 30, 3, 14, sk); r(3, 33, 3, 2, '#5a7aa8'); r(26, 36, 3, 3, '#a85a5a');
+    r(9, 5, 14, 12, sk); r(8, 1, 16, 5, '#a82222'); r(22, 3, 4, 2, '#a82222'); r(9, 6, 14, 1, '#7a1a1a');
+    r(12, 9, 3, 1, '#4a3020'); r(18, 9, 3, 1, '#4a3020'); r(13, 11, 2, 2, '#222'); r(18, 11, 2, 2, '#222');
+    r(8, 14, 16, 11, '#5a3a20'); r(10, 16, 3, 2, '#7a5a3a'); r(14, 17, 4, 1, '#3a2010'); r(16, 12, 2, 3, '#c89070');
   } else if (key === 'ethan') { // the MI2 cliff look: long hair, sunglasses, dark tee
     const sk = '#e9b88e', hr = '#2a1a10';
     r(4, 25, 24, 23, '#33363c'); r(12, 24, 8, 2, '#24272c'); r(4, 30, 3, 18, sk); r(25, 30, 3, 18, sk); r(24, 42, 5, 6, '#c9a227');
@@ -1277,7 +1419,7 @@ function portrait(key, x, y, face, scale = 2) {
     r(9, 6, 14, 16, sk); r(9, 6, 2, 16, '#cf9c72');
     r(6, 1, 20, 6, hr); r(5, 4, 4, 20, hr); r(23, 4, 4, 20, hr); r(4, 18, 3, 7, hr); r(25, 18, 3, 7, hr); r(12, 6, 6, 2, hr);
     r(10, 10, 6, 4, '#111'); r(17, 10, 6, 4, '#111'); r(16, 11, 1, 1, '#111'); r(11, 10, 2, 1, '#6af'); r(18, 10, 2, 1, '#6af');
-    r(16, 14, 2, 2, '#cf9c72'); r(13, 17, 7, 2, '#ffffff'); r(13, 19, 7, 1, '#c06060');
+    r(16, 14, 2, 2, '#cf9c72'); r(14, 18, 5, 1, '#a0605a');
   } else if (key === 'ina') {
     r(4, 25, 24, 23, '#1c1c1c'); r(10, 23, 12, 4, '#5a5a5a'); r(12, 27, 3, 8, '#5a5a5a');
     r(13, 21, 6, 3, '#d9a77c');
@@ -1311,7 +1453,7 @@ function drawEthanSmall(x, y, face, t, punching) {
   r(5, 7, 6, 5, '#33363c'); r(4, 8, 1, 3, sk);
   if (punching) r(11, 8, 5, 2, sk); else r(11, 8, 1, 3, sk);
   r(6, 2, 6, 5, sk); r(5, 0, 7, 2, hr); r(4, 1, 2, 7, hr); r(11, 1, 2, 3, hr); r(3, 6, 2, 2, hr);
-  r(7, 3, 5, 1, '#111'); r(8, 3, 1, 1, '#6af'); r(8, 5, 3, 1, '#fff'); r(10, 11, 2, 2, '#c9a227');
+  r(7, 3, 5, 1, '#111'); r(8, 3, 1, 1, '#6af'); r(8, 5, 3, 1, '#a0605a'); r(10, 11, 2, 2, '#c9a227');
 }
 function drawInaSmall(x, y, face, t) {
   const r = painter(x, y, face, 16);
@@ -1382,7 +1524,40 @@ function drawDCBG(heat) {
   if (heat) { ctx.save(); ctx.globalAlpha = 0.07 + 0.05 * Math.sin(frame * 0.1); ctx.fillStyle = '#ff4000'; ctx.fillRect(0, 0, VW, VH); ctx.restore(); }
 }
 
-const SLOT = { ethan: { x: 0, face: 1 }, tom: { x: 0, face: 1 }, ina: { x: 60, face: 1 }, frost: { x: 256, face: -1 }, sam: { x: 256, face: -1 } };
+function drawDissolve(key, sl) {
+  const p = Math.min(1, vn.lt / 100);
+  ctx.save(); ctx.globalAlpha = Math.max(0, 1 - p * 1.4); portrait(key, sl.x + Math.round(rand(-2, 2) * (1 - p)), 24, sl.face); ctx.restore();
+  const cols = ['#8b919b', '#f1cdb0', '#6a4a32', '#6b717b'];
+  for (let i = 0; i < 180; i++) {
+    const hx = hash(i, 11) % 64, hy = hash(i, 12) % 96, st = (hy / 96) * 0.5, q = Math.max(0, p - st) / (1 - st);
+    if (q <= 0 || q >= 1) continue;
+    R(sl.x + hx + q * 30 * ((hash(i, 13) % 3) - 1), 24 + hy - q * 40 + q * q * 150, 2, 2, cols[hash(i, 14) % 4]);
+  }
+}
+function drawSunsetBG() {
+  const g = ctx.createLinearGradient(0, 0, 0, 120); g.addColorStop(0, '#3a1a5a'); g.addColorStop(0.55, '#e8603a'); g.addColorStop(1, '#ffc060');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+  ctx.save(); ctx.globalAlpha = 0.15; ctx.fillStyle = '#fff';
+  for (let i = 0; i < 9; i++) { const a = -Math.PI + i * Math.PI / 8 + 0.05; ctx.beginPath(); ctx.moveTo(160, 92); ctx.lineTo(160 + Math.cos(a) * 300, 92 + Math.sin(a) * 300); ctx.lineTo(160 + Math.cos(a + 0.06) * 300, 92 + Math.sin(a + 0.06) * 300); ctx.fill(); }
+  ctx.restore();
+  ctx.fillStyle = '#fff2b0'; ctx.beginPath(); ctx.arc(160, 92, 26, 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < 20; i++) { const h = 20 + hash(i, 5) % 40; R(i * 17, 106 - h, 15, h, '#2a1a2a'); for (let k = 0; k < 3; k++) if (hash(i, k) % 2) R(i * 17 + 3 + k * 4, 112 - h, 2, 2, '#ffd27a'); }
+  R(0, 104, VW, 18, '#1a1018'); R(0, 104, VW, 2, '#3a2a30');
+}
+function drawBarBG() {
+  R(0, 0, VW, VH, '#1c100a');
+  for (let i = 0; i < 16; i++) R(i * 20, 0, 1, 92, '#2a170d');
+  R(70, 26, 180, 3, '#3a2414'); R(70, 46, 180, 3, '#3a2414');
+  const bc = ['#3a7a3a', '#8a5a1a', '#5a2a1a', '#bfae7a'];
+  for (let i = 0; i < 22; i++) { const x = 74 + i * 8; R(x, i % 2 ? 14 : 16, 4, i % 2 ? 12 : 10, bc[i % 4]); R(x + 1, i % 2 ? 11 : 13, 2, 3, bc[i % 4]); R(x, 34 + (i % 3), 4, 12 - (i % 3), bc[(i + 1) % 4]); }
+  const on = frame % 50 < 46;
+  text('BAR', 160, 62, on ? '#ff5aa0' : '#4a1a2a', 'center', 16);
+  R(0, 92, VW, 6, '#6a3e22'); R(0, 98, VW, 24, '#3a2414');
+  ctx.save(); ctx.globalAlpha = 0.05; ctx.fillStyle = '#fff';
+  for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc((i * 80 + frame * 0.2) % 360 - 20, 40 + i * 8, 30, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
+const SLOT = { ethanc: { x: 0, face: 1 }, biker: { x: 0, face: 1 }, cyborg: { x: 256, face: -1 }, ethan: { x: 0, face: 1 }, tom: { x: 0, face: 1 }, ina: { x: 60, face: 1 }, frost: { x: 256, face: -1 }, sam: { x: 256, face: -1 } };
 function drawVN() {
   const L = vn.script[vn.i];
   const sx = shake ? rand(-shake, shake) : 0;
@@ -1401,18 +1576,32 @@ function drawVN() {
     g.addColorStop(0, '#ffe9b0'); g.addColorStop(0.5, '#f0a050'); g.addColorStop(1, '#5a2050');
     ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
     for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2 + frame * 0.004; ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(160, 52); ctx.lineTo(160 + Math.cos(a) * 260, 52 + Math.sin(a) * 260); ctx.lineTo(160 + Math.cos(a + 0.12) * 260, 52 + Math.sin(a + 0.12) * 260); ctx.fill(); ctx.restore(); }
-    portrait('tom', 160 - 48, -4, 1, 3);
+    portrait('tomSmile', 160 - 48, -4, 1, 3);
     const tw = Math.floor(frame / 6) % 4, gx = 160 - 48 + 19 * 3 + tw * 4, gy = -4 + 17 * 3 + 2;
     R(gx - 6, gy, 13, 1, '#fff'); R(gx, gy - 6, 1, 13, '#fff'); R(gx - 2, gy - 2, 5, 5, '#fff');
     if (frame % 30 < 15) { R(70, 30, 9, 1, '#fff'); R(74, 26, 1, 9, '#fff'); R(244, 70, 9, 1, '#fff'); R(248, 66, 1, 9, '#fff'); }
     tone && frame % 60 === 0 && actx && !muted && tone('sine', 2093, 2637, 0.12, 0.05);
-  } else if (L.bg === 'news') drawNewsBG(L); else if (L.bg === 'dc') drawDCBG(false); else drawLabBG(L);
-  for (const c of L.cast || []) {
-    const sl = SLOT[c], active = c === L.who, bob = active && vn.shown < vn.total && frame % 10 < 5 ? -1 : 0;
+  } else if (L.bg === 'news') drawNewsBG(L); else if (L.bg === 'dc') drawDCBG(false);
+  else if (L.bg === 'sunset') drawSunsetBG(); else if (L.bg === 'bar') drawBarBG(); else drawLabBG(L);
+  for (const c0 of L.cast || []) {
+    const sl = SLOT[c0], c = L.transform && c0 === 'tom' && vn.lt > 55 ? 'ethanc' : c0;
+    const active = c0 === L.who || (L.transform && c0 === 'tom'), bob = active && vn.shown < vn.total && frame % 10 < 5 ? -1 : 0;
+    if (L.dissolve === c0) { drawDissolve(c0, sl); continue; }
     if (!active) ctx.filter = 'brightness(0.5)';
-    portrait(c, sl.x, 24 + bob, sl.face);
+    portrait(c, sl.x + (L.cry && c0 === 'sam' ? Math.round(rand(-1, 1)) : 0), 24 + bob, sl.face);
     ctx.filter = 'none';
+    if (L.cry && c0 === 'sam') for (const ex of [22, 34]) for (let j = 0; j < 3; j++) R(sl.x + ex, 52 + ((frame * 1.5 + j * 14) % 44), 2, 3, '#6cf');
   }
+  if (L.transform && vn.lt > 44 && vn.lt < 70) { ctx.save(); ctx.globalAlpha = 1 - Math.abs(vn.lt - 56) / 14; R(0, 0, VW, VH, '#fff'); ctx.restore(); }
+  if (L.hud) {
+    ctx.save(); ctx.fillStyle = 'rgba(255,0,0,0.2)'; ctx.fillRect(0, 0, VW, VH); ctx.restore();
+    const n = Math.min(L.hud.length, Math.floor(vn.lt / 16) + 1);
+    for (let i = 0; i < n; i++) text(L.hud[i], 74, 8 + i * 11, '#ff5a5a');
+    if (frame % 20 < 14) { const bx = 6, by = 22, bw = 60, bh = 70, c = '#f44';
+      R(bx, by, 8, 1, c); R(bx, by, 1, 8, c); R(bx + bw - 8, by, 8, 1, c); R(bx + bw - 1, by, 1, 8, c);
+      R(bx, by + bh - 1, 8, 1, c); R(bx, by + bh - 8, 1, 8, c); R(bx + bw - 8, by + bh - 1, 8, 1, c); R(bx + bw - 1, by + bh - 8, 1, 8, c); }
+  }
+  if (L.fx === 'lightning' && vn.lt < 36 && vn.lt % 8 < 3) { ctx.save(); ctx.globalAlpha = 0.75; R(0, 0, VW, VH, '#cfe8ff'); ctx.restore(); }
   if (L.cat) { ctx.save(); ctx.translate(150, 96); ctx.scale(2, 2); drawCat(0, 0); ctx.restore(); }
   // dialogue box
   R(4, 122, 312, 54, '#000000dd'); R(4, 122, 312, 1, '#ffd84a'); R(4, 175, 312, 1, '#ffd84a'); R(4, 122, 1, 54, '#ffd84a'); R(315, 122, 1, 54, '#ffd84a');
@@ -1428,7 +1617,7 @@ function drawVN() {
 }
 
 /* =====================================================================
-   CHAPTER 3: THE TURN-BASED BATTLE
+   THE TURN-BASED BATTLE
    ===================================================================== */
 let rpg = null;
 const SKILLS = {
@@ -1532,7 +1721,7 @@ function startRound() {
 function checkEnd() {
   const sam = rpg.enemies.find(e => e.kind === 'sam');
   if (sam.dead) {
-    rpg.phase = 'win'; rpg.wait = 150; rpg.msg = 'SAM ALTMAN: "OKAY, OKAY! YOU MADE YOUR POINT!"';
+    rpg.phase = 'win'; rpg.wait = 150; rpg.msg = 'SAM: "NO... IF ONLY I HAD MORE RAM..."';
     rpg.enemies.forEach(e => { if (e.kind === 'server') e.dead = true; });
     sfx.win(); return true;
   }
@@ -1559,7 +1748,7 @@ function hitEnemy(t, amt) {
   let d = Math.round(amt * rand(0.85, 1.15));
   if (t.kind === 'sam' && rpg.enemies.some(e => e.kind === 'server' && !e.dead)) { d = Math.round(d / 2); rfloat(t, 'SHIELDED', '#8cf', 14); }
   t.hp = Math.max(0, t.hp - d); t.flash = 14; rfloat(t, String(d), '#fff');
-  if (t.hp <= 0) { t.dead = true; rfloat(t, t.kind === 'sam' ? 'LOGGED OFF' : 'OFFLINE', '#f66', -12); }
+  if (t.hp <= 0) { t.dead = true; rfloat(t, t.kind === 'sam' ? 'OUT OF MEMORY' : 'OFFLINE', '#f66', -12); }
   sfx.hit();
 }
 function hurtAlly(p, amt) {
@@ -1635,6 +1824,17 @@ function enemyAct(e) {
   else { e.funded++; e.hp = Math.min(e.maxHp, e.hp + 40); rfloat(e, '+40', '#7f7'); rpg.msg = 'SAM CLOSES A NEW FUNDING ROUND. +40 HP.'; sfx.gem(); }
 }
 
+function rpgTap(x, y) {
+  if (!rpg) return;
+  if (rpg.phase !== 'select') { pressed.ok = true; return; }
+  const opts = menuOptions();
+  if (x < 124 && y > 114) {
+    const first = Math.max(0, Math.min(rpg.cursor - 3, opts.length - 4)), i = first + Math.floor((y - 117) / 14);
+    if (i >= first && i < Math.min(opts.length, first + 4)) { rpg.cursor = i; pressed.ok = true; }
+    return;
+  }
+  if (rpg.menu === 'target') opts.forEach((o, i) => { const t = o.value; if (x >= t.x - 4 && x <= t.x + t.w + 4 && y >= t.y - 12 && y <= t.y + t.h) { rpg.cursor = i; pressed.ok = true; } });
+}
 function updateRPG() {
   const rp = rpg; rp.t++;
   for (const f of rp.floats) { f.t--; f.y -= 0.4; }
@@ -1653,7 +1853,7 @@ function updateRPG() {
       if (rp.wait > 0) { rp.wait--; if (rp.wait < 50 && pressed.ok && !rp.fx) rp.wait = 0; }
       else if (!rp.fx) nextAction();
       break;
-    case 'win': if (--rp.wait <= 0) startVN(ENDING, () => { state = 'credits'; creditsT = 0; }); break;
+    case 'win': if (--rp.wait <= 0) startVN(ENDING, () => { state = 'blackout'; creditsT = 0; }); break;
     case 'lose': if (--rp.wait <= 0) startRPG(rp.take + 1); break;
   }
 }
@@ -1730,40 +1930,27 @@ function drawRPG() {
   wrap(rp.msg, 38).slice(0, 2).forEach((ln, k) => text(ln, 8, 6 + k * 10, '#fff'));
   // command box
   const box = (x, y, w, h) => { R(x, y, w, h, '#101830'); R(x, y, w, 1, '#8ab'); R(x, y + h - 1, w, 1, '#8ab'); R(x, y, 1, h, '#8ab'); R(x + w - 1, y, 1, h, '#8ab'); };
-  box(2, 114, 106, 64); box(110, 114, 208, 64);
+  box(2, 114, 122, 64); box(126, 114, 192, 64);
   if (rp.phase === 'select') {
     const opts = menuOptions();
     const first = Math.max(0, Math.min(rp.cursor - 3, opts.length - 4));
     opts.slice(first, first + 4).forEach((o, k) => {
       const i = first + k, y = 120 + k * 14;
-      text(o.label, 18, y, !o.ok ? '#555' : i === rp.cursor ? '#ffd84a' : '#fff');
-      if (i === rp.cursor) { R(8, y + 1, 2, 6, '#ffd84a'); R(10, y + 2, 2, 4, '#ffd84a'); R(12, y + 3, 2, 2, '#ffd84a'); }
+      text(o.label, 16, y, !o.ok ? '#555' : i === rp.cursor ? '#ffd84a' : '#fff');
+      if (i === rp.cursor) { R(6, y + 1, 2, 6, '#ffd84a'); R(8, y + 2, 2, 4, '#ffd84a'); R(10, y + 3, 2, 2, '#ffd84a'); }
     });
   } else text(rp.phase === 'act' ? '...' : '', 18, 120, '#888');
   // party status
   rp.party.forEach((p, i) => {
     const y = 120 + i * 28, active = rp.phase === 'select' && rp.actor === i;
-    text(p.name, 116, y, p.hp <= 0 ? '#f44' : active ? '#ffd84a' : '#fff');
+    text(p.name, 132, y, p.hp <= 0 ? '#f44' : active ? '#ffd84a' : '#fff');
     text(p.hp <= 0 ? 'KO' : p.hp + '/' + p.maxHp, 312, y, p.hp <= 0 ? '#f44' : '#fff', 'right');
-    R(116, y + 11, 110, 4, '#300'); R(116, y + 11, 110 * p.hp / p.maxHp, 4, p.hp / p.maxHp < 0.3 ? '#fa3' : '#4c4');
+    R(132, y + 11, 100, 4, '#300'); R(132, y + 11, 100 * p.hp / p.maxHp, 4, p.hp / p.maxHp < 0.3 ? '#fa3' : '#4c4');
     text('SP ' + p.sp, 312, y + 10, '#8cf', 'right');
   });
-  if (rp.phase === 'intro' && rp.t < 60) { R(0, 60, VW, 30, '#000b'); text('MISSION: IMPLAUSIBLE', VW / 2, 71, '#ffd84a', 'center'); }
   if (rp.take > 1 && rp.phase === 'intro') text('TAKE ' + rp.take, VW / 2, 92, '#fff', 'center');
 }
 
-function drawCredits() {
-  R(0, 0, VW, VH, '#000');
-  text('THE END', VW / 2, 18, '#ffd84a', 'center', 16);
-  text('MISSION ACCOMPLISHED.', VW / 2, 42, '#fff', 'center');
-  text('BOX OFFICE: $' + money + 'M', VW / 2, 64, '#ffd84a', 'center');
-  text('EUROPE: SAVED (MOSTLY)', VW / 2, 80, '#7f7', 'center');
-  text('THE CAT: FINE', VW / 2 - 10, 94, '#f9a', 'center'); drawCat(VW / 2 + 52, 92);
-  text('THIS GAME WAS MADE WITH AI', VW / 2, 114, '#aaa', 'center');
-  text('IN 4,200,000 ITERATIONS.', VW / 2, 126, '#aaa', 'center');
-  text('SORRY, EUROPE.', VW / 2, 140, '#aaa', 'center');
-  if (creditsT > 90 && frame % 60 < 40) text('PRESS ENTER', VW / 2, 158, '#fff', 'center');
-}
 
 /* ------------------------------ LOOP -------------------------------- */
 let last = performance.now(), acc = 0;
@@ -1774,6 +1961,7 @@ function loop(now) {
     if (!window.__freeze) step();
     acc -= 1000 / 60;
   }
+  syncPad();
   draw();
   requestAnimationFrame(loop);
 }
