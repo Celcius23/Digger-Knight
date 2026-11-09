@@ -214,61 +214,219 @@ const sfx = {
   die: () => { [392, 330, 262, 196].forEach((f, i) => tone('square', f, f * 0.98, 0.18, 0.18, i * 0.15)); }
 };
 
-/* Tiny original chiptune: a driving A-minor action loop */
+/* ------------------------------ MUSIC -------------------------------
+   A tiny generative score. Every track is built from sections (intro,
+   verse, chorus, bridge, breakdown) with their own chords, bass, drums and
+   arrangement. Melodies grow from a motif that mutates each time a section
+   comes back, phrases end in drum fills, and every playthrough gets a new
+   seed, so no loop plays out exactly the same way twice. All original.
+   -------------------------------------------------------------------- */
 const N = n => 440 * Math.pow(2, (n - 69) / 12);
-const BASS = [45, 0, 57, 45, 0, 45, 57, 0, 41, 0, 53, 41, 0, 41, 53, 0, 43, 0, 55, 43, 0, 43, 55, 0, 40, 0, 52, 40, 0, 40, 52, 52];
-const LEAD = [69, 0, 72, 0, 76, 0, 74, 72, 69, 0, 72, 0, 77, 76, 74, 0, 71, 0, 74, 0, 79, 0, 77, 76, 76, 0, 74, 0, 71, 0, 68, 0];
-const BOSS_LEAD = [81, 80, 81, 0, 76, 0, 77, 0, 81, 80, 81, 0, 84, 0, 83, 0, 79, 78, 79, 0, 74, 0, 76, 0, 80, 0, 83, 0, 88, 0, 86, 0];
-// Original 5/4 spy-thriller loop for the data-center battle (2 bars x 20 sixteenths)
-const seq = (len, pairs) => { const a = Array(len).fill(0); pairs.forEach(([i, n]) => a[i] = n); return a; };
-const SPY_BASS = seq(40, [[0, 40], [2, 40], [4, 47], [8, 40], [10, 43], [12, 42], [14, 40], [16, 38], [18, 35],
-  [20, 40], [22, 40], [24, 47], [28, 40], [30, 43], [32, 45], [34, 46], [36, 47], [38, 35]]);
-const SPY_LEAD = seq(40, [[4, 71], [8, 72], [12, 71], [14, 67], [16, 66], [20, 76], [26, 74], [28, 72], [30, 71], [34, 70], [36, 71]]);
-const VN_BASS = seq(32, [[0, 45], [8, 41], [16, 43], [24, 40]]);
-const VN_LEAD = seq(32, [[4, 69], [6, 72], [12, 65], [14, 69], [20, 67], [22, 71], [28, 64], [30, 68]]);
-const SONGS = {
-  title: { bpm: 136, len: 32, bass: BASS },
-  level: { bpm: 136, len: 32, bass: BASS, lead: LEAD, hat: 4 },
-  boss: { bpm: 160, len: 32, bass: BASS, lead: BOSS_LEAD, hat: 4 },
-  vn: { bpm: 76, len: 32, bass: VN_BASS, bassType: 'sine', bassDur: 7, bassVol: 0.18, lead: VN_LEAD, leadType: 'triangle', leadDur: 3, leadVol: 0.05 },
-  rpg: { bpm: 168, len: 40, bass: SPY_BASS, bassType: 'square', bassDur: 1.2, bassVol: 0.09, lead: SPY_LEAD, leadType: 'sawtooth', leadDur: 1.8, leadVol: 0.035, hat: 2 }
+const SCALES = {
+  minor: [0, 2, 3, 5, 7, 8, 10], major: [0, 2, 4, 5, 7, 9, 11], dorian: [0, 2, 3, 5, 7, 9, 10],
+  harm: [0, 2, 3, 5, 7, 8, 11], phryg: [0, 1, 3, 5, 7, 8, 10], mixo: [0, 2, 4, 5, 7, 9, 10]
 };
+const deg = (key, sc, d) => { const n = sc.length; return key + sc[((d % n) + n) % n] + 12 * Math.floor(d / n); };
+function rng(seed) { return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const hashStr = s => { let h = 7; for (const c of s) h = h * 31 + c.charCodeAt(0) | 0; return h; };
+
+// sec: prog = chord degree per bar; bass/drums/lead/arp = pattern names; pad = sustained chords
+const SONGS = {
+  title: { bpm: 108, key: 45, scale: 'minor', lead: 'triangle', form: ['A', 'B', 'A', 'C'], sec: {
+    A: { prog: [0, 5, 2, 6], bass: 'pulse', drums: 'soft', lead: 'sparse', arp: 'slow' },
+    B: { prog: [3, 4, 5, 6], bass: 'pulse', drums: 'soft', lead: 'motif', pad: 1 },
+    C: { prog: [5, 6, 0, 0], bass: 'drive', drums: 'half', lead: 'long', arp: 'fast' } } },
+  level: { bpm: 136, key: 45, scale: 'minor', form: ['I', 'A', 'A', 'B', 'A', 'C', 'B', 'D'], sec: {
+    I: { prog: [0, 0, 5, 6], bass: 'drive', drums: 'build', lead: 'none', arp: 'fast' },
+    A: { prog: [0, 5, 2, 6], bass: 'drive', drums: 'rock', lead: 'motif' },
+    B: { prog: [3, 4, 5, 6], bass: 'octave', drums: 'rock', lead: 'motif', arp: 'fast' },
+    C: { prog: [5, 6, 0, 4], bass: 'drive', drums: 'half', lead: 'long', pad: 1 },
+    D: { prog: [0, 0, 6, 6], bass: 'pulse', drums: 'break', lead: 'none', arp: 'fast' } } },
+  boss: { bpm: 160, key: 40, scale: 'harm', lead: 'sawtooth', form: ['I', 'A', 'B', 'A', 'C', 'B', 'D'], sec: {
+    I: { prog: [0, 0, 0, 4], bass: 'octave', drums: 'build', lead: 'none' },
+    A: { prog: [0, 5, 3, 4], bass: 'drive', drums: 'rock', lead: 'motif' },
+    B: { prog: [5, 1, 4, 4], bass: 'octave', drums: 'rock', lead: 'motif', arp: 'fast' },
+    C: { prog: [3, 3, 0, 0], bass: 'pulse', drums: 'half', lead: 'long', pad: 1 },
+    D: { prog: [0, 1, 0, 4], bass: 'drive', drums: 'break', lead: 'none', arp: 'fast' } } },
+  fresh: { bpm: 140, key: 48, scale: 'major', form: ['A', 'B'], sec: {
+    A: { prog: [0, 3, 4, 0], bass: 'drive', drums: 'rock', lead: 'fanfare', pad: 1 },
+    B: { prog: [5, 3, 4, 4], bass: 'octave', drums: 'rock', lead: 'fanfare', arp: 'fast' } } },
+  news: { bpm: 124, key: 50, scale: 'minor', lead: 'square', form: ['A', 'B'], sec: {
+    A: { prog: [0, 0, 5, 4], bass: 'pulse', drums: 'tick', lead: 'none', pad: 1 },
+    B: { prog: [3, 3, 4, 4], bass: 'drive', drums: 'tick', lead: 'sparse', pad: 1 } } },
+  lab: { bpm: 84, key: 45, scale: 'minor', lead: 'triangle', form: ['A', 'B', 'A', 'C'], sec: {
+    A: { prog: [0, 5, 3, 4], bass: 'pulse', drums: 'none', lead: 'sparse', pad: 1 },
+    B: { prog: [5, 3, 0, 4], bass: 'pulse', drums: 'soft', lead: 'none', arp: 'slow', pad: 1 },
+    C: { prog: [3, 4, 0, 0], bass: 'pulse', drums: 'soft', lead: 'long', pad: 1 } } },
+  smile: { bpm: 126, key: 53, scale: 'major', lead: 'square', form: ['A', 'B'], sec: {
+    A: { prog: [0, 3, 4, 0], bass: 'walk', drums: 'soft', lead: 'fanfare', pad: 1 },
+    B: { prog: [5, 3, 1, 4], bass: 'walk', drums: 'soft', lead: 'motif', arp: 'slow', pad: 1 } } },
+  hope: { bpm: 96, key: 48, scale: 'major', lead: 'triangle', form: ['A', 'B', 'A'], sec: {
+    A: { prog: [0, 4, 5, 3], bass: 'walk', drums: 'soft', lead: 'long', arp: 'slow', pad: 1 },
+    B: { prog: [3, 4, 2, 5], bass: 'walk', drums: 'soft', lead: 'motif', pad: 1 } } },
+  sad: { bpm: 72, key: 45, scale: 'minor', lead: 'triangle', form: ['A', 'B'], sec: {
+    A: { prog: [0, 3, 5, 4], bass: 'pulse', drums: 'none', lead: 'long', pad: 1 },
+    B: { prog: [5, 2, 3, 4], bass: 'pulse', drums: 'none', lead: 'sparse', arp: 'slow', pad: 1 } } },
+  sunset: { bpm: 92, key: 52, scale: 'major', lead: 'triangle', form: ['A', 'B', 'A', 'C'], sec: {
+    A: { prog: [0, 4, 5, 3], bass: 'walk', drums: 'soft', lead: 'motif', arp: 'slow', pad: 1 },
+    B: { prog: [5, 3, 0, 4], bass: 'walk', drums: 'half', lead: 'long', pad: 1 },
+    C: { prog: [3, 4, 0, 0], bass: 'pulse', drums: 'soft', lead: 'fanfare', arp: 'slow', pad: 1 } } },
+  bar: { bpm: 104, key: 40, scale: 'mixo', swing: 1, lead: 'square', form: ['A', 'A', 'B', 'A'], sec: {
+    A: { prog: [0, 3, 0, 4], bass: 'walk', drums: 'shuffle', lead: 'motif' },
+    B: { prog: [3, 3, 0, 4], bass: 'walk', drums: 'shuffle', lead: 'long', pad: 1 } } },
+  cyborg: { bpm: 96, key: 38, scale: 'phryg', lead: 'sawtooth', form: ['A', 'B'], sec: {
+    A: { prog: [0, 0, 1, 0], bass: 'pulse', drums: 'pound', lead: 'none', pad: 1 },
+    B: { prog: [0, 1, 0, 6], bass: 'octave', drums: 'pound', lead: 'sparse', pad: 1 } } },
+  rpg: { bpm: 168, key: 40, scale: 'harm', meter: 20, lead: 'sawtooth', form: ['I', 'A', 'A', 'B', 'A', 'C', 'B', 'D'], sec: {
+    I: { prog: [0, 0, 0, 0], bass: 'spy', drums: 'spyb', lead: 'none' },
+    A: { prog: [0, 0, 5, 4], bass: 'spy', drums: 'spy', lead: 'motif' },
+    B: { prog: [3, 3, 4, 4], bass: 'spy', drums: 'spy', lead: 'long', arp: 'fast' },
+    C: { prog: [5, 1, 4, 0], bass: 'spy2', drums: 'spy', lead: 'motif', pad: 1 },
+    D: { prog: [0, 1, 0, 4], bass: 'spy2', drums: 'spyb', lead: 'none', arp: 'fast' } } }
+};
+
 function songFor() {
   if (state === 'rpg') return 'rpg';
-  if (state === 'vn') return 'vn';
+  if (state === 'vn' && vn) {
+    const L = vn.script[vn.i];
+    if (L.bg === 'card') return L.text.includes('MISSION') ? 'rpg' : null;
+    if (L.hud) return 'cyborg';
+    if (L.map === 'heal' || L.map === 'healed') return 'hope';
+    return { news: 'news', lab: 'lab', smile: 'smile', dc: 'sad', sunset: 'sunset', bar: 'bar' }[L.bg] || 'lab';
+  }
+  if (state === 'fresh') return freshT <= freshCut() * 2 ? 'fresh' : null;
   if (state === 'title') return 'title';
   if (state === 'play' || state === 'dead') return bossActive && !(boss && boss.dead) ? 'boss' : 'level';
   return null;
 }
-let musicStep = 0, musicNext = 0, curSong = null;
-function startMusic() {
-  musicNext = actx.currentTime + 0.1;
-  setInterval(() => {
-    if (!actx || muted) { if (actx) musicNext = actx.currentTime + 0.1; return; }
-    const name = songFor(), S = SONGS[name];
-    if (name !== curSong) { curSong = name; musicStep = 0; }
-    if (!S) { musicNext = actx.currentTime + 0.1; return; }
-    const step = 60 / S.bpm / 4;
-    while (musicNext < actx.currentTime + 0.12) {
-      const i = musicStep % S.len;
-      const b = S.bass[i]; if (b) note(S.bassType || 'triangle', N(b), musicNext, step * (S.bassDur || 1.6), S.bassVol || 0.22);
-      if (S.lead) { const l = S.lead[i]; if (l) note(S.leadType || 'square', N(l), musicNext, step * (S.leadDur || 0.9), S.leadVol || 0.05); }
-      if (S.hat && i % S.hat === 0) hat(musicNext);
-      musicNext += step; musicStep++;
-    }
-  }, 25);
+function musicIntensity() {
+  if (mus && mus.name === 'boss' && boss && boss.enraged) return 2;
+  if (mus && mus.name === 'rpg' && rpg) { const sam = rpg.enemies.find(e => e.kind === 'sam'); if (sam && (sam.charging || sam.hp < sam.maxHp * 0.5)) return 2; }
+  return 1;
 }
+
+// --- instruments ---
 function note(type, f, t, dur, vol) {
   const o = actx.createOscillator(), g = actx.createGain();
   o.type = type; o.frequency.value = f;
   g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
   o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
 }
-function hat(t) {
+function hat(t, v = 0.05) {
   const s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
   s.buffer = noiseBuf; f.type = 'highpass'; f.frequency.value = 7000;
-  g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
   s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 0.05);
+}
+function kick(t, v = 0.35) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.18);
+}
+function snare(t, v = 0.14) {
+  const s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
+  s.buffer = noiseBuf; f.type = 'bandpass'; f.frequency.value = 1800;
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+  s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 0.13);
+  note('triangle', 190, t, 0.06, v * 0.6);
+}
+
+// --- pattern generators (return [{n: midi, d: steps, v: vol}] for this step) ---
+function bassAt(style, r, i, M, rnd, lastBar, next) {
+  switch (style) {
+    case 'drive': if (i % 2) return []; if (i === M - 2 && rnd() < 0.6) return [{ n: next - 1, d: 2 }]; return [{ n: i % 8 === 6 ? r + 12 : r, d: 2 }];
+    case 'octave': return i % 2 ? [] : [{ n: (i / 2) % 2 ? r + 12 : r, d: 2 }];
+    case 'pulse': return i === 0 ? [{ n: r, d: M * 0.45 }] : i === M / 2 ? [{ n: rnd() < 0.5 ? r : r + 7, d: M * 0.4 }] : [];
+    case 'walk': { if (i % 4) return []; const k = i / 4; return [{ n: k === 3 ? next + (next > r ? -1 : 1) : [r, r + 4, r + 7, r][k] + (k === 1 && rnd() < 0.5 ? -1 : 0), d: 4 }]; }
+    case 'spy': { const hits = { 0: 0, 4: 7, 10: 0, 14: 6, 17: 1, 18: 0 }; return i in hits ? [{ n: r + hits[i], d: i === 0 || i === 10 ? 3 : 2 }] : []; }
+    case 'spy2': return i % 2 ? [] : [{ n: r + [0, 12, 10, 12, 0, 7, 12, 10, 3, 2][(i / 2) % 10], d: 2 }];
+  }
+  return [];
+}
+function drumsAt(style, i, M, fill, inten, t, st) {
+  const H = inten > 1;
+  if (fill && i >= M - 4 && style !== 'none' && style !== 'soft') { snare(t, 0.08 + (i - (M - 4)) * 0.03); if (i === M - 1) snare(t + st / 2, 0.2); return; }
+  switch (style) {
+    case 'rock': if (i === 0 || i === 8 || (i === 10 && H)) kick(t); if (i === 4 || i === 12) snare(t); if (H || i % 2 === 0) hat(t, i % 4 === 0 ? 0.06 : 0.035); break;
+    case 'half': if (i === 0) kick(t); if (i === 8) snare(t); if (i % 4 === 0) hat(t, 0.04); break;
+    case 'build': if (i % 4 === 0) kick(t, 0.3); if (fill && i % 2 === 0) snare(t, 0.06 + i * 0.008); hat(t, 0.025); break;
+    case 'break': if (i === 0) kick(t); hat(t, i % 2 ? 0.025 : 0.045); break;
+    case 'soft': if (i === 0) kick(t, 0.18); if (i === 8) hat(t, 0.04); if (i === 12 && H) snare(t, 0.06); break;
+    case 'tick': if (i === 0) kick(t, 0.25); hat(t, i % 4 === 0 ? 0.05 : 0.02); break;
+    case 'shuffle': if (i === 0 || i === 8) kick(t, 0.25); if (i === 4 || i === 12) snare(t, 0.1); if (i % 2 === 0 || i % 4 === 3) hat(t, 0.035); break;
+    case 'pound': if (i % 4 === 0) kick(t, 0.4); if (i === 12) snare(t, 0.12); break;
+    case 'spy': if (i === 0 || i === 10 || (H && i === 14)) kick(t); if (i === 6 || i === 16) snare(t, 0.12); if (i % 2 === 0 || H) hat(t, 0.03); break;
+    case 'spyb': if (i === 0) kick(t); if (i % 2 === 0) hat(t, 0.03); if (i === 16) snare(t, 0.06); break;
+  }
+}
+function makeMotif(rnd, M, prev) {
+  if (prev && rnd() < 0.75) { // develop the last version instead of starting over
+    const m = prev.map(o => ({ ...o }));
+    const k = Math.floor(rnd() * m.length); m[k].o += rnd() < 0.5 ? 1 : -1;
+    if (rnd() < 0.4 && m.length < 7) { const last = m[m.length - 1]; if (last.p + 2 < M) m.push({ p: last.p + 2, o: last.o - 1 }); }
+    if (rnd() < 0.3 && m.length > 3) m.splice(1 + Math.floor(rnd() * (m.length - 2)), 1);
+    return m.sort((a, b) => a.p - b.p);
+  }
+  const n = 3 + Math.floor(rnd() * 4), pos = new Set([0]);
+  while (pos.size < n) pos.add(Math.floor(rnd() * (M / 2)) * 2 + (rnd() < 0.15 ? 1 : 0));
+  let o = [0, 2, 4][Math.floor(rnd() * 3)];
+  return [...pos].sort((a, b) => a - b).map(p => { const r = { p, o }; o += [-2, -1, 1, 1, 2, 3][Math.floor(rnd() * 6)]; o = clamp(o, -2, 7); return r; });
+}
+function leadAt(style, sc, lk, d, i, M, bar, bars, pass, motif, rnd) {
+  const up = pass >= 3 && pass % 2 ? 12 : 0;
+  switch (style) {
+    case 'motif': {
+      const variant = bar % 4;
+      if (variant === 3 && bar === bars - 1) { // the answer: half the motif, then land on a chord tone
+        if (i >= M / 2) return i === M / 2 ? [{ n: deg(lk, sc, d + (rnd() < 0.5 ? 0 : 4)) + up, d: M / 2 - 1 }] : [];
+      }
+      const lift = variant === 1 ? 1 : 0;
+      const m = motif.find(x => x.p === i); if (!m) return [];
+      const nxt = motif.find(x => x.p > i), dur = (nxt ? nxt.p : M) - i;
+      return [{ n: deg(lk, sc, d + m.o + lift) + up, d: Math.max(1, dur - 0.2) }];
+    }
+    case 'long': return i === 0 ? [{ n: deg(lk, sc, d + [0, 2, 4][Math.floor(rnd() * 3)]) + up, d: M * 0.55 }] : i === Math.round(M * 0.6) && rnd() < 0.7 ? [{ n: deg(lk, sc, d + [2, 4, 6][Math.floor(rnd() * 3)]) + up, d: M * 0.35 }] : [];
+    case 'sparse': return (i === 0 || i === 6 || i === 10) && rnd() < 0.55 ? [{ n: deg(lk, sc, d + [0, 2, 4, 7][Math.floor(rnd() * 4)]), d: 3 }] : [];
+    case 'fanfare': { const seq = { 0: 0, 2: 2, 4: 4, 6: 7 }; if (i in seq) return [{ n: deg(lk, sc, d + seq[i]) + up, d: 2 }]; if (i === 8) return [{ n: deg(lk, sc, d + (bar % 2 ? 9 : 7)) + up, d: 7 }]; return []; }
+  }
+  return [];
+}
+
+// --- the scheduler ---
+let mus = null, musicNext = 0;
+function musReset(name) { mus = name ? { name, si: 0, bar: 0, step: 0, passes: {}, motifs: {}, seed: (Math.random() * 1e9) | 0 } : null; }
+function musStep(t) {
+  const S = SONGS[mus.name], M = S.meter || 16, secName = S.form[mus.si % S.form.length], sec = S.sec[secName];
+  const bars = sec.prog.length, sc = SCALES[S.scale], st = 60 / S.bpm / 4, i = mus.step;
+  if (i === 0 && mus.bar === 0) {
+    const pass = mus.passes[secName] = (mus.passes[secName] || 0) + 1;
+    mus.pass = pass; mus.rnd = rng(mus.seed + hashStr(secName) * 97 + pass * 7919 + mus.si * 13);
+    mus.motif = mus.motifs[secName] = makeMotif(mus.rnd, M, mus.motifs[secName]);
+  }
+  if (i === 0) mus.barRnd = rng(mus.seed + mus.si * 1009 + mus.bar * 31 + mus.pass * 17);
+  const d = sec.prog[mus.bar], nd = sec.prog[(mus.bar + 1) % bars];
+  const bk = S.key, r = deg(bk, sc, d), next = deg(bk, sc, nd), lk = S.key + 24, rnd = mus.barRnd;
+  const inten = musicIntensity(), lastBar = mus.bar === bars - 1;
+  const tt = S.swing && i % 2 ? t + st * 0.33 : t;
+  for (const b of bassAt(sec.bass, r, i, M, rnd, lastBar, next)) note(S.bass || 'triangle', N(b.n), tt, st * b.d * 0.95, 0.17);
+  drumsAt(sec.drums, i, M, lastBar && (mus.si % S.form.length) % 2 === 1, inten, tt, st);
+  if (sec.lead !== 'none') for (const l of leadAt(sec.lead, sc, lk, d, i, M, mus.bar, bars, mus.pass, mus.motif, rnd))
+    note(S.lead || 'square', N(l.n + (inten > 1 && sec.lead === 'motif' ? 12 : 0)), tt, st * l.d, S.lead === 'triangle' ? 0.07 : 0.04);
+  if (sec.arp && (sec.arp === 'fast' || i % 2 === 0)) { const tones = [0, 2, 4, 7]; const k = sec.arp === 'fast' ? i : i / 2; note('square', N(deg(lk - 12, sc, d + tones[k % 4])), tt, st * 0.8, 0.02); }
+  if (sec.pad && i === 0) for (const o of [0, 2, 4]) note('sine', N(deg(lk - 12, sc, d + o)), t, st * M * 0.95, 0.025);
+  if (++mus.step >= M) { mus.step = 0; if (++mus.bar >= bars) { mus.bar = 0; mus.si++; } }
+}
+function startMusic() {
+  musicNext = actx.currentTime + 0.1;
+  setInterval(() => {
+    if (!actx || muted) { if (actx) musicNext = actx.currentTime + 0.1; return; }
+    const name = songFor();
+    if ((mus && mus.name) !== name) musReset(name);
+    if (!mus) { musicNext = actx.currentTime + 0.05; return; }
+    if (musicNext < actx.currentTime) musicNext = actx.currentTime + 0.02;
+    while (musicNext < actx.currentTime + 0.12) { const S = SONGS[mus.name]; musStep(musicNext); musicNext += 60 / S.bpm / 4; }
+  }, 25);
 }
 
 /* ----------------------------- LEVEL -------------------------------- */

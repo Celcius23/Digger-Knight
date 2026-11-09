@@ -9,6 +9,16 @@ Digger is going to dig, stomp and boot his way through every one of them.
 Everything (pixel art, sound effects, chiptune music) is generated in code, so
 `index.html` is the whole game. There's no build step and no dependencies.
 
+The soundtrack is generative. Each scene has its own original track: the
+platformer, the boss, the victory fanfare, breaking news, the lab, the smile,
+the sad and hopeful moments, the rooftop sunset, the biker bar, the cyborg scan,
+and a 5/4 spy theme for the battle. Every track is built from sections (intro,
+verse, chorus, bridge, breakdown) with their own chords, bass lines and drum
+patterns. Melodies grow from a motif that mutates each time a section returns,
+phrases end in drum fills, the boss and battle music intensify when things get
+dangerous, and each playthrough uses a fresh random seed. Tested over 5 minutes
+per track, none of them ever repeats exactly.
+
 ## Play
 
 Open `index.html` in any modern browser. To serve it locally instead:
