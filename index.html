@@ -57,17 +57,29 @@ const KEYMAP = {
   KeyX: 'attack', KeyK: 'attack', KeyC: 'boot', KeyL: 'boot', ShiftLeft: 'sprint', ShiftRight: 'sprint',
   Enter: 'start', KeyP: 'pause', Escape: 'pause', KeyM: 'mute'
 };
+// Menu keys for the visual novel + turn-based chapters
+const MENUMAP = {
+  ArrowUp: 'mUp', KeyW: 'mUp', ArrowLeft: 'mUp', KeyA: 'mUp', ArrowDown: 'mDown', KeyS: 'mDown', ArrowRight: 'mDown', KeyD: 'mDown',
+  KeyZ: 'ok', Space: 'ok', Enter: 'ok', KeyJ: 'ok', KeyX: 'back', KeyK: 'back', Escape: 'back', Backspace: 'back'
+};
 function press(k) { if (!keys[k]) pressed[k] = true; keys[k] = true; initAudio(); }
 function release(k) { keys[k] = false; }
-addEventListener('keydown', e => { const k = KEYMAP[e.code]; if (!k) return; e.preventDefault(); press(k); });
-addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (!k) return; e.preventDefault(); release(k); });
-cv.addEventListener('pointerdown', () => { if (state !== 'play') press('start'); });
-cv.addEventListener('pointerup', () => release('start'));
+addEventListener('keydown', e => {
+  const k = KEYMAP[e.code], m = MENUMAP[e.code]; if (!k && !m) return; e.preventDefault();
+  if (k) press(k); if (m) press(m);
+});
+addEventListener('keyup', e => {
+  const k = KEYMAP[e.code], m = MENUMAP[e.code]; if (!k && !m) return; e.preventDefault();
+  if (k) release(k); if (m) release(m);
+});
+const tapAdvances = () => ['title', 'fresh', 'vn', 'credits'].includes(state);
+cv.addEventListener('pointerdown', () => { if (tapAdvances()) { press('start'); press('ok'); } });
+cv.addEventListener('pointerup', () => { release('start'); release('ok'); });
 if (matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window) document.body.classList.add('touch');
 document.querySelectorAll('#touch button').forEach(b => {
-  const k = b.dataset.k;
-  const on = e => { e.preventDefault(); b.classList.add('on'); press(k); if (state !== 'play') press('start'); };
-  const off = e => { e.preventDefault(); b.classList.remove('on'); release(k); release('start'); };
+  const k = b.dataset.k, menu = { left: 'mUp', right: 'mDown', down: 'mDown', jump: 'ok', attack: 'back' }[k];
+  const on = e => { e.preventDefault(); b.classList.add('on'); press(k); if (menu) press(menu); if (state === 'title') press('start'); };
+  const off = e => { e.preventDefault(); b.classList.remove('on'); release(k); if (menu) release(menu); release('start'); };
   b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
   b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
 });
@@ -122,20 +134,41 @@ const N = n => 440 * Math.pow(2, (n - 69) / 12);
 const BASS = [45, 0, 57, 45, 0, 45, 57, 0, 41, 0, 53, 41, 0, 41, 53, 0, 43, 0, 55, 43, 0, 43, 55, 0, 40, 0, 52, 40, 0, 40, 52, 52];
 const LEAD = [69, 0, 72, 0, 76, 0, 74, 72, 69, 0, 72, 0, 77, 76, 74, 0, 71, 0, 74, 0, 79, 0, 77, 76, 76, 0, 74, 0, 71, 0, 68, 0];
 const BOSS_LEAD = [81, 80, 81, 0, 76, 0, 77, 0, 81, 80, 81, 0, 84, 0, 83, 0, 79, 78, 79, 0, 74, 0, 76, 0, 80, 0, 83, 0, 88, 0, 86, 0];
-let musicStep = 0, musicNext = 0;
+// Original 5/4 spy-thriller loop for the data-center battle (2 bars x 20 sixteenths)
+const seq = (len, pairs) => { const a = Array(len).fill(0); pairs.forEach(([i, n]) => a[i] = n); return a; };
+const SPY_BASS = seq(40, [[0, 40], [2, 40], [4, 47], [8, 40], [10, 43], [12, 42], [14, 40], [16, 38], [18, 35],
+  [20, 40], [22, 40], [24, 47], [28, 40], [30, 43], [32, 45], [34, 46], [36, 47], [38, 35]]);
+const SPY_LEAD = seq(40, [[4, 71], [8, 72], [12, 71], [14, 67], [16, 66], [20, 76], [26, 74], [28, 72], [30, 71], [34, 70], [36, 71]]);
+const VN_BASS = seq(32, [[0, 45], [8, 41], [16, 43], [24, 40]]);
+const VN_LEAD = seq(32, [[4, 69], [6, 72], [12, 65], [14, 69], [20, 67], [22, 71], [28, 64], [30, 68]]);
+const SONGS = {
+  title: { bpm: 136, len: 32, bass: BASS },
+  level: { bpm: 136, len: 32, bass: BASS, lead: LEAD, hat: 4 },
+  boss: { bpm: 160, len: 32, bass: BASS, lead: BOSS_LEAD, hat: 4 },
+  vn: { bpm: 76, len: 32, bass: VN_BASS, bassType: 'sine', bassDur: 7, bassVol: 0.18, lead: VN_LEAD, leadType: 'triangle', leadDur: 3, leadVol: 0.05 },
+  rpg: { bpm: 168, len: 40, bass: SPY_BASS, bassType: 'square', bassDur: 1.2, bassVol: 0.09, lead: SPY_LEAD, leadType: 'sawtooth', leadDur: 1.8, leadVol: 0.035, hat: 2 }
+};
+function songFor() {
+  if (state === 'rpg') return 'rpg';
+  if (state === 'vn' || state === 'credits') return 'vn';
+  if (state === 'title') return 'title';
+  if (state === 'play' || state === 'dead') return bossActive && !(boss && boss.dead) ? 'boss' : 'level';
+  return null;
+}
+let musicStep = 0, musicNext = 0, curSong = null;
 function startMusic() {
   musicNext = actx.currentTime + 0.1;
   setInterval(() => {
     if (!actx || muted) { if (actx) musicNext = actx.currentTime + 0.1; return; }
-    const fast = bossActive && !(boss && boss.dead);
-    const step = 60 / (fast ? 160 : 136) / 4;
+    const name = songFor(), S = SONGS[name];
+    if (name !== curSong) { curSong = name; musicStep = 0; }
+    if (!S) { musicNext = actx.currentTime + 0.1; return; }
+    const step = 60 / S.bpm / 4;
     while (musicNext < actx.currentTime + 0.12) {
-      const i = musicStep % 32, playing = state === 'play' || state === 'dead';
-      if (playing || state === 'title') {
-        const b = BASS[i]; if (b) note('triangle', N(b), musicNext, step * 1.6, 0.22);
-        if (playing) { const l = (fast ? BOSS_LEAD : LEAD)[i]; if (l) note('square', N(l), musicNext, step * 0.9, 0.05); }
-        if (i % 4 === 0 && playing) hat(musicNext);
-      }
+      const i = musicStep % S.len;
+      const b = S.bass[i]; if (b) note(S.bassType || 'triangle', N(b), musicNext, step * (S.bassDur || 1.6), S.bassVol || 0.22);
+      if (S.lead) { const l = S.lead[i]; if (l) note(S.leadType || 'square', N(l), musicNext, step * (S.leadDur || 0.9), S.leadVol || 0.05); }
+      if (S.hat && i % S.hat === 0) hat(musicNext);
       musicNext += step; musicStep++;
     }
   }, 25);
@@ -155,8 +188,8 @@ function hat(t) {
 
 /* ----------------------------- LEVEL -------------------------------- */
 // '#' ground, 'D' diggable dirt, '^' sharpened-pencil spikes, '.' air
-const LW = 211, LH = 11;
-const ARENA_X = 190, GATE_X = 189;
+const LW = 107, LH = 11;
+const ARENA_X = 86, GATE_X = 85;
 let grid = [];
 function buildGrid() {
   grid = Array.from({ length: LH }, () => Array(LW).fill('.'));
@@ -166,21 +199,16 @@ function buildGrid() {
   };
   F(0, LW - 1, 9, 10, '#'); F(0, 0, 0, 8, '#');
   // Act 1: the red carpet
-  F(12, 13, 7, 8, 'D'); F(21, 23, 7, 7, '#');
+  F(9, 10, 7, 8, 'D'); F(16, 18, 7, 7, '#');
   // Act 2: the pit of bloggers
-  F(28, 40, 9, 10, '.'); F(30, 32, 8, 8, '#'); F(35, 37, 7, 7, '#');
+  F(22, 32, 9, 10, '.'); F(24, 26, 8, 8, '#'); F(29, 30, 7, 7, '#');
   // Act 3: the dirt wall
-  F(44, 70, 8, 8, '#'); F(50, 51, 5, 7, 'D'); F(62, 65, 6, 6, '#'); F(66, 67, 6, 7, 'D');
-  // Act 4: the pencil pit
-  F(78, 100, 9, 9, '^'); F(80, 81, 8, 8, '#'); F(86, 87, 7, 7, '#'); F(92, 93, 7, 7, '#'); F(97, 98, 7, 7, '#');
-  // Act 5: the review gauntlet
-  F(106, 109, 7, 7, '#'); F(125, 128, 6, 8, 'D'); F(131, 133, 9, 10, '.');
-  // Act 6: the stunt sequence (pogo chain)
-  F(150, 170, 9, 10, '.');
-  F(152, 153, 8, 8, 'D'); F(156, 157, 8, 8, 'D');
-  F(160, 162, 8, 8, '#'); F(165, 166, 8, 8, 'D'); F(169, 170, 8, 8, 'D');
+  F(36, 48, 8, 8, '#'); F(41, 42, 5, 7, 'D'); F(45, 47, 6, 6, '#');
+  // Act 4: the pencil pit. Stepping platforms are the safe route; bloggers
+  // hover low in the gaps, so they're a bonus bounce (or a safety net), never required.
+  F(54, 72, 9, 9, '^'); F(56, 58, 8, 8, '#'); F(61, 62, 8, 8, '#'); F(65, 66, 7, 7, '#'); F(69, 70, 8, 8, '#');
   // Finale: the premiere
-  F(193, 195, 7, 7, '#'); F(204, 206, 7, 7, '#'); F(LW - 1, LW - 1, 0, 8, '#');
+  F(ARENA_X + 3, ARENA_X + 5, 7, 7, '#'); F(ARENA_X + 14, ARENA_X + 16, 7, 7, '#'); F(LW - 1, LW - 1, 0, 8, '#');
 }
 const tileAt = (tx, ty) => (tx < 0 || tx >= LW) ? '#' : (ty < 0 || ty >= LH) ? '.' : grid[ty][tx];
 const solid = (tx, ty) => { const t = tileAt(tx, ty); return t === '#' || t === 'D'; };
@@ -220,7 +248,7 @@ let cam = { x: 0 }, shake = 0, money = 0, bossActive = false, banner = null, dea
 let cruiseShown = false, respawnPt = { x: 3, y: 9 };
 let bootMeter = 0, superBoot = null;
 
-const TAUNTS = ['C MINUS!', 'ALL STYLE!', 'NO SUBSTANCE!', 'EGO TRIP!', 'TOO MUCH LATEX!', 'WHO IS THAT?!', 'MISFIRE!', 'TEETH?!'];
+const TAUNTS = ['C MINUS!', 'ALL STYLE!', 'NO SUBSTANCE!', 'EGO TRIP!', 'MISFIRE!', 'SELF-INDULGENT!', '2 STARS!'];
 const RECANTS = ['FINE. A PLUS!', 'TRANSFORMATIVE!', 'A ROMP!', 'BOLD CHOICES!', 'AWARDS SEASON!', 'MASTERPIECE!', 'I GET IT NOW'];
 const BLOGS = ['#FLOP', 'FIRST!', 'LOL', 'RATIO', 'MID.', '#DIGGERFAIL'];
 
@@ -240,7 +268,7 @@ function mkBoss() {
   return place({
     type: 'boss', boss: true, w: 24, h: 34, vx: 0, vy: 0, hp: 14, maxHp: 14, inv: 0, flash: 0,
     face: -1, state: 'wait', t: 0, dead: false, say: null, onGround: false, enraged: false
-  }, 204, 9);
+  }, ARENA_X + 14, 9);
 }
 function mkGem(x, y, val, isStatic = false) {
   const colors = { 1: '#b9a6ff', 5: '#ffd84a', 10: '#ffe680', 25: '#ff7a6a' };
@@ -258,24 +286,21 @@ function newGame() {
   money = 0; takes = 1; cruiseShown = false; bossActive = false; winT = 0; bootMeter = 0; superBoot = null;
   respawnPt = { x: 3, y: 9 };
   enemies = [
-    mkEnemy('critic', 18, 9),
-    mkEnemy('blogger', 33, 4, { chase: true }), mkEnemy('blogger', 38, 3, { chase: true }),
-    mkEnemy('critic', 47, 8), mkEnemy('critic', 58, 8), mkEnemy('tomato', 63, 6),
-    mkEnemy('blogger', 84, 6), mkEnemy('blogger', 90, 5), mkEnemy('blogger', 95, 5),
-    mkEnemy('tomato', 107, 7), mkEnemy('critic', 113, 9), mkEnemy('critic', 121, 9), mkEnemy('tomato', 139, 9),
-    mkEnemy('critic', 178, 9), mkEnemy('critic', 182, 9)
+    mkEnemy('critic', 13, 9),
+    mkEnemy('blogger', 27, 3, { chase: true }),
+    mkEnemy('critic', 38, 8), mkEnemy('tomato', 46, 6),
+    mkEnemy('blogger', 59.5, 8), mkEnemy('blogger', 63.5, 8), mkEnemy('blogger', 67.5, 8), mkEnemy('blogger', 71.5, 8),
+    mkEnemy('critic', 76, 9)
   ];
   boss = mkBoss(); enemies.push(boss);
   gems = [];
   const G = (tx, ty, v = 1) => gems.push(mkGem(tx * TS + 4, ty * TS + 4, v, true));
-  [6, 7, 8].forEach(x => G(x, 7)); G(22, 5, 5);
-  [29, 33, 34].forEach(x => G(x, 6)); G(36, 4, 5);
-  [45, 46, 54, 55, 56].forEach(x => G(x, 6)); G(64, 4, 10);
-  G(84, 3, 5); G(90, 2, 5); G(95, 2, 5);
-  [111, 112, 116, 117, 118].forEach(x => G(x, 7)); G(132, 6, 5);
-  [152, 157, 165, 170].forEach(x => G(x, 4)); G(161, 2, 25);
-  [174, 175, 176].forEach(x => G(x, 7));
-  checkpoints = [74, 146, 186].map(tx => ({ x: tx * TS + 2, y: 9 * TS - 18, w: 12, h: 18, tx, on: false }));
+  [5, 6, 7].forEach(x => G(x, 7)); G(17, 5, 5);
+  [24, 25, 26].forEach(x => G(x, 6)); G(29.5, 4, 5);
+  [37, 38, 44].forEach(x => G(x, 6)); G(46, 3, 10);
+  G(59.5, 5, 5); G(63.5, 5, 5); G(67.5, 4, 5); G(71.5, 5, 10);
+  [74, 75].forEach(x => G(x, 7));
+  checkpoints = [51, 79].map(tx => ({ x: tx * TS + 2, y: 9 * TS - 18, w: 12, h: 18, tx, on: false }));
   projectiles = []; particles = []; popups = [];
   spawnPlayer();
   state = 'play';
@@ -345,7 +370,7 @@ function updatePlayer() {
   if (keys.sprint && move) p.sprint = true;
   if (p.runT > 45 && !p.sprint) {
     p.sprint = true;
-    if (!cruiseShown) { cruiseShown = true; popup(p.x + 5, p.y - 10, 'CRUISE CONTROL!', '#ffd84a', 90); }
+    if (!cruiseShown) { cruiseShown = true; popup(p.x + 5, p.y - 10, 'FULL THROTTLE!', '#ffd84a', 90); }
   }
   const speed = p.sprint ? 2.3 : 1.4;
   if (p.knock > 0) p.knock--;
@@ -416,7 +441,7 @@ function pogoBounce() {
   const p = player;
   p.vy = keys.jump ? -5.6 : -5.0; p.bouncing = true; p.combo++;
   sfx.bounce();
-  if (p.combo === 3) popup(p.x + 5, p.y - 10, 'I DO MY OWN STUNTS!', '#ffd84a', 90);
+  if (p.combo === 3) popup(p.x + 5, p.y - 10, 'YEEHAW!', '#ffd84a', 90);
   else if (p.combo === 5) popup(p.x + 5, p.y - 10, 'DIGG. OR DIE!', '#ffd84a', 90);
   else if (p.combo > 3) popup(p.x + 5, p.y - 10, 'x' + p.combo, '#ffd84a', 40);
 }
@@ -605,7 +630,10 @@ function update() {
   frame++;
   if (pressed.mute) muted = !muted;
   if (state === 'title') { if (pressed.start || pressed.jump || pressed.attack) newGame(); return; }
-  if (state === 'win') { if (winT > 0) winT--; else if (pressed.start || pressed.jump) state = 'title'; return; }
+  if (state === 'fresh') { if (winT > 0) winT--; else if (pressed.start || pressed.ok) startVN(INTRO, () => startRPG(1)); return; }
+  if (state === 'vn') { updateVN(); decayShake(); return; }
+  if (state === 'rpg') { updateRPG(); decayShake(); return; }
+  if (state === 'credits') { creditsT++; if (creditsT > 90 && (pressed.start || pressed.ok)) state = 'title'; return; }
   if (state === 'play' && pressed.pause) paused = !paused;
   if (paused) return;
   if (banner && --banner.t <= 0) banner = null;
@@ -693,7 +721,7 @@ function update() {
   cam.x += (target - cam.x) * (bossActive ? 0.08 : 0.12);
   if (shake > 0) shake *= 0.85; if (shake < 0.3) shake = 0;
 
-  if (boss.dead && winT > 0 && --winT <= 0) { state = 'win'; winT = 60; sfx.win(); }
+  if (boss.dead && winT > 0 && --winT <= 0) { state = 'fresh'; winT = 60; sfx.win(); }
 }
 
 /* ------------------------------ DRAWING ----------------------------- */
@@ -1006,10 +1034,10 @@ function drawWorld() {
   ctx.translate(-Math.round(cam.x) + Math.round(sx), Math.round(sy));
   drawTiles(cam.x);
   // the premiere marquee before the arena
-  R(184 * TS, 9 * TS - 40, 2, 40, '#555'); R(184 * TS + 30, 9 * TS - 40, 2, 40, '#555');
-  R(184 * TS - 8, 9 * TS - 52, 48, 14, '#7a1020');
-  for (let i = 0; i < 12; i++) R(184 * TS - 7 + i * 4, 9 * TS - 52, 2, 2, frame % 20 < 10 === (i % 2 === 0) ? '#ffd84a' : '#a65');
-  text('PREMIERE', 184 * TS + 16, 9 * TS - 47, '#fff', 'center', 4);
+  R((ARENA_X - 4) * TS, 9 * TS - 40, 2, 40, '#555'); R((ARENA_X - 4) * TS + 30, 9 * TS - 40, 2, 40, '#555');
+  R((ARENA_X - 4) * TS - 8, 9 * TS - 52, 48, 14, '#7a1020');
+  for (let i = 0; i < 12; i++) R((ARENA_X - 4) * TS - 7 + i * 4, 9 * TS - 52, 2, 2, frame % 20 < 10 === (i % 2 === 0) ? '#ffd84a' : '#a65');
+  text('PREMIERE', (ARENA_X - 4) * TS + 16, 9 * TS - 47, '#fff', 'center', 4);
   for (const c of checkpoints) drawCheckpoint(c);
   for (const g of gems) drawGem(g);
   for (const e of enemies) {
@@ -1023,7 +1051,7 @@ function drawWorld() {
   }
   for (const pr of projectiles) drawProjectile(pr);
   if (superBoot) drawGiantBoot(superBoot);
-  if ((state === 'play' || state === 'win') && !(player.inv > 0 && frame % 4 < 2)) drawTom(player, frame);
+  if ((state === 'play' || state === 'fresh') && !(player.inv > 0 && frame % 4 < 2)) drawTom(player, frame);
   for (const pt of particles) R(pt.x, pt.y, pt.s, pt.s, pt.c);
   for (const e of enemies) if (!e.dead) drawBubble(e);
   for (const pu of popups) {
@@ -1071,15 +1099,17 @@ function drawWin() {
   text('100% FRESH', VW / 2, 46, '#7f7', 'center', 16);
   text('BOX OFFICE: $' + money + 'M', VW / 2, 80, '#ffd84a', 'center');
   text('TAKES NEEDED: ' + takes, VW / 2, 94, '#fff', 'center');
-  text(takes === 1 ? 'ONE TAKE. NO STUNT DOUBLE.' : 'HE DOES HIS OWN STUNTS.', VW / 2, 112, '#cbb', 'center');
-  text('AND THE CAT IS SAFE.', VW / 2 - 8, 128, '#f9a', 'center'); drawCat(VW / 2 + 82, 126);
-  text('DIGG. OR DIE.', VW / 2, 140, '#ffd84a', 'center');
+  text('THE CRITICS HAVE SPOKEN.', VW / 2, 116, '#cbb', 'center');
+  text('WHAT COULD GO WRONG?', VW / 2, 130, '#f9a', 'center');
   if (winT <= 0 && frame % 60 < 40) text('PRESS ENTER', VW / 2, 158, '#fff', 'center');
 }
 
 function draw() {
   ctx.imageSmoothingEnabled = false;
   if (state === 'title') { drawTitle(); return; }
+  if (state === 'vn') { drawVN(); return; }
+  if (state === 'rpg') { drawRPG(); return; }
+  if (state === 'credits') { drawCredits(); return; }
   drawWorld();
   drawHUD();
   if (state === 'dead') {
@@ -1096,7 +1126,564 @@ function draw() {
     ctx.globalAlpha = 1;
   }
   if (paused) { R(0, 0, VW, VH, '#0008'); text('PAUSED', VW / 2, 80, '#fff', 'center', 16); }
-  if (state === 'win') drawWin();
+  if (state === 'fresh') drawWin();
+}
+
+/* =====================================================================
+   CHAPTER 2: THE VISUAL NOVEL
+   ===================================================================== */
+let vn = null, creditsT = 0;
+function decayShake() { if (shake > 0) { shake *= 0.85; if (shake < 0.3) shake = 0; } }
+function blip() { if (actx && !muted) tone('square', 520 + Math.random() * 120, 520, 0.03, 0.03); }
+function wrap(str, n = 36) {
+  const lines = []; let cur = '';
+  for (const w of str.split(' ')) {
+    if ((cur ? cur + ' ' + w : w).length > n) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+const NAMES = { tom: 'TOM CRUISE', ina: 'IÑÁRRITU', frost: 'DR. FROST', sam: 'SAM ALTMAN' };
+const C3 = ['tom', 'ina', 'frost'];
+const INTRO = [
+  { bg: 'news', map: 'burn', text: 'MEANWHILE... THE "DIGGER" MARKETING GAME GOES VIRAL. TWO BILLION PLAYERS IN ONE WEEKEND.' },
+  { bg: 'news', map: 'burnt', fx: 'shake', text: 'GLOBAL TEMPERATURES UP SIX DEGREES. EXPERTS BLAME "SOME KIND OF BOOT GAME".' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'MR. CRUISE. SEÑOR IÑÁRRITU. THANK YOU FOR COMING. PLEASE... SIT DOWN.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'IS THIS ABOUT THE REVIEWS? BECAUSE WE FIXED THE REVIEWS. WITH A BOOT.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'IT IS ABOUT YOUR LITTLE MARKETING GAME. THE ONE WITH THE BOOT.' },
+  { bg: 'lab', cast: C3, who: 'ina', text: 'THE GAME? IT WAS ONLY A TEASER. A LITTLE TOY.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'IT WAS MADE WITH AI. AND EVERY TIME SOMEONE PLAYED, A DATA CENTER SOMEWHERE SPUN UP.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'TWO BILLION PLAYERS. A MILLION GPUS. RUNNING HOT. DAY AND NIGHT.' },
+  { bg: 'lab', cast: C3, who: 'frost', fx: 'shake', text: 'THE ALPS MELTED BY TUESDAY. VENICE IS A REEF. HALF OF EUROPE IS... GONE.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: '...HALF?' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'THE LEFT HALF.' },
+  { bg: 'lab', cast: C3, who: 'ina', text: 'MADRE DE DIOS. THIS IS A VERY LONG, VERY BAD SINGLE TAKE.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'HOW DO WE STOP IT?' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'THE SERVERS ARE STILL RUNNING. EVERY CABLE LEADS TO ONE CAMPUS. AND ONE MAN.' },
+  { bg: 'lab', cast: C3, call: true, who: 'sam', text: 'RELAX, EVERYONE. THE NEXT MODEL WILL FIX THE CLIMATE. IT JUST NEEDS A FEW MORE GIGAWATTS.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'HE WILL NOT TURN THEM OFF. SOMEONE HAS TO GO IN THERE AND PULL THE PLUG.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'ALEJANDRO. GRAB YOUR CAMERA.' },
+  { bg: 'lab', cast: C3, who: 'ina', text: 'WE SHOOT IT IN ONE TAKE. NO CUTS.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'THIS IS OUR MISSION. IMPOSSIBLE OR NOT.' },
+  { bg: 'card', text: 'CHAPTER 3: THE DATA CENTER' }
+];
+const ENDING = [
+  { bg: 'dc', cast: ['tom', 'ina', 'sam'], who: 'sam', text: 'OKAY. OKAY! WE WILL RUN EVERYTHING ON RENEWABLES. AND MAYBE ASK BEFORE WE SCALE.' },
+  { bg: 'dc', cast: ['tom', 'ina', 'sam'], who: 'tom', text: 'AND SHUT DOWN THE BOOT GAME.' },
+  { bg: 'dc', cast: ['tom', 'ina', 'sam'], who: 'sam', text: '...THE BOOT GAME STAYS. THE ENGAGEMENT NUMBERS ARE INCREDIBLE.' },
+  { bg: 'dc', cast: ['tom', 'ina', 'sam'], who: 'tom', text: 'FINE. BUT IT RUNS ON SOLAR.' },
+  { bg: 'lab', cast: C3, who: 'frost', map: 'heal', text: 'THE SERVERS ARE COOLING. TEMPERATURES ARE FALLING. THE ALPS ARE... REFREEZING.' },
+  { bg: 'lab', cast: C3, who: 'tom', map: 'healed', text: 'AND THE CAT?' },
+  { bg: 'lab', cast: C3, who: 'frost', map: 'healed', cat: true, text: 'THE CAT IS FINE.' },
+  { bg: 'lab', cast: C3, who: 'ina', map: 'healed', cat: true, text: '...AND CUT. PRINT IT. THAT IS THE MOVIE.' }
+];
+
+function startVN(script, onDone) { vn = { script, i: 0, onDone, t: 0 }; state = 'vn'; vnLine(); }
+function vnLine() {
+  const L = vn.script[vn.i];
+  vn.lines = L.bg === 'card' ? [L.text] : wrap(L.text);
+  vn.total = vn.lines.join('').length; vn.shown = 0; vn.lt = 0;
+  if (L.fx === 'shake') { shake = 12; sfx.boom(); }
+}
+function updateVN() {
+  vn.t++; vn.lt++;
+  if (vn.shown < vn.total) { vn.shown = Math.min(vn.total, vn.shown + 1); if (vn.shown % 3 === 0) blip(); }
+  if (pressed.ok || pressed.start) {
+    if (vn.shown < vn.total) vn.shown = vn.total;
+    else if (++vn.i >= vn.script.length) { const done = vn.onDone; vn = null; done(); }
+    else vnLine();
+  }
+}
+
+// A rough pixel map of Europe (yes, Italy is a boot)
+const EU = [
+  '.............##...........',
+  '............####.....###..',
+  '.....#.....#####....#####.',
+  '....##.....####....######.',
+  '...###....#####...#######.',
+  '....#....######..########.',
+  '.......##################.',
+  '..##..###################.',
+  '.###.####################.',
+  '..##..##################..',
+  '......#################...',
+  '....####.######.######....',
+  '...#####..####...####.....',
+  '....###....###....##......',
+  '.....#......##.....#......',
+  '............#.............'
+];
+function drawEurope(x, y, s, mode, prog) {
+  const W = EU[0].length;
+  R(x, y, W * s, EU.length * s, '#123c6a');
+  for (let i = 0; i < 6; i++) R(x + ((frame * 0.3 + i * 37) % (W * s - 6)), y + 4 + i * 10, 6, 1, '#2a5a8a');
+  const burn = mode === 'burn' ? prog : mode === 'burnt' ? 1 : mode === 'heal' ? 1 - prog : 0;
+  for (let r = 0; r < EU.length; r++) for (let c = 0; c < W; c++) {
+    if (EU[r][c] !== '#') continue;
+    let col = r < 2 ? '#e8f4ff' : '#4f9a4a';
+    if (c / W < 0.52 * burn) {
+      if (hash(c, r) % 4 === 0) continue; // flooded
+      col = hash(c, r + Math.floor(frame / 6)) % 3 === 0 ? '#ff9a2a' : '#c8321a';
+    }
+    R(x + c * s, y + r * s, s, s, col);
+  }
+}
+
+// 32x48 portraits, drawn at 2x
+function portrait(key, x, y, face, scale = 2) {
+  ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.scale(scale, scale);
+  const r = painter(0, 0, face, 32);
+  if (key === 'tom') {
+    r(4, 25, 24, 23, SUIT); r(4, 25, 7, 4, YOKE); r(21, 25, 7, 4, YOKE); r(11, 25, 2, 12, SUITd); r(19, 25, 2, 12, SUITd);
+    r(13, 25, 6, 23, SHIRT); r(14, 25, 1, 23, STRIPE); r(17, 25, 1, 23, STRIPE); r(15, 28, 2, 2, TURQ); r(15, 30, 1, 6, '#222'); r(16, 30, 1, 6, '#222');
+    r(13, 22, 6, 3, SKN);
+    r(9, 6, 14, 16, SKN); r(9, 6, 2, 16, SKNd); r(8, 11, 2, 4, SKN);
+    r(8, 2, 16, 5, HAIR); r(6, 4, 4, 8, HAIR); r(10, 0, 12, 3, HAIR); r(20, 2, 4, 4, HAIR); r(12, 1, 6, 1, '#f2f2f2'); r(7, 6, 2, 4, HAIRd);
+    r(13, 10, 4, 1, HAIRd); r(19, 10, 3, 1, HAIRd); r(14, 12, 2, 2, '#222'); r(19, 12, 2, 2, '#222');
+    r(12, 8, 6, 1, SKNd); r(21, 14, 2, 4, SKNd); r(15, 18, 6, 2, '#fff6d8'); r(14, 20, 8, 1, SKNd); r(10, 16, 2, 4, SKNd);
+  } else if (key === 'ina') {
+    r(4, 25, 24, 23, '#1c1c1c'); r(10, 23, 12, 4, '#5a5a5a'); r(12, 27, 3, 8, '#5a5a5a');
+    r(13, 21, 6, 3, '#d9a77c');
+    r(9, 7, 14, 15, '#d9a77c'); r(9, 7, 2, 14, '#c08f66');
+    r(8, 1, 16, 7, '#3a3a3a'); r(7, 4, 3, 10, '#3a3a3a'); r(22, 3, 3, 8, '#3a3a3a'); r(10, 2, 2, 4, '#9a9a9a'); r(18, 1, 3, 3, '#8a8a8a'); r(14, 3, 2, 2, '#777');
+    r(12, 9, 4, 1, '#2a2a2a'); r(18, 9, 4, 1, '#2a2a2a'); r(13, 11, 2, 2, '#222'); r(19, 11, 2, 2, '#222');
+    r(9, 16, 14, 7, '#4a4a4a'); r(11, 18, 3, 2, '#9a9a9a'); r(18, 19, 2, 2, '#9a9a9a'); r(14, 17, 4, 1, '#3a2020'); r(20, 13, 2, 3, '#c08f66');
+    r(23, 30, 4, 8, '#1c1c1c'); r(24, 27, 7, 5, '#555'); r(29, 28, 2, 3, '#9cf');
+  } else if (key === 'frost') {
+    r(3, 25, 26, 23, '#f4f4f4'); r(3, 25, 2, 23, '#d0d0d0'); r(12, 25, 8, 10, '#4a7ac8'); r(10, 25, 3, 7, '#ddd'); r(19, 25, 3, 7, '#ddd');
+    r(7, 30, 2, 4, '#36f'); r(21, 32, 9, 12, '#8a5a2b'); r(22, 34, 7, 9, '#fff'); r(23, 36, 5, 1, '#999'); r(23, 38, 5, 1, '#999');
+    r(13, 22, 6, 3, '#f0c8a8');
+    r(9, 6, 14, 16, '#f0c8a8'); r(9, 6, 2, 16, '#d8a888');
+    r(11, 0, 10, 4, '#eeeeee'); r(8, 3, 16, 5, '#e6e6e6'); r(7, 6, 3, 10, '#dddddd');
+    r(12, 9, 4, 1, '#aaa'); r(19, 9, 4, 1, '#aaa');
+    r(12, 11, 5, 4, '#333'); r(13, 12, 3, 2, '#bfe2ff'); r(18, 11, 5, 4, '#333'); r(19, 12, 3, 2, '#bfe2ff'); r(17, 12, 1, 1, '#333');
+    r(14, 18, 5, 1, '#8a4a4a'); r(13, 19, 1, 1, '#8a4a4a'); r(19, 19, 1, 1, '#8a4a4a');
+  } else if (key === 'sam') {
+    r(4, 25, 24, 23, '#8b919b'); r(11, 24, 10, 3, '#6b717b'); r(4, 25, 2, 23, '#767c86');
+    r(13, 21, 6, 4, '#f1cdb0');
+    r(9, 6, 14, 16, '#f1cdb0'); r(9, 6, 2, 16, '#ddb596');
+    r(9, 2, 14, 5, '#6a4a32'); r(8, 4, 2, 6, '#6a4a32'); r(22, 4, 2, 5, '#6a4a32'); r(12, 2, 5, 1, '#7d5a3f');
+    r(12, 10, 4, 1, '#6a4a32'); r(18, 10, 4, 1, '#6a4a32'); r(13, 12, 2, 2, '#2c4a6c'); r(19, 12, 2, 2, '#2c4a6c');
+    r(16, 14, 2, 3, '#ddb596'); r(14, 18, 4, 1, '#b06a60'); r(13, 17, 1, 1, '#b06a60'); r(18, 17, 1, 1, '#b06a60');
+  }
+  ctx.restore();
+}
+function drawInaSmall(x, y, face, t) {
+  const r = painter(x, y, face, 16);
+  r(6, 13, 2, 3, '#2a2a2a'); r(9, 13, 2, 3, '#2a2a2a'); r(5, 15, 3, 1, '#111'); r(9, 15, 3, 1, '#111');
+  r(5, 8, 7, 5, '#1c1c1c'); r(6, 7, 5, 1, '#5a5a5a'); r(4, 9, 1, 3, '#1c1c1c');
+  r(6, 2, 6, 5, '#d9a77c'); r(5, 0, 7, 3, '#3a3a3a'); r(5, 2, 1, 3, '#3a3a3a'); r(7, 0, 2, 1, '#9a9a9a');
+  r(8, 3, 1, 1, '#222'); r(10, 3, 1, 1, '#222'); r(6, 5, 6, 3, '#4a4a4a'); r(8, 6, 1, 1, '#9a9a9a');
+  r(11, 8, 2, 2, '#1c1c1c'); r(12, 7, 3, 3, '#555'); r(14, 8, 1, 1, '#9cf');
+}
+
+function drawLabBG(L) {
+  R(0, 0, VW, VH, '#0f1d26'); R(0, 100, VW, 22, '#0a1418');
+  for (let i = 0; i < 6; i++) R(i * 56 + 4, 100, 40, 1, '#1a2f3a');
+  // desks with blinking monitors
+  for (const mx of [20, 236]) {
+    R(mx, 70, 64, 4, '#22343e'); R(mx + 6, 52, 22, 16, '#05080a'); R(mx + 36, 52, 22, 16, '#05080a');
+    R(mx + 8, 54, 18, 12, frame % 40 < 20 ? '#1a4a2a' : '#1a3a4a'); R(mx + 38, 54, 18, 12, '#4a1a1a');
+    for (let k = 0; k < 3; k++) R(mx + 40, 56 + k * 3, 6 + ((frame / 5 + k * 3) % 10), 1, '#f55');
+  }
+  // the big wall screen
+  R(94, 6, 132, 76, '#2a3a44'); R(96, 8, 128, 72, '#05080a');
+  if (L.call) {
+    R(98, 10, 124, 68, '#1a2a3a');
+    ctx.save(); ctx.beginPath(); ctx.rect(96, 8, 128, 72); ctx.clip();
+    portrait('sam', 138, 12, 1, 1.4);
+    ctx.restore();
+    text('LIVE', 102, 12, frame % 30 < 15 ? '#f44' : '#822', 'left');
+  } else {
+    drawEurope(108, 12, 4, L.map || (vn && vn.script === ENDING ? 'healed' : 'burnt'), Math.min(1, (vn ? vn.lt : 0) / 120));
+    text('EUROPE', 160, 70, '#fff', 'center');
+  }
+  if (!L.map || L.map === 'burn' || L.map === 'burnt') {
+    ctx.save(); ctx.globalAlpha = 0.12 + 0.1 * Math.sin(frame * 0.12); ctx.fillStyle = '#f00'; ctx.fillRect(0, 0, VW, VH); ctx.restore();
+    R(150, 0, 20, 4, frame % 30 < 15 ? '#f33' : '#600');
+  }
+}
+function drawNewsBG(L) {
+  R(0, 0, VW, VH, '#0a1a3a');
+  for (let i = 0; i < 8; i++) R(i * 44, 0, 22, 120, '#0d2048');
+  drawEurope(108, 10, 4, L.map, Math.min(1, vn.lt / 120));
+  R(0, 80, VW, 14, '#c00'); text('BREAKING NEWS', 6, 83, '#fff');
+  text('LIVE', VW - 6, 83, frame % 30 < 15 ? '#fff' : '#f99', 'right');
+  R(0, 94, VW, 12, '#000');
+  const tick = 'EUROPE +6C ... BOOT GAME HITS 2 BILLION PLAYERS ... DATA CENTERS AT 400% ... VENICE NOW A REEF ... CAT STATUS UNKNOWN ... ';
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 94, VW, 12); ctx.clip();
+  const off = (frame * 1.2) % (tick.length * 8);
+  text(tick + tick, 4 - off, 96, '#ffd84a'); ctx.restore();
+}
+function drawDCBG(heat) {
+  R(0, 0, VW, VH, '#0e1218'); R(0, 84, VW, 40, '#0a0d12');
+  for (let i = 0; i < 6; i++) { ctx.fillStyle = '#141a22'; ctx.fillRect(0, 86 + i * 6, VW, 1); }
+  for (let i = 0; i < 11; i++) {
+    const x = i * 30 + 2; R(x, 6, 24, 76, '#1a2029'); R(x + 1, 7, 22, 74, '#141920');
+    for (let k = 0; k < 9; k++) {
+      R(x + 3, 10 + k * 8, 18, 5, '#222a35');
+      const h = hash(i * 9 + k, Math.floor(frame / 9)) % 5;
+      R(x + 4, 12 + k * 8, 2, 1, h === 0 ? '#f44' : h < 3 ? '#4f6' : '#48f');
+    }
+  }
+  if (heat) { ctx.save(); ctx.globalAlpha = 0.07 + 0.05 * Math.sin(frame * 0.1); ctx.fillStyle = '#ff4000'; ctx.fillRect(0, 0, VW, VH); ctx.restore(); }
+}
+
+const SLOT = { tom: { x: 0, face: 1 }, ina: { x: 60, face: 1 }, frost: { x: 256, face: -1 }, sam: { x: 256, face: -1 } };
+function drawVN() {
+  const L = vn.script[vn.i];
+  const sx = shake ? rand(-shake, shake) : 0;
+  ctx.save(); ctx.translate(Math.round(sx), 0);
+  if (L.bg === 'card') {
+    R(0, 0, VW, VH, '#000');
+    const s = L.text.slice(0, vn.shown);
+    text(s, VW / 2, 80, '#ffd84a', 'center');
+    if (vn.shown >= vn.total && frame % 60 < 40) text('PRESS ENTER', VW / 2, 110, '#888', 'center');
+    ctx.restore(); return;
+  }
+  if (L.bg === 'news') drawNewsBG(L); else if (L.bg === 'dc') drawDCBG(false); else drawLabBG(L);
+  for (const c of L.cast || []) {
+    const sl = SLOT[c], active = c === L.who, bob = active && vn.shown < vn.total && frame % 10 < 5 ? -1 : 0;
+    if (!active) ctx.filter = 'brightness(0.5)';
+    portrait(c, sl.x, 24 + bob, sl.face);
+    ctx.filter = 'none';
+  }
+  if (L.cat) { ctx.save(); ctx.translate(150, 96); ctx.scale(2, 2); drawCat(0, 0); ctx.restore(); }
+  // dialogue box
+  R(4, 122, 312, 54, '#000000dd'); R(4, 122, 312, 1, '#ffd84a'); R(4, 175, 312, 1, '#ffd84a'); R(4, 122, 1, 54, '#ffd84a'); R(315, 122, 1, 54, '#ffd84a');
+  if (L.who) {
+    const nm = NAMES[L.who]; ctx.font = '8px ' + FONT;
+    const w = ctx.measureText(nm).width + 10;
+    R(8, 112, w, 12, '#ffd84a'); ctx.fillStyle = '#111'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(nm, 13, 114);
+  }
+  let left = vn.shown;
+  vn.lines.forEach((ln, k) => { if (left <= 0) return; text(ln.slice(0, left), 12, 129 + k * 11, L.who ? '#fff' : '#cfe'); left -= ln.length; });
+  if (vn.shown >= vn.total && frame % 40 < 25) { R(304, 166, 6, 2, '#ffd84a'); R(305, 168, 4, 1, '#ffd84a'); R(306, 169, 2, 1, '#ffd84a'); }
+  ctx.restore();
+}
+
+/* =====================================================================
+   CHAPTER 3: THE TURN-BASED BATTLE
+   ===================================================================== */
+let rpg = null;
+const SKILLS = {
+  'BOOT STOMP': { sp: 8, target: 'enemy', desc: 'BOOT STOMP (8 SP): A BIG HIT ON ONE FOE.' },
+  'UNPLUG': { sp: 10, target: 'all', desc: 'UNPLUG (10 SP): HITS ALL. SERVERS TAKE DOUBLE.' },
+  'DIGG OR DIE': { sp: 20, target: 'enemy', desc: 'DIGG OR DIE (20 SP): THE GIANT DIGGER BOOT.' },
+  'LONG TAKE': { sp: 10, target: 'all', desc: 'LONG TAKE (10 SP): FOUR HITS ON RANDOM FOES.' },
+  'CUT!': { sp: 8, target: 'enemy', desc: 'CUT! (8 SP): A FOE LOSES ITS NEXT TURN.' },
+  'CATERING': { sp: 8, target: 'party', desc: 'CATERING (8 SP): HEAL THE WHOLE CREW 35.' }
+};
+const ITEMS = {
+  COFFEE: { desc: 'ICED COFFEE: +50 HP. CAN WAKE A KNOCKED-OUT ALLY.' },
+  SOLAR: { desc: 'SOLAR CELL: +20 SP.' }
+};
+const RPG_TIPS = [
+  'TIP: SERVERS SHIELD SAM. UNPLUG THEM FIRST!',
+  'TIP: WHEN SAM SCALES UP, DEFEND OR YELL "CUT!"',
+  'TIP: CATERING HEALS EVERYONE. COFFEE REVIVES.',
+  'TIP: SAVE 20 SP FOR DIGG OR DIE.'
+];
+function mkServer(x, y, label) { return { kind: 'server', name: 'SERVER ' + label, hp: 70, maxHp: 70, atk: 11, x, y, w: 30, h: 50, stun: 0, imm: 0, flash: 0, ox: 0, dead: false }; }
+function startRPG(take) {
+  state = 'rpg';
+  rpg = {
+    take, t: 0, phase: 'intro', turn: 0, wait: 0, summoned: false, bootFx: null, floats: [],
+    msg: take > 1 ? RPG_TIPS[(take - 2) % RPG_TIPS.length] : 'SAM ALTMAN AND HIS DATA CENTERS BLOCK THE WAY!', items: { COFFEE: 3, SOLAR: 2 },
+    party: [
+      { key: 'tom', name: 'TOM', hp: 140, maxHp: 140, sp: 40, maxSp: 40, atk: 18, skills: ['BOOT STOMP', 'UNPLUG', 'DIGG OR DIE'], x: 232, y: 50, w: 32, h: 32, def: false, flash: 0, ox: 0 },
+      { key: 'ina', name: 'ALEJANDRO', hp: 110, maxHp: 110, sp: 50, maxSp: 50, atk: 13, skills: ['LONG TAKE', 'CUT!', 'CATERING'], x: 270, y: 70, w: 32, h: 32, def: false, flash: 0, ox: 0 }
+    ],
+    enemies: [
+      mkServer(8, 50, 'A'),
+      { kind: 'sam', name: 'SAM ALTMAN', hp: 320, maxHp: 320, atk: 16, x: 58, y: 34, w: 64, h: 96, stun: 0, imm: 0, flash: 0, ox: 0, dead: false, turn: 0, charging: false, funded: 0 },
+      mkServer(140, 56, 'B')
+    ]
+  };
+}
+const aliveP = () => rpg.party.filter(p => p.hp > 0);
+const aliveE = () => rpg.enemies.filter(e => !e.dead);
+function rfloat(t, txt, c, dy = 0) { rpg.floats.push({ x: t.x + t.w / 2, y: t.y + 8 + dy, txt, c, t: 50 }); }
+
+function beginSelect() {
+  rpg.phase = 'select'; rpg.choices = []; rpg.menu = 'main'; rpg.cursor = 0;
+  rpg.actor = rpg.party.findIndex(p => p.hp > 0);
+}
+function menuOptions() {
+  const a = rpg.party[rpg.actor];
+  if (rpg.menu === 'main') return [
+    { label: 'ATTACK', ok: true, desc: a.key === 'tom' ? 'ATTACK: A SWING OF THE SPADE.' : 'ATTACK: CLAPPERBOARD TO THE FACE.' },
+    { label: 'SKILL', ok: true, desc: a.name + ' SKILLS. SP: ' + a.sp },
+    { label: 'ITEM', ok: true, desc: 'COFFEE x' + rpg.items.COFFEE + '   SOLAR CELL x' + rpg.items.SOLAR },
+    { label: 'DEFEND', ok: true, desc: 'DEFEND: HALF DAMAGE THIS TURN, +4 SP.' }
+  ];
+  if (rpg.menu === 'skill') return a.skills.map(k => ({ label: k, ok: a.sp >= SKILLS[k].sp, desc: SKILLS[k].desc, value: k }));
+  if (rpg.menu === 'item') return ['COFFEE', 'SOLAR'].map(k => ({ label: k + ' x' + rpg.items[k], ok: rpg.items[k] > 0, desc: ITEMS[k].desc, value: k }));
+  // target
+  const want = rpg.pending.target;
+  const list = want === 'ally' ? rpg.party.filter(p => rpg.pending.item === 'COFFEE' || p.hp > 0) : aliveE();
+  return list.map(t => ({ label: t.name.length > 12 ? t.name.slice(0, 12) : t.name, ok: true, desc: 'TARGET: ' + t.name, value: t }));
+}
+function commit(c) {
+  c.actor = rpg.actor; rpg.choices.push(c);
+  const next = rpg.party.findIndex((p, i) => i > rpg.actor && p.hp > 0);
+  if (next < 0) startRound();
+  else { rpg.actor = next; rpg.menu = 'main'; rpg.cursor = 0; }
+}
+function updateSelect() {
+  const opts = menuOptions();
+  if (!opts.length) { rpg.menu = 'main'; return; }
+  rpg.cursor = Math.min(rpg.cursor, opts.length - 1);
+  if (pressed.mUp) { rpg.cursor = (rpg.cursor + opts.length - 1) % opts.length; blip(); }
+  if (pressed.mDown) { rpg.cursor = (rpg.cursor + 1) % opts.length; blip(); }
+  const o = opts[rpg.cursor];
+  rpg.msg = o.desc;
+  if (pressed.ok) {
+    if (!o.ok) { tone('square', 140, 120, 0.1, 0.1); return; }
+    sfx.throw();
+    if (rpg.menu === 'main') {
+      if (o.label === 'ATTACK') { rpg.pending = { cmd: 'attack', target: 'enemy' }; rpg.menu = 'target'; rpg.cursor = 0; }
+      else if (o.label === 'SKILL') { rpg.menu = 'skill'; rpg.cursor = 0; }
+      else if (o.label === 'ITEM') { rpg.menu = 'item'; rpg.cursor = 0; }
+      else commit({ cmd: 'defend' });
+    } else if (rpg.menu === 'skill') {
+      const S = SKILLS[o.value];
+      if (S.target === 'enemy') { rpg.pending = { cmd: 'skill', skill: o.value, target: 'enemy' }; rpg.menu = 'target'; rpg.cursor = 0; }
+      else commit({ cmd: 'skill', skill: o.value });
+    } else if (rpg.menu === 'item') { rpg.pending = { cmd: 'item', item: o.value, target: 'ally' }; rpg.menu = 'target'; rpg.cursor = 0; }
+    else { const c = rpg.pending; c.tgt = o.value; commit(c); }
+  } else if (pressed.back) {
+    if (rpg.menu === 'target') rpg.menu = rpg.pending.cmd === 'skill' ? 'skill' : rpg.pending.cmd === 'item' ? 'item' : 'main';
+    else if (rpg.menu !== 'main') rpg.menu = 'main';
+    else if (rpg.choices.length) { const c = rpg.choices.pop(); rpg.actor = c.actor; }
+    rpg.cursor = 0;
+  }
+}
+function startRound() {
+  rpg.turn++;
+  rpg.queue = [...rpg.choices, ...aliveE().map(e => ({ enemy: e }))];
+  rpg.phase = 'act'; rpg.wait = 0;
+}
+function checkEnd() {
+  const sam = rpg.enemies.find(e => e.kind === 'sam');
+  if (sam.dead) {
+    rpg.phase = 'win'; rpg.wait = 150; rpg.msg = 'SAM ALTMAN: "OKAY, OKAY! YOU MADE YOUR POINT!"';
+    rpg.enemies.forEach(e => { if (e.kind === 'server') e.dead = true; });
+    sfx.win(); return true;
+  }
+  if (!aliveP().length) { rpg.phase = 'lose'; rpg.wait = 150; rpg.msg = 'THE CREW IS DOWN... CUT! TAKE ' + (rpg.take + 1) + '.'; sfx.die(); return true; }
+  return false;
+}
+function endRound() {
+  if (checkEnd()) return;
+  rpg.party.forEach(p => { if (p.hp > 0) p.sp = Math.min(p.maxSp, p.sp + 3); p.def = false; });
+  rpg.enemies.forEach(e => { if (e.stun > 0) e.stun--; if (e.imm > 0) e.imm--; });
+  beginSelect();
+}
+function nextAction() {
+  if (checkEnd()) return;
+  const q = rpg.queue.shift();
+  if (!q) { endRound(); return; }
+  if (q.enemy) { if (q.enemy.dead) return nextAction(); enemyAct(q.enemy); }
+  else { const a = rpg.party[q.actor]; if (a.hp <= 0) return nextAction(); partyAct(a, q); }
+  rpg.wait = 70;
+}
+
+function hitEnemy(t, amt) {
+  if (!t || t.dead) return;
+  let d = Math.round(amt * rand(0.85, 1.15));
+  if (t.kind === 'sam' && rpg.enemies.some(e => e.kind === 'server' && !e.dead)) { d = Math.round(d / 2); rfloat(t, 'SHIELDED', '#8cf', 14); }
+  t.hp = Math.max(0, t.hp - d); t.flash = 14; rfloat(t, String(d), '#fff');
+  if (t.hp <= 0) { t.dead = true; rfloat(t, t.kind === 'sam' ? 'LOGGED OFF' : 'OFFLINE', '#f66', -12); }
+  sfx.hit();
+}
+function hurtAlly(p, amt) {
+  if (p.hp <= 0) return;
+  let d = Math.round(amt * rand(0.85, 1.15)); if (p.def) d = Math.round(d / 2);
+  p.hp = Math.max(0, p.hp - d); p.flash = 14; rfloat(p, String(d), '#f88');
+  if (p.hp <= 0) rfloat(p, 'KO', '#f44', -12);
+}
+function partyAct(a, q) {
+  a.ox = -16;
+  const pickT = t => (t && !t.dead) ? t : pick(aliveE());
+  if (q.cmd === 'defend') { a.def = true; a.sp = Math.min(a.maxSp, a.sp + 4); rpg.msg = a.name + ' BRACES FOR IMPACT.'; return; }
+  if (q.cmd === 'attack') {
+    hitEnemy(pickT(q.tgt), a.atk); sfx.swing();
+    rpg.msg = a.key === 'tom' ? 'TOM SWINGS THE SPADE!' : 'ALEJANDRO SWINGS THE CLAPPERBOARD!'; return;
+  }
+  if (q.cmd === 'item') {
+    rpg.items[q.item]--; const t = q.tgt; sfx.gem();
+    if (q.item === 'COFFEE') { const was = t.hp <= 0; t.hp = Math.min(t.maxHp, t.hp + 50); rfloat(t, '+50', '#7f7'); rpg.msg = was ? t.name + ' SIPS AN ICED COFFEE AND GETS BACK UP!' : t.name + ' DRINKS AN ICED COFFEE. +50 HP.'; }
+    else { t.sp = Math.min(t.maxSp, t.sp + 20); rfloat(t, '+20 SP', '#8cf'); rpg.msg = t.name + ' RECHARGES ON SOLAR. +20 SP.'; }
+    return;
+  }
+  a.sp -= SKILLS[q.skill].sp;
+  switch (q.skill) {
+    case 'BOOT STOMP': hitEnemy(pickT(q.tgt), a.atk * 2.2); sfx.bounce(); rpg.msg = 'TOM: BOOT STOMP!'; break;
+    case 'UNPLUG': aliveE().forEach(e => hitEnemy(e, a.atk * (e.kind === 'server' ? 2 : 1))); rpg.msg = 'TOM YANKS OUT EVERY POWER CABLE HE CAN REACH!'; break;
+    case 'DIGG OR DIE': {
+      const t = pickT(q.tgt); if (!t) break;
+      rpg.bootFx = { x: t.x + t.w / 2 - 36, y: -110, ty: t.y + t.h - 96, t: 0, tgt: t, dmg: a.atk * 3.6 };
+      sfx.whistle(); rpg.msg = 'DIGG. OR DIE. THE GIANT BOOT DESCENDS!'; break;
+    }
+    case 'LONG TAKE':
+      for (let k = 0; k < 4; k++) { const t = pick(aliveE()); if (t) hitEnemy(t, a.atk * 0.75); }
+      rpg.msg = 'ALEJANDRO SHOOTS ONE LONG, UNBROKEN TAKE!'; break;
+    case 'CUT!': {
+      const t = pickT(q.tgt); if (!t) break;
+      if (t.imm > 0) { rpg.msg = t.name + ' IGNORES THE DIRECTOR THIS TIME.'; break; }
+      t.stun = 1; if (t.kind === 'sam') t.imm = 2; rfloat(t, 'CUT!', '#ffd84a');
+      rpg.msg = '"CUT!" ' + t.name + ' FREEZES IN PLACE.'; sfx.check(); break;
+    }
+    case 'CATERING':
+      aliveP().forEach(p => { p.hp = Math.min(p.maxHp, p.hp + 35); rfloat(p, '+35', '#7f7'); });
+      rpg.msg = 'CRAFT SERVICES ARRIVES. EVERYONE EATS. +35 HP.'; sfx.gem(); break;
+  }
+}
+function enemyAct(e) {
+  e.ox = 12;
+  const tgts = aliveP(); if (!tgts.length) return;
+  if (e.stun > 0) {
+    rpg.msg = e.kind === 'sam' ? 'SAM IS STUCK IN A MEETING.' : e.name + ' IS FROZEN BY THE DIRECTOR.';
+    if (e.charging) { e.charging = false; rpg.msg += ' THE GIGAWATT FIZZLES OUT.'; }
+    return;
+  }
+  if (e.kind === 'server') {
+    if (Math.random() < 0.7) { const t = pick(tgts); hurtAlly(t, e.atk); rpg.msg = e.name + ' OVERHEATS ALL OVER ' + t.name + '!'; }
+    else { tgts.forEach(p => hurtAlly(p, 6)); rpg.msg = e.name + "'S FANS ROAR. EVERYONE TAKES THE HEAT."; }
+    sfx.hurt(); return;
+  }
+  e.turn++;
+  if (e.charging) {
+    e.charging = false; tgts.forEach(p => hurtAlly(p, 36));
+    rpg.msg = 'GIGAWATT BLAST! THE ROOM HITS 200 DEGREES!'; shake = 14; sfx.boom(); return;
+  }
+  if (!rpg.summoned && e.hp < e.maxHp * 0.55) {
+    rpg.summoned = true;
+    rpg.enemies.forEach(s => { if (s.kind === 'server') { s.dead = false; s.hp = s.maxHp; s.flash = 20; } });
+    rpg.msg = 'SAM: "MORE COMPUTE!" TWO FRESH SERVER RACKS SPIN UP.'; sfx.check(); return;
+  }
+  if (e.turn % 3 === 0) { e.charging = true; rpg.msg = 'SAM IS SCALING UP... A GIGAWATT IS COMING! DEFEND, OR CUT HIM!'; tone('sawtooth', 80, 400, 0.8, 0.12); return; }
+  const r = Math.random();
+  if (r < 0.4) { tgts.forEach(p => hurtAlly(p, 13)); rpg.msg = 'SAM CITES THE SCALING LAWS. IT HURTS EVERYONE.'; sfx.hurt(); }
+  else if (r < 0.8 || e.hp > e.maxHp * 0.7 || e.funded >= 2) { const t = pick(tgts); hurtAlly(t, 24); rpg.msg = 'SAM HYPES THE NEXT MODEL STRAIGHT AT ' + t.name + '!'; sfx.hurt(); }
+  else { e.funded++; e.hp = Math.min(e.maxHp, e.hp + 40); rfloat(e, '+40', '#7f7'); rpg.msg = 'SAM CLOSES A NEW FUNDING ROUND. +40 HP.'; sfx.gem(); }
+}
+
+function updateRPG() {
+  const rp = rpg; rp.t++;
+  for (const f of rp.floats) { f.t--; f.y -= 0.4; }
+  rp.floats = rp.floats.filter(f => f.t > 0);
+  for (const m of [...rp.party, ...rp.enemies]) { m.ox *= 0.82; if (m.flash > 0) m.flash--; }
+  if (rp.bootFx) {
+    const b = rp.bootFx; b.y = Math.min(b.ty, b.y + 10);
+    if (b.y >= b.ty && ++b.t === 1) { shake = 14; sfx.boom(); hitEnemy(b.tgt.dead ? pick(aliveE()) : b.tgt, b.dmg); }
+    if (b.t > 40) rp.bootFx = null;
+  }
+  switch (rp.phase) {
+    case 'intro': if (rp.t > 110 || pressed.ok) beginSelect(); break;
+    case 'select': updateSelect(); break;
+    case 'act':
+      if (rp.wait > 0) { rp.wait--; if (rp.wait < 50 && pressed.ok && !rp.bootFx) rp.wait = 0; }
+      else if (!rp.bootFx) nextAction();
+      break;
+    case 'win': if (--rp.wait <= 0) startVN(ENDING, () => { state = 'credits'; creditsT = 0; }); break;
+    case 'lose': if (--rp.wait <= 0) startRPG(rp.take + 1); break;
+  }
+}
+
+function drawServer(e) {
+  const x = Math.round(e.x + e.ox), y = e.y;
+  R(x, y, e.w, e.h, '#3a4250'); R(x + 1, y + 1, e.w - 2, e.h - 2, '#262c36');
+  for (let k = 0; k < 6; k++) {
+    R(x + 3, y + 4 + k * 7, e.w - 6, 5, '#323a48');
+    const h = hash(k + e.x, Math.floor(frame / 6)) % 4;
+    R(x + 5, y + 6 + k * 7, 2, 1, h === 0 ? '#f44' : '#4f6'); R(x + 9, y + 6 + k * 7, 2, 1, h === 1 ? '#fa0' : '#48f');
+    R(x + e.w - 9, y + 5 + k * 7, 4, 3, (frame + k * 3) % 8 < 4 ? '#4a5260' : '#3a4250');
+  }
+  text('GPU', x + e.w / 2, y + e.h - 9, '#8cf', 'center');
+  ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = '#ff7a2a';
+  for (let i = 0; i < 3; i++) { const wx = x + 6 + i * 9; for (let k = 0; k < 4; k++) ctx.fillRect(wx + Math.round(Math.sin(frame * 0.2 + k + i) * 2), y - 4 - k * 3, 1, 2); }
+  ctx.restore();
+}
+function drawRPG() {
+  const rp = rpg;
+  const sx = shake ? rand(-shake, shake) : 0;
+  ctx.save(); ctx.translate(Math.round(sx), 0);
+  drawDCBG(true);
+  // enemies
+  for (const e of rp.enemies) {
+    if (e.dead) continue;
+    if (e.flash > 0 && frame % 4 < 2) ctx.filter = 'brightness(3)';
+    if (e.kind === 'server') drawServer(e);
+    else {
+      if (e.charging) { ctx.save(); ctx.globalAlpha = 0.35 + 0.25 * Math.sin(frame * 0.4); R(e.x - 6, e.y - 2, e.w + 12, e.h + 4, '#ffd84a'); ctx.restore(); }
+      portrait('sam', e.x + e.ox, e.y, 1);
+      if (e.stun > 0) for (let i = 0; i < 3; i++) { const a = frame * 0.15 + i * 2.1; R(e.x + 32 + Math.cos(a) * 16, e.y + 2 + Math.sin(a) * 4, 3, 3, '#ffd84a'); }
+    }
+    ctx.filter = 'none';
+    // hp bar
+    R(e.x + e.w / 2 - 15, e.y - 6, 30, 3, '#300'); R(e.x + e.w / 2 - 15, e.y - 6, 30 * e.hp / e.maxHp, 3, e.kind === 'sam' ? '#f0a' : '#d22');
+  }
+  // party
+  rp.party.forEach((p, i) => {
+    const active = rp.phase === 'select' && rp.actor === i;
+    if (p.flash > 0 && frame % 4 < 2) ctx.filter = 'brightness(3)';
+    if (p.hp <= 0) ctx.filter = 'grayscale(1) brightness(0.6)';
+    ctx.save(); ctx.translate(Math.round(p.x + p.ox), p.y + (active && frame % 20 < 10 ? -1 : 0)); ctx.scale(2, 2);
+    if (p.key === 'tom') drawTom({ x: 3, y: 2, w: 10, h: 14, face: -1, onGround: true, vx: 0, pogo: false, atk: Math.abs(p.ox) > 4 ? 8 : 0, sprint: false }, frame);
+    else drawInaSmall(0, 0, -1, frame);
+    ctx.restore(); ctx.filter = 'none';
+    if (p.def) text('DEF', p.x + 16, p.y - 8, '#8cf', 'center');
+  });
+  // target arrow
+  if (rp.phase === 'select' && rp.menu === 'target') {
+    const o = menuOptions()[rp.cursor];
+    if (o) { const t = o.value, bx = t.x + t.w / 2, by = t.y - 14 + (frame % 20 < 10 ? 0 : 2); R(bx - 3, by, 7, 2, '#ffd84a'); R(bx - 2, by + 2, 5, 2, '#ffd84a'); R(bx - 1, by + 4, 3, 2, '#ffd84a'); }
+  }
+  if (rp.bootFx) drawGiantBoot(rp.bootFx);
+  for (const f of rp.floats) { ctx.globalAlpha = Math.min(1, f.t / 12); text(f.txt, f.x, f.y, f.c, 'center'); ctx.globalAlpha = 1; }
+  ctx.restore();
+
+  // message banner
+  R(4, 2, 312, 25, '#000c'); R(4, 26, 312, 1, '#8ab');
+  wrap(rp.msg, 38).slice(0, 2).forEach((ln, k) => text(ln, 8, 6 + k * 10, '#fff'));
+  // command box
+  const box = (x, y, w, h) => { R(x, y, w, h, '#101830'); R(x, y, w, 1, '#8ab'); R(x, y + h - 1, w, 1, '#8ab'); R(x, y, 1, h, '#8ab'); R(x + w - 1, y, 1, h, '#8ab'); };
+  box(2, 114, 106, 64); box(110, 114, 208, 64);
+  if (rp.phase === 'select') {
+    const opts = menuOptions();
+    const first = Math.max(0, Math.min(rp.cursor - 3, opts.length - 4));
+    opts.slice(first, first + 4).forEach((o, k) => {
+      const i = first + k, y = 120 + k * 14;
+      text(o.label, 18, y, !o.ok ? '#555' : i === rp.cursor ? '#ffd84a' : '#fff');
+      if (i === rp.cursor) { R(8, y + 1, 2, 6, '#ffd84a'); R(10, y + 2, 2, 4, '#ffd84a'); R(12, y + 3, 2, 2, '#ffd84a'); }
+    });
+  } else text(rp.phase === 'act' ? '...' : '', 18, 120, '#888');
+  // party status
+  rp.party.forEach((p, i) => {
+    const y = 120 + i * 28, active = rp.phase === 'select' && rp.actor === i;
+    text(p.name, 116, y, p.hp <= 0 ? '#f44' : active ? '#ffd84a' : '#fff');
+    text(p.hp <= 0 ? 'KO' : p.hp + '/' + p.maxHp, 312, y, p.hp <= 0 ? '#f44' : '#fff', 'right');
+    R(116, y + 11, 110, 4, '#300'); R(116, y + 11, 110 * p.hp / p.maxHp, 4, p.hp / p.maxHp < 0.3 ? '#fa3' : '#4c4');
+    text('SP ' + p.sp, 312, y + 10, '#8cf', 'right');
+  });
+  if (rp.phase === 'intro' && rp.t < 60) { R(0, 60, VW, 30, '#000b'); text('CHAPTER 3: THE DATA CENTER', VW / 2, 71, '#ffd84a', 'center'); }
+  if (rp.take > 1 && rp.phase === 'intro') text('TAKE ' + rp.take, VW / 2, 92, '#fff', 'center');
+}
+
+function drawCredits() {
+  R(0, 0, VW, VH, '#000');
+  text('THE END', VW / 2, 18, '#ffd84a', 'center', 16);
+  text('DIGG. OR DIE.', VW / 2, 42, '#fff', 'center');
+  text('BOX OFFICE: $' + money + 'M', VW / 2, 64, '#ffd84a', 'center');
+  text('EUROPE: SAVED (MOSTLY)', VW / 2, 80, '#7f7', 'center');
+  text('THE CAT: FINE', VW / 2 - 10, 94, '#f9a', 'center'); drawCat(VW / 2 + 52, 92);
+  text('THIS GAME WAS MADE WITH AI.', VW / 2, 120, '#aaa', 'center');
+  text('SORRY, EUROPE.', VW / 2, 132, '#aaa', 'center');
+  if (creditsT > 90 && frame % 60 < 40) text('PRESS ENTER', VW / 2, 158, '#fff', 'center');
 }
 
 /* ------------------------------ LOOP -------------------------------- */
@@ -1113,7 +1700,7 @@ function loop(now) {
 }
 buildGrid();
 (document.fonts ? document.fonts.load('8px "Press Start 2P"').catch(() => {}) : Promise.resolve()).finally(() => requestAnimationFrame(loop));
-window.__game = { get state() { return state; }, get player() { return player; }, get boss() { return boss; }, get money() { return money; }, get projectiles() { return projectiles; }, get superBoot() { return superBoot; }, get enemies() { return enemies; }, setMeter: v => { bootMeter = v; }, newGame, keys, pressed, step, grid: () => grid };
+window.__game = { get state() { return state; }, get player() { return player; }, get boss() { return boss; }, get money() { return money; }, get projectiles() { return projectiles; }, get superBoot() { return superBoot; }, get rpg() { return rpg; }, get vn() { return vn; }, startVN, startRPG, INTRO, ENDING, get enemies() { return enemies; }, setMeter: v => { bootMeter = v; }, newGame, keys, pressed, step, grid: () => grid };
 </script>
 </body>
 </html>

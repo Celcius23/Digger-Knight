@@ -54,20 +54,49 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 Beaten critics have a change of heart ("TRANSFORMATIVE!", "AWARDS SEASON!").
 Clapperboards are checkpoints. Dying yells "CUT!" and costs 20% of the box office.
 
-## The level
+## The story: three games in one
 
+### Chapter 1: the platformer
 1. The red carpet
 2. The pit of bloggers
 3. The dirt wall
-4. The pencil pit (sharpened pencils make for very pointed criticism)
-5. The review gauntlet
-6. The stunt sequence: a stomp chain over a bottomless drop
-7. The premiere: boss fight
+4. The pencil pit: stepping-stone platforms get you across safely. The
+   bloggers hovering low in the gaps are optional bounces (and a safety net),
+   never required.
+5. The premiere: boss fight with Mortimer Snobb
 
 All set against a sunset of searchlights, the HOLLYDIG sign and nodding oil
-pumpjacks. Win to earn a **100% FRESH** critics consensus. And the cat is safe.
+pumpjacks. Beat the boss for a **100% FRESH** critics consensus... but then:
+
+### Chapter 2: the visual novel
+BREAKING NEWS. The AI-made marketing game went viral, two billion players spun
+up a million GPUs, and the left half of Europe is gone. Climate scientist
+Dr. Frost briefs Tom and Iñárritu, then a certain tech CEO calls in to say the
+next model will fix it, if he can just get a few more gigawatts.
+Press **Z / Enter** (or tap) to advance.
+
+### Chapter 3: the turn-based battle
+Tom and Iñárritu storm the data center to fight **Sam Altman** and his GPU
+server racks in a classic turn-based battle, to an original 5/4 spy-thriller theme.
+
+| Tom | Iñárritu |
+| --- | --- |
+| **Boot Stomp:** big single hit | **Long Take:** four hits on random foes |
+| **Unplug:** hits all, double damage to servers | **CUT!:** a foe loses its next turn (cancels a charging gigawatt) |
+| **Digg or Die:** the giant boot | **Catering:** heals the whole crew |
+
+Items: **Iced Coffee** (+50 HP, revives) and **Solar Cell** (+20 SP).
+Servers shield Sam (half damage), so unplug them first. When Sam starts
+"scaling up", defend or yell CUT! Menus: arrows to choose, **Z/Enter** to
+confirm, **X/Esc** to go back (touch: ◀ ▶ ▼, JUMP = OK, DIG = back).
+
+Win, and Sam agrees to run everything on renewables, the Alps refreeze, and
+the cat is fine.
 
 ---
 
-*An affectionate fan-made parody. It isn't affiliated with or endorsed by Tom
-Cruise, the filmmakers, or any studio. All critics in the game are fictional.*
+*An affectionate fan-made satire. It isn't affiliated with or endorsed by Tom
+Cruise, Alejandro G. Iñárritu, Sam Altman, OpenAI, the filmmakers, or any
+studio. Their appearances are caricatures, the dialogue is invented, and all
+critics, scientists and events in the game are fictional. The battle music is
+an original composition.*
