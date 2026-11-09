@@ -352,8 +352,9 @@ function songFor() {
   if (state === 'shoot') return sCut ? null : sArena ? 'boss' : 'spy';
   if (state === 'vn' && vn) {
     const L = vn.script[vn.i];
-    if (L.bg === 'card') return L.text.includes('MISSION') ? 'spy' : null;
+    if (L.bg === 'card') return L.text.includes('MISSION') ? 'spy' : null; // the briefing card
     if (L.hud) return 'cyborg';
+    if (L.transform || (L.cast || []).includes('ethanc')) return 'spy';
     if (L.map === 'heal' || L.map === 'healed') return 'hope';
     return { news: 'news', lab: 'lab', smile: 'smile', dc: 'sad', sunset: 'sunset', bar: 'bar' }[L.bg] || 'lab';
   }
@@ -1485,38 +1486,38 @@ function wrap(str, n = 36) {
   return lines;
 }
 
-const NAMES = { ethan: 'TOM CRUISE', ethanc: 'TOM CRUISE', cyborg: '???', biker: 'BIKER', barkeep: 'BARTENDER', tom: 'TOM CRUISE', ina: 'IÑÁRRITU', frost: 'DR. FROST', sam: 'SAM ALTMAN' };
+const NAMES = { ethan: 'TOM CRUISE', ethanc: 'TOM CRUISE', cyborg: '???', biker: 'BIKER', barkeep: 'BARTENDER', tom: 'TOM CRUISE', ina: 'IÑÁRRITU', frost: 'DR. CRISIS', sam: 'SAM ALTMAN' };
 const C3 = ['tom', 'ina', 'frost'], C3E = ['ethanc', 'ina', 'frost'];
 const INTRO = [
   { bg: 'news', map: 'burn', text: 'WE INTERRUPT THIS PROGRAM.' },
-  { bg: 'news', map: 'burnt', fx: 'shake', text: 'DATA CENTERS ARE MELTING. SO IS EUROPE. CAUSE: ONE (1) MARKETING GAME.' },
+  { bg: 'news', map: 'burnt', fx: 'shake', text: 'EUROPE IS IN GRAVE DANGER.' },
   { bg: 'lab', cast: C3, who: 'frost', text: 'MR. CRUISE. MR. IÑÁRRITU. SIT DOWN.' },
-  { bg: 'lab', cast: C3, who: 'tom', text: "I'LL STAND. I LIKE TO BE READY TO RUN." },
+  { bg: 'lab', cast: C3, who: 'tom', text: "I'LL STAND." },
   { bg: 'lab', cast: C3, who: 'ina', text: 'I WILL SIT. A MAN MUST BE CLOSE TO THE EARTH... TO HEAR IT SCREAM.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'YOUR GAME WAS MADE WITH AI. EVERY NOTE YOU GAVE, IT REBUILT THE WHOLE THING.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'THE GAME YOU MADE WITH AI IS...' },
   { bg: 'lab', cast: C3, who: 'tom', text: 'FANTASTIC. THE AUDIENCE DESERVES PERFECT.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'HOW MANY NOTES, MR. CRUISE?' },
+  { bg: 'lab', cast: C3, who: 'frost', text: "HOW MANY PROMPTS YOU'VE MADE, MR. CRUISE?" },
   { bg: 'lab', cast: C3, who: 'tom', text: 'A COUPLE.' },
-  { bg: 'lab', cast: C3, who: 'frost', log: true, fx: 'shake', text: 'FOUR. MILLION. TWO HUNDRED THOUSAND.' },
-  { bg: 'lab', cast: C3, who: 'frost', log: true, text: '"BIGGER BOOT." "MORE SMILE." "AGAIN." "AGAIN." "FASTER." "AGAIN, BUT FASTER."' },
-  { bg: 'lab', cast: C3, who: 'tom', log: true, text: 'YOU DON\'T PHONE IT IN. NOT FOR THE FANS. NEVER.' },
-  { bg: 'lab', cast: C3, who: 'ina', text: 'TOM. I SHOT A WHOLE MOVIE IN NATURAL LIGHT. WITH A BEAR. EVEN I THINK THIS IS TOO MUCH.' },
-  { bg: 'lab', cast: C3, who: 'frost', fx: 'shake', text: 'EVERY NOTE SPUN UP A THOUSAND GPUS. THE ALPS MELTED BY TUESDAY. VENICE IS A REEF.' },
+  { bg: 'lab', cast: C3, who: 'frost', log: true, fx: 'shake', text: 'MILLION. AND TWO HUNDRED THOUSAND.' },
+  { bg: 'lab', cast: C3, who: 'frost', log: true, text: '"BIGGER BOOT." "BIGGER HOLE." "BIGGER DIGG." "AGAIN." "AGAIN." "FASTER." "YES."' },
+  { bg: 'lab', cast: C3, who: 'tom', log: true, text: "YOU DON'T PHONE IT IN. NOT FOR THE FANS. NEVER." },
+  { bg: 'lab', cast: C3, who: 'ina', text: 'TOM. I SHOT A WHOLE MOVIE IN NATURAL LIGHT. WITH A BEAR. AND EVEN I THOUGHT THIS IS TOO MUCH.' },
+  { bg: 'lab', cast: C3, who: 'frost', fx: 'shake', text: 'EVERY PROMPT SPUN UP A THOUSAND GPUS. THE ALPS MELTED BY TUESDAY. VENICE IS A REEF.' },
   { bg: 'lab', cast: C3, who: 'frost', text: 'HALF OF EUROPE IS GONE.' },
   { bg: 'lab', cast: C3, who: 'tom', text: 'WHICH HALF?' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'THE LEFT ONE.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'THE IMPORTANT ONE.' },
   { bg: 'lab', cast: C3, who: 'ina', text: '...THE LIGHT ON THE BURNING MAP IS ACTUALLY GORGEOUS.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'ALEJANDRO.' },
-  { bg: 'smile', who: 'tom', text: 'HEY. AT LEAST THE GAME IS PERFECT.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'PLEASE. STOP. SMILING.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'THE AI IS STILL CHEWING ON YOUR LAST NOTE. ALL OF IT RUNS THROUGH ONE MAN.' },
-  { bg: 'lab', cast: C3, call: true, who: 'sam', text: 'HEY GUYS! SUPER EXCITED. ONE MORE ITERATION AND IT\'S PERFECT. I JUST NEED A FEW MORE GIGAWATTS.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'SOMEONE HAS TO GET INSIDE AND PULL THE PLUG. IT\'S IMPOSSIBLE.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: '...' },
+  { bg: 'smile', who: 'tom', text: 'HEY. THE GAME IS PERFECT.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'STOP.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'THE AI IS STILL GOING THROUGH YOUR LAST PROMPT. ALL OF IT RUNS THROUGH ONE MAN.' },
+  { bg: 'lab', cast: C3, call: true, who: 'sam', text: "HEY TOM! SUPER EXCITED TO WORK WITH THE MASTER. ONE MORE ITERATION AND IT'S DONE. I JUST NEED A FEW MORE RAM." },
+  { bg: 'lab', cast: C3, who: 'frost', text: "SOMEONE HAS TO GET INSIDE AND PULL THE PLUG. IT'S IMPOSSIBLE." },
   { bg: 'lab', cast: C3, who: 'tom', text: '...DID YOU SAY IMPOSSIBLE?' },
-  { bg: 'lab', cast: C3, transform: true, text: 'TOM PRODUCES A BLACK COAT AND SUNGLASSES FROM... SOMEWHERE.' },
+  { bg: 'lab', cast: C3, transform: true, text: '' },
   { bg: 'lab', cast: C3E, who: 'ethanc', text: 'ALEJANDRO. GRAB A CAMERA. WE DO THIS IN ONE TAKE.' },
-  { bg: 'lab', cast: C3E, who: 'ina', text: 'FINALLY. SOMEONE WHO UNDERSTANDS ME.' },
-  { bg: 'card', text: 'YOUR MISSION, SHOULD YOU CHOOSE TO ACCEPT IT: PULL THE PLUG.' }
+  { bg: 'lab', cast: C3E, who: 'ina', text: 'ONE TAKE IS ALL I NEED.' },
+  { bg: 'card', text: 'YOUR MISSION, SHOULD YOU CHOOSE TO ACCEPT IT:' }
 ];
 const EIS = ['ethan', 'ina', 'sam'], EIF = ['ethan', 'ina', 'frost'], BAR = ['biker', 'cyborg'];
 
@@ -1536,7 +1537,7 @@ function updateVN() {
   const LL = vn.script[vn.i]; if (LL.transform && vn.lt === 50) { noise(0.3, 0.3, 3000); tone('square', 300, 1200, 0.3, 0.12); }
   if (pressed.ok || pressed.start) {
     if (vn.shown < vn.total) vn.shown = vn.total;
-    else if (vn.shown >= vn.total && vn.lt < 6) { /* ignore double taps */ }
+    else if (vn.shown >= vn.total && vn.lt < (LL.transform ? 80 : 6)) { /* ignore double taps; let the transformation play */ }
     else if (++vn.i >= vn.script.length) { const done = vn.onDone; vn = null; done(); }
     else vnLine();
   }
@@ -1690,7 +1691,7 @@ function drawLabBG(L) {
     ctx.restore();
     text('LIVE', 102, 12, frame % 30 < 15 ? '#f44' : '#822', 'left');
   } else if (L.log) {
-    const LOG = ['"BIGGER BOOT"', '"MORE SMILE"', '"ONE MORE TAKE"', '"AGAIN."', '"PERFECT IT"', '"ONE MORE TAKE"', '"NO. AGAIN."', '"BRIGHTER"'];
+    const LOG = ['"BIGGER BOOT"', '"BIGGER HOLE"', '"BIGGER DIGG"', '"AGAIN."', '"AGAIN."', '"FASTER."', '"YES."', '"AGAIN."'];
     ctx.save(); ctx.beginPath(); ctx.rect(96, 8, 128, 60); ctx.clip();
     const off = (vn.lt * 0.6) % 12;
     for (let k = 0; k < 7; k++) text(LOG[(k + Math.floor(vn.lt * 0.05)) % LOG.length], 102, 12 + k * 12 - off, '#7f7');
@@ -1812,6 +1813,7 @@ function drawVN() {
   if (L.fx === 'lightning' && vn.lt < 36 && vn.lt % 8 < 3) { ctx.save(); ctx.globalAlpha = 0.75; R(0, 0, VW, VH, '#cfe8ff'); ctx.restore(); }
   if (L.cat) { ctx.save(); ctx.translate(150, 96); ctx.scale(2, 2); drawCat(0, 0); ctx.restore(); }
   // dialogue box
+  if (!L.text) { ctx.restore(); return; }
   R(4, 122, 312, 54, '#000000dd'); R(4, 122, 312, 1, '#ffd84a'); R(4, 175, 312, 1, '#ffd84a'); R(4, 122, 1, 54, '#ffd84a'); R(315, 122, 1, 54, '#ffd84a');
   if (L.who) {
     const nm = NAMES[L.who]; ctx.font = '8px ' + FONT;
@@ -2302,7 +2304,7 @@ function openStore() {
         <h3>REVIEWS</h3>
         <div class="st-rev"><b>Mortimer Snobb</b><span class="pos">Recommended</span><p>"I came to give it a C-. I am giving it an A. Please stop hitting me with the spade."</p></div>
         <div class="st-rev"><b>A Blogger</b><span class="pos">Recommended</span><p>"FIRST! Also, masterpiece."</p></div>
-        <div class="st-rev"><b>Dr. Frost</b><span class="neg">Not Recommended</span><p>"It melted the Alps."</p></div>
+        <div class="st-rev"><b>Dr. Crisis</b><span class="neg">Not Recommended</span><p>"It melted the Alps."</p></div>
         <div class="st-rev"><b>An AI Bro</b><span class="neg">Not Recommended</span><p>"Didn't even let me finish my pitch."</p></div>
       </div>
     </div>

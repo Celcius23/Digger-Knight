@@ -81,7 +81,7 @@ premiere boss fight with Mortimer Snobb. The **100% FRESH** score screen starts
 typing itself out... and gets cut off mid-word by static and an alarm:
 **WE INTERRUPT THIS PROGRAM.**
 
-**The visual novel.** In a crisis lab, Dr. Frost explains to Tom Cruise (off
+**The visual novel.** In a crisis lab, Dr. Crisis explains to Tom Cruise (off
 duty, in a plain grey tee) and Alejandro G. Iñárritu that the marketing game
 was made with AI, and Tom gave **4,200,000 notes** ("AGAIN, BUT FASTER"). Each
 one spun up more GPUs. Half of Europe is gone ("Which half?" "The left one.").
