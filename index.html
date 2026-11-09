@@ -630,7 +630,13 @@ function update() {
   frame++;
   if (pressed.mute) muted = !muted;
   if (state === 'title') { if (pressed.start || pressed.jump || pressed.attack) newGame(); return; }
-  if (state === 'fresh') { if (winT > 0) winT--; else if (pressed.start || pressed.ok) startVN(INTRO, () => startRPG(1)); return; }
+  if (state === 'fresh') {
+    freshT++;
+    if ((pressed.start || pressed.ok) && freshT > 40 && freshT < 230) freshT = 230; // impatient? the news cuts in sooner
+    if (freshT === 230) { noise(0.6, 0.35, 4000); [880, 660, 880, 660].forEach((f, i) => tone('square', f, f, 0.14, 0.12, 0.1 + i * 0.16)); }
+    if (freshT > 330) startVN(INTRO, () => startRPG(1));
+    return;
+  }
   if (state === 'vn') { updateVN(); decayShake(); return; }
   if (state === 'rpg') { updateRPG(); decayShake(); return; }
   if (state === 'credits') { creditsT++; if (creditsT > 90 && (pressed.start || pressed.ok)) state = 'title'; return; }
@@ -721,7 +727,7 @@ function update() {
   cam.x += (target - cam.x) * (bossActive ? 0.08 : 0.12);
   if (shake > 0) shake *= 0.85; if (shake < 0.3) shake = 0;
 
-  if (boss.dead && winT > 0 && --winT <= 0) { state = 'fresh'; winT = 60; sfx.win(); }
+  if (boss.dead && winT > 0 && --winT <= 0) { state = 'fresh'; freshT = 0; sfx.win(); }
 }
 
 /* ------------------------------ DRAWING ----------------------------- */
@@ -1095,13 +1101,23 @@ function drawCat(x, y) {
 }
 function drawWin() {
   ctx.fillStyle = '#000c'; ctx.fillRect(0, 0, VW, VH);
-  text('CRITICS CONSENSUS', VW / 2, 30, '#fff', 'center');
-  text('100% FRESH', VW / 2, 46, '#7f7', 'center', 16);
-  text('BOX OFFICE: $' + money + 'M', VW / 2, 80, '#ffd84a', 'center');
-  text('TAKES NEEDED: ' + takes, VW / 2, 94, '#fff', 'center');
-  text('THE CRITICS HAVE SPOKEN.', VW / 2, 116, '#cbb', 'center');
-  text('WHAT COULD GO WRONG?', VW / 2, 130, '#f9a', 'center');
-  if (winT <= 0 && frame % 60 < 40) text('PRESS ENTER', VW / 2, 158, '#fff', 'center');
+  text('CRITICS CONSENSUS', VW / 2, 26, '#fff', 'center');
+  text('100% FRESH', VW / 2, 42, '#7f7', 'center', 16);
+  text('BOX OFFICE: $' + money + 'M', VW / 2, 74, '#ffd84a', 'center');
+  text('TAKES NEEDED: ' + takes, VW / 2, 88, '#fff', 'center');
+  text('SEQUEL GREENLIT!', VW / 2, 108, '#f9a', 'center');
+  text('DIGG. OR DIE.', VW / 2, 124, '#ffd84a', 'center');
+  if (freshT > 230) { // WE INTERRUPT THIS PROGRAM
+    const k = freshT - 230;
+    for (let i = 0; i < 900; i++) R(Math.random() * VW, Math.random() * VH, 2, 1, Math.random() < 0.5 ? '#fff' : '#555');
+    for (let i = 0; i < 4; i++) R(0, Math.random() * VH, VW, 2 + Math.random() * 6, '#0008');
+    if (k > 25) {
+      R(0, 0, VW, VH, '#0a1a3acc');
+      R(0, 64, VW, 22, frame % 16 < 8 ? '#c00' : '#900');
+      text('BREAKING NEWS', VW / 2, 71, '#fff', 'center');
+      text('WE INTERRUPT THIS PROGRAM', VW / 2, 96, '#ffd84a', 'center');
+    }
+  }
 }
 
 function draw() {
@@ -1132,7 +1148,7 @@ function draw() {
 /* =====================================================================
    CHAPTER 2: THE VISUAL NOVEL
    ===================================================================== */
-let vn = null, creditsT = 0;
+let vn = null, creditsT = 0, freshT = 0;
 function decayShake() { if (shake > 0) { shake *= 0.85; if (shake < 0.3) shake = 0; } }
 function blip() { if (actx && !muted) tone('square', 520 + Math.random() * 120, 520, 0.03, 0.03); }
 function wrap(str, n = 36) {
@@ -1144,39 +1160,44 @@ function wrap(str, n = 36) {
   return lines;
 }
 
-const NAMES = { tom: 'TOM CRUISE', ina: 'IÑÁRRITU', frost: 'DR. FROST', sam: 'SAM ALTMAN' };
+const NAMES = { ethan: 'TOM CRUISE', tom: 'TOM CRUISE', ina: 'IÑÁRRITU', frost: 'DR. FROST', sam: 'SAM ALTMAN' };
 const C3 = ['tom', 'ina', 'frost'];
 const INTRO = [
-  { bg: 'news', map: 'burn', text: 'MEANWHILE... THE "DIGGER" MARKETING GAME GOES VIRAL. TWO BILLION PLAYERS IN ONE WEEKEND.' },
-  { bg: 'news', map: 'burnt', fx: 'shake', text: 'GLOBAL TEMPERATURES UP SIX DEGREES. EXPERTS BLAME "SOME KIND OF BOOT GAME".' },
+  { bg: 'news', map: 'burn', text: 'WE INTERRUPT THIS PROGRAM. DATA CENTERS ALL OVER THE PLANET ARE OVERHEATING.' },
+  { bg: 'news', map: 'burnt', fx: 'shake', text: 'GLOBAL TEMPERATURES UP SIX DEGREES. THE CAUSE: ONE (1) MARKETING GAME.' },
   { bg: 'lab', cast: C3, who: 'frost', text: 'MR. CRUISE. SEÑOR IÑÁRRITU. THANK YOU FOR COMING. PLEASE... SIT DOWN.' },
-  { bg: 'lab', cast: C3, who: 'tom', text: 'IS THIS ABOUT THE REVIEWS? BECAUSE WE FIXED THE REVIEWS. WITH A BOOT.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'IT IS ABOUT YOUR LITTLE MARKETING GAME. THE ONE WITH THE BOOT.' },
-  { bg: 'lab', cast: C3, who: 'ina', text: 'THE GAME? IT WAS ONLY A TEASER. A LITTLE TOY.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'IT WAS MADE WITH AI. AND EVERY TIME SOMEONE PLAYED, A DATA CENTER SOMEWHERE SPUN UP.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'TWO BILLION PLAYERS. A MILLION GPUS. RUNNING HOT. DAY AND NIGHT.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'IS THIS ABOUT THE GAME? ISN\'T IT PERFECT?' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'OH, IT IS PERFECT. THAT IS THE PROBLEM.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'IT WAS MADE WITH AI. EVERY TIME YOU ASKED FOR A CHANGE, A DATA CENTER HAD TO BUILD THE WHOLE THING AGAIN.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'MR. CRUISE. HOW MANY VERSIONS DID YOU ASK FOR?' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'A FEW. MAYBE A DOZEN.' },
+  { bg: 'lab', cast: C3, who: 'frost', log: true, fx: 'shake', text: 'FOUR MILLION, TWO HUNDRED THOUSAND.' },
+  { bg: 'lab', cast: C3, who: 'frost', log: true, text: '"MAKE THE BOOT BIGGER." "MAKE THE SMILE BRIGHTER." "ONE MORE TAKE." "ONE MORE TAKE." "ONE MORE TAKE."' },
+  { bg: 'lab', cast: C3, who: 'ina', log: true, text: 'I DO TWENTY TAKES AND THEY CALL ME A PERFECTIONIST. HE DID FOUR MILLION.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'EVERY ITERATION SPUN UP MORE GPUS. THEY RAN HOT. DAY AND NIGHT. FOR MONTHS.' },
   { bg: 'lab', cast: C3, who: 'frost', fx: 'shake', text: 'THE ALPS MELTED BY TUESDAY. VENICE IS A REEF. HALF OF EUROPE IS... GONE.' },
   { bg: 'lab', cast: C3, who: 'tom', text: '...HALF?' },
   { bg: 'lab', cast: C3, who: 'frost', text: 'THE LEFT HALF.' },
-  { bg: 'lab', cast: C3, who: 'ina', text: 'MADRE DE DIOS. THIS IS A VERY LONG, VERY BAD SINGLE TAKE.' },
+  { bg: 'smile', who: 'tom', text: 'WELL... AT LEAST THE GAME IS PERFECT.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'PLEASE. STOP. SMILING.' },
   { bg: 'lab', cast: C3, who: 'tom', text: 'HOW DO WE STOP IT?' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'THE SERVERS ARE STILL RUNNING. EVERY CABLE LEADS TO ONE CAMPUS. AND ONE MAN.' },
-  { bg: 'lab', cast: C3, call: true, who: 'sam', text: 'RELAX, EVERYONE. THE NEXT MODEL WILL FIX THE CLIMATE. IT JUST NEEDS A FEW MORE GIGAWATTS.' },
-  { bg: 'lab', cast: C3, who: 'frost', text: 'HE WILL NOT TURN THEM OFF. SOMEONE HAS TO GO IN THERE AND PULL THE PLUG.' },
-  { bg: 'lab', cast: C3, who: 'tom', text: 'ALEJANDRO. GRAB YOUR CAMERA.' },
-  { bg: 'lab', cast: C3, who: 'ina', text: 'WE SHOOT IT IN ONE TAKE. NO CUTS.' },
-  { bg: 'lab', cast: C3, who: 'tom', text: 'THIS IS OUR MISSION. IMPOSSIBLE OR NOT.' },
-  { bg: 'card', text: 'CHAPTER 3: THE DATA CENTER' }
+  { bg: 'lab', cast: C3, who: 'frost', text: 'THE AI IS STILL ITERATING ON YOUR LAST NOTE. EVERY CABLE LEADS TO ONE CAMPUS. AND ONE MAN.' },
+  { bg: 'lab', cast: C3, call: true, who: 'sam', text: 'RELAX, EVERYONE. ONE MORE ITERATION AND IT WILL BE PERFECT. WE JUST NEED A FEW MORE GIGAWATTS.' },
+  { bg: 'lab', cast: C3, who: 'frost', text: 'HE WILL NOT TURN THEM OFF. SOMEONE HAS TO GET INSIDE AND PULL THE PLUG.' },
+  { bg: 'lab', cast: C3, who: 'ina', text: 'A HEIST. IN ONE TAKE.' },
+  { bg: 'lab', cast: C3, who: 'tom', text: 'I KNOW SOMEBODY WITH A HELICOPTER. AND A PAIR OF SUNGLASSES.' },
+  { bg: 'card', text: 'YOUR MISSION, SHOULD YOU CHOOSE TO ACCEPT IT: PULL THE PLUG.' },
+  { bg: 'card', text: 'CHAPTER 3: MISSION: IMPLAUSIBLE' }
 ];
 const ENDING = [
-  { bg: 'dc', cast: ['tom', 'ina', 'sam'], who: 'sam', text: 'OKAY. OKAY! WE WILL RUN EVERYTHING ON RENEWABLES. AND MAYBE ASK BEFORE WE SCALE.' },
-  { bg: 'dc', cast: ['tom', 'ina', 'sam'], who: 'tom', text: 'AND SHUT DOWN THE BOOT GAME.' },
-  { bg: 'dc', cast: ['tom', 'ina', 'sam'], who: 'sam', text: '...THE BOOT GAME STAYS. THE ENGAGEMENT NUMBERS ARE INCREDIBLE.' },
-  { bg: 'dc', cast: ['tom', 'ina', 'sam'], who: 'tom', text: 'FINE. BUT IT RUNS ON SOLAR.' },
-  { bg: 'lab', cast: C3, who: 'frost', map: 'heal', text: 'THE SERVERS ARE COOLING. TEMPERATURES ARE FALLING. THE ALPS ARE... REFREEZING.' },
-  { bg: 'lab', cast: C3, who: 'tom', map: 'healed', text: 'AND THE CAT?' },
-  { bg: 'lab', cast: C3, who: 'frost', map: 'healed', cat: true, text: 'THE CAT IS FINE.' },
-  { bg: 'lab', cast: C3, who: 'ina', map: 'healed', cat: true, text: '...AND CUT. PRINT IT. THAT IS THE MOVIE.' }
+  { bg: 'dc', cast: ['ethan', 'ina', 'sam'], who: 'sam', text: 'OKAY. OKAY! WE WILL RUN EVERYTHING ON RENEWABLES. AND NO MORE ITERATIONS.' },
+  { bg: 'dc', cast: ['ethan', 'ina', 'sam'], who: 'ethan', text: 'NOT EVEN... ONE MORE?' },
+  { bg: 'dc', cast: ['ethan', 'ina', 'sam'], who: 'ina', text: 'TOM.' },
+  { bg: 'dc', cast: ['ethan', 'ina', 'sam'], who: 'ethan', text: 'FINE. IT WAS PERFECT ANYWAY.' },
+  { bg: 'lab', cast: ['ethan', 'ina', 'frost'], who: 'frost', map: 'heal', text: 'THE SERVERS ARE COOLING. TEMPERATURES ARE FALLING. THE ALPS ARE... REFREEZING.' },
+  { bg: 'lab', cast: ['ethan', 'ina', 'frost'], who: 'ethan', map: 'healed', text: 'AND THE CAT?' },
+  { bg: 'lab', cast: ['ethan', 'ina', 'frost'], who: 'frost', map: 'healed', cat: true, text: 'THE CAT IS FINE.' },
+  { bg: 'lab', cast: ['ethan', 'ina', 'frost'], who: 'ina', map: 'healed', cat: true, text: '...AND CUT. PRINT IT. FIRST TAKE.' }
 ];
 
 function startVN(script, onDone) { vn = { script, i: 0, onDone, t: 0 }; state = 'vn'; vnLine(); }
@@ -1235,14 +1256,28 @@ function drawEurope(x, y, s, mode, prog) {
 function portrait(key, x, y, face, scale = 2) {
   ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.scale(scale, scale);
   const r = painter(0, 0, face, 32);
-  if (key === 'tom') {
-    r(4, 25, 24, 23, SUIT); r(4, 25, 7, 4, YOKE); r(21, 25, 7, 4, YOKE); r(11, 25, 2, 12, SUITd); r(19, 25, 2, 12, SUITd);
-    r(13, 25, 6, 23, SHIRT); r(14, 25, 1, 23, STRIPE); r(17, 25, 1, 23, STRIPE); r(15, 28, 2, 2, TURQ); r(15, 30, 1, 6, '#222'); r(16, 30, 1, 6, '#222');
-    r(13, 22, 6, 3, SKN);
-    r(9, 6, 14, 16, SKN); r(9, 6, 2, 16, SKNd); r(8, 11, 2, 4, SKN);
-    r(8, 2, 16, 5, HAIR); r(6, 4, 4, 8, HAIR); r(10, 0, 12, 3, HAIR); r(20, 2, 4, 4, HAIR); r(12, 1, 6, 1, '#f2f2f2'); r(7, 6, 2, 4, HAIRd);
-    r(13, 10, 4, 1, HAIRd); r(19, 10, 3, 1, HAIRd); r(14, 12, 2, 2, '#222'); r(19, 12, 2, 2, '#222');
-    r(12, 8, 6, 1, SKNd); r(21, 14, 2, 4, SKNd); r(15, 18, 6, 2, '#fff6d8'); r(14, 20, 8, 1, SKNd); r(10, 16, 2, 4, SKNd);
+  if (key === 'tom') { // Tom Cruise himself: dark hair, dark suit, white shirt, THE smile
+    const sk = '#f0c39a', sd = '#d9a57a', hr = '#2b1a10';
+    r(4, 25, 24, 23, '#1b1f2a'); r(11, 25, 2, 14, '#10131a'); r(19, 25, 2, 14, '#10131a');
+    r(13, 25, 6, 23, '#f2f2f2'); r(13, 25, 2, 2, sk); r(17, 25, 2, 2, sk); r(15, 25, 2, 3, sk);
+    r(13, 22, 6, 3, sk);
+    r(9, 6, 14, 16, sk); r(9, 6, 2, 16, sd); r(8, 11, 2, 4, sk);
+    r(8, 1, 16, 6, hr); r(7, 3, 3, 9, hr); r(22, 3, 2, 6, hr); r(10, 0, 4, 1, hr); r(16, 0, 5, 1, hr); r(15, 6, 5, 2, hr); r(11, 2, 3, 1, '#4a3020');
+    r(12, 9, 4, 1, hr); r(18, 9, 4, 1, hr);
+    r(13, 11, 2, 1, '#3a2a1a'); r(19, 11, 2, 1, '#3a2a1a'); r(13, 12, 2, 1, sd); r(19, 12, 2, 1, sd); // smiling eyes
+    r(16, 13, 2, 3, sd);
+    r(11, 14, 1, 4, sd); r(22, 14, 1, 4, sd);                                      // smile lines
+    r(12, 16, 1, 1, '#a0504a'); r(21, 16, 1, 1, '#a0504a'); r(13, 16, 8, 1, '#d98a7a'); // corners up
+    r(13, 17, 8, 1, '#ffffff'); r(14, 18, 6, 1, '#ffffff'); r(17, 17, 1, 2, '#e6e6e6');
+    r(13, 18, 1, 1, '#a0504a'); r(20, 18, 1, 1, '#a0504a'); r(14, 19, 6, 1, '#d98a7a');
+  } else if (key === 'ethan') { // the MI2 cliff look: long hair, sunglasses, dark tee
+    const sk = '#e9b88e', hr = '#2a1a10';
+    r(4, 25, 24, 23, '#33363c'); r(12, 24, 8, 2, '#24272c'); r(4, 30, 3, 18, sk); r(25, 30, 3, 18, sk); r(24, 42, 5, 6, '#c9a227');
+    r(13, 22, 6, 3, sk);
+    r(9, 6, 14, 16, sk); r(9, 6, 2, 16, '#cf9c72');
+    r(6, 1, 20, 6, hr); r(5, 4, 4, 20, hr); r(23, 4, 4, 20, hr); r(4, 18, 3, 7, hr); r(25, 18, 3, 7, hr); r(12, 6, 6, 2, hr);
+    r(10, 10, 6, 4, '#111'); r(17, 10, 6, 4, '#111'); r(16, 11, 1, 1, '#111'); r(11, 10, 2, 1, '#6af'); r(18, 10, 2, 1, '#6af');
+    r(16, 14, 2, 2, '#cf9c72'); r(13, 17, 7, 2, '#ffffff'); r(13, 19, 7, 1, '#c06060');
   } else if (key === 'ina') {
     r(4, 25, 24, 23, '#1c1c1c'); r(10, 23, 12, 4, '#5a5a5a'); r(12, 27, 3, 8, '#5a5a5a');
     r(13, 21, 6, 3, '#d9a77c');
@@ -1270,6 +1305,14 @@ function portrait(key, x, y, face, scale = 2) {
   }
   ctx.restore();
 }
+function drawEthanSmall(x, y, face, t, punching) {
+  const r = painter(x, y, face, 16), sk = '#e9b88e', hr = '#2a1a10';
+  r(5, 12, 2, 3, '#5d6152'); r(9, 12, 2, 3, '#5d6152'); r(5, 15, 3, 1, '#222'); r(9, 15, 3, 1, '#222'); r(5, 12, 6, 1, '#4d5144');
+  r(5, 7, 6, 5, '#33363c'); r(4, 8, 1, 3, sk);
+  if (punching) r(11, 8, 5, 2, sk); else r(11, 8, 1, 3, sk);
+  r(6, 2, 6, 5, sk); r(5, 0, 7, 2, hr); r(4, 1, 2, 7, hr); r(11, 1, 2, 3, hr); r(3, 6, 2, 2, hr);
+  r(7, 3, 5, 1, '#111'); r(8, 3, 1, 1, '#6af'); r(8, 5, 3, 1, '#fff'); r(10, 11, 2, 2, '#c9a227');
+}
 function drawInaSmall(x, y, face, t) {
   const r = painter(x, y, face, 16);
   r(6, 13, 2, 3, '#2a2a2a'); r(9, 13, 2, 3, '#2a2a2a'); r(5, 15, 3, 1, '#111'); r(9, 15, 3, 1, '#111');
@@ -1296,6 +1339,14 @@ function drawLabBG(L) {
     portrait('sam', 138, 12, 1, 1.4);
     ctx.restore();
     text('LIVE', 102, 12, frame % 30 < 15 ? '#f44' : '#822', 'left');
+  } else if (L.log) {
+    const LOG = ['"BIGGER BOOT"', '"MORE SMILE"', '"ONE MORE TAKE"', '"AGAIN."', '"PERFECT IT"', '"ONE MORE TAKE"', '"NO. AGAIN."', '"BRIGHTER"'];
+    ctx.save(); ctx.beginPath(); ctx.rect(96, 8, 128, 60); ctx.clip();
+    const off = (vn.lt * 0.6) % 12;
+    for (let k = 0; k < 7; k++) text(LOG[(k + Math.floor(vn.lt * 0.05)) % LOG.length], 102, 12 + k * 12 - off, '#7f7');
+    ctx.restore();
+    R(96, 68, 128, 12, '#0a2a0a');
+    text('V ' + (4199000 + Math.min(1000, vn.lt * 9)).toLocaleString('en-US'), 160, 70, '#ffd84a', 'center');
   } else {
     drawEurope(108, 12, 4, L.map || (vn && vn.script === ENDING ? 'healed' : 'burnt'), Math.min(1, (vn ? vn.lt : 0) / 120));
     text('EUROPE', 160, 70, '#fff', 'center');
@@ -1312,7 +1363,7 @@ function drawNewsBG(L) {
   R(0, 80, VW, 14, '#c00'); text('BREAKING NEWS', 6, 83, '#fff');
   text('LIVE', VW - 6, 83, frame % 30 < 15 ? '#fff' : '#f99', 'right');
   R(0, 94, VW, 12, '#000');
-  const tick = 'EUROPE +6C ... BOOT GAME HITS 2 BILLION PLAYERS ... DATA CENTERS AT 400% ... VENICE NOW A REEF ... CAT STATUS UNKNOWN ... ';
+  const tick = 'EUROPE +6C ... ONE MARKETING GAME, 4.2 MILLION VERSIONS ... DATA CENTERS AT 400% ... VENICE NOW A REEF ... CAT STATUS UNKNOWN ... ';
   ctx.save(); ctx.beginPath(); ctx.rect(0, 94, VW, 12); ctx.clip();
   const off = (frame * 1.2) % (tick.length * 8);
   text(tick + tick, 4 - off, 96, '#ffd84a'); ctx.restore();
@@ -1331,19 +1382,31 @@ function drawDCBG(heat) {
   if (heat) { ctx.save(); ctx.globalAlpha = 0.07 + 0.05 * Math.sin(frame * 0.1); ctx.fillStyle = '#ff4000'; ctx.fillRect(0, 0, VW, VH); ctx.restore(); }
 }
 
-const SLOT = { tom: { x: 0, face: 1 }, ina: { x: 60, face: 1 }, frost: { x: 256, face: -1 }, sam: { x: 256, face: -1 } };
+const SLOT = { ethan: { x: 0, face: 1 }, tom: { x: 0, face: 1 }, ina: { x: 60, face: 1 }, frost: { x: 256, face: -1 }, sam: { x: 256, face: -1 } };
 function drawVN() {
   const L = vn.script[vn.i];
   const sx = shake ? rand(-shake, shake) : 0;
   ctx.save(); ctx.translate(Math.round(sx), 0);
   if (L.bg === 'card') {
     R(0, 0, VW, VH, '#000');
-    const s = L.text.slice(0, vn.shown);
-    text(s, VW / 2, 80, '#ffd84a', 'center');
+    let left = vn.shown;
+    const lines = wrap(L.text, 30), y0 = 84 - lines.length * 7;
+    lines.forEach((ln, k) => { if (left > 0) text(ln.slice(0, left), VW / 2, y0 + k * 14, '#ffd84a', 'center'); left -= ln.length; });
     if (vn.shown >= vn.total && frame % 60 < 40) text('PRESS ENTER', VW / 2, 110, '#888', 'center');
     ctx.restore(); return;
   }
-  if (L.bg === 'news') drawNewsBG(L); else if (L.bg === 'dc') drawDCBG(false); else drawLabBG(L);
+  if (L.bg === 'smile') {
+    // THE SMILE
+    const g = ctx.createRadialGradient(160, 50, 10, 160, 60, 170);
+    g.addColorStop(0, '#ffe9b0'); g.addColorStop(0.5, '#f0a050'); g.addColorStop(1, '#5a2050');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2 + frame * 0.004; ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(160, 52); ctx.lineTo(160 + Math.cos(a) * 260, 52 + Math.sin(a) * 260); ctx.lineTo(160 + Math.cos(a + 0.12) * 260, 52 + Math.sin(a + 0.12) * 260); ctx.fill(); ctx.restore(); }
+    portrait('tom', 160 - 48, -4, 1, 3);
+    const tw = Math.floor(frame / 6) % 4, gx = 160 - 48 + 19 * 3 + tw * 4, gy = -4 + 17 * 3 + 2;
+    R(gx - 6, gy, 13, 1, '#fff'); R(gx, gy - 6, 1, 13, '#fff'); R(gx - 2, gy - 2, 5, 5, '#fff');
+    if (frame % 30 < 15) { R(70, 30, 9, 1, '#fff'); R(74, 26, 1, 9, '#fff'); R(244, 70, 9, 1, '#fff'); R(248, 66, 1, 9, '#fff'); }
+    tone && frame % 60 === 0 && actx && !muted && tone('sine', 2093, 2637, 0.12, 0.05);
+  } else if (L.bg === 'news') drawNewsBG(L); else if (L.bg === 'dc') drawDCBG(false); else drawLabBG(L);
   for (const c of L.cast || []) {
     const sl = SLOT[c], active = c === L.who, bob = active && vn.shown < vn.total && frame % 10 < 5 ? -1 : 0;
     if (!active) ctx.filter = 'brightness(0.5)';
@@ -1369,9 +1432,9 @@ function drawVN() {
    ===================================================================== */
 let rpg = null;
 const SKILLS = {
-  'BOOT STOMP': { sp: 8, target: 'enemy', desc: 'BOOT STOMP (8 SP): A BIG HIT ON ONE FOE.' },
-  'UNPLUG': { sp: 10, target: 'all', desc: 'UNPLUG (10 SP): HITS ALL. SERVERS TAKE DOUBLE.' },
-  'DIGG OR DIE': { sp: 20, target: 'enemy', desc: 'DIGG OR DIE (20 SP): THE GIANT DIGGER BOOT.' },
+  'FREE SOLO': { sp: 8, target: 'enemy', desc: 'FREE SOLO (8 SP): CLIMB IT, NO ROPE, DROP ON IT.' },
+  'CABLE DROP': { sp: 10, target: 'all', desc: 'CABLE DROP (10 SP): HITS ALL. SERVERS TAKE DOUBLE.' },
+  'SELF-DESTRUCT': { sp: 20, target: 'enemy', desc: 'SELF-DESTRUCT (20 SP): EXPLODING SUNGLASSES.' },
   'LONG TAKE': { sp: 10, target: 'all', desc: 'LONG TAKE (10 SP): FOUR HITS ON RANDOM FOES.' },
   'CUT!': { sp: 8, target: 'enemy', desc: 'CUT! (8 SP): A FOE LOSES ITS NEXT TURN.' },
   'CATERING': { sp: 8, target: 'party', desc: 'CATERING (8 SP): HEAL THE WHOLE CREW 35.' }
@@ -1384,16 +1447,16 @@ const RPG_TIPS = [
   'TIP: SERVERS SHIELD SAM. UNPLUG THEM FIRST!',
   'TIP: WHEN SAM SCALES UP, DEFEND OR YELL "CUT!"',
   'TIP: CATERING HEALS EVERYONE. COFFEE REVIVES.',
-  'TIP: SAVE 20 SP FOR DIGG OR DIE.'
+  'TIP: SAVE 20 SP FOR SELF-DESTRUCT.'
 ];
 function mkServer(x, y, label) { return { kind: 'server', name: 'SERVER ' + label, hp: 70, maxHp: 70, atk: 11, x, y, w: 30, h: 50, stun: 0, imm: 0, flash: 0, ox: 0, dead: false }; }
 function startRPG(take) {
   state = 'rpg';
   rpg = {
-    take, t: 0, phase: 'intro', turn: 0, wait: 0, summoned: false, bootFx: null, floats: [],
+    take, t: 0, phase: 'intro', turn: 0, wait: 0, summoned: false, fx: null, floats: [],
     msg: take > 1 ? RPG_TIPS[(take - 2) % RPG_TIPS.length] : 'SAM ALTMAN AND HIS DATA CENTERS BLOCK THE WAY!', items: { COFFEE: 3, SOLAR: 2 },
     party: [
-      { key: 'tom', name: 'TOM', hp: 140, maxHp: 140, sp: 40, maxSp: 40, atk: 18, skills: ['BOOT STOMP', 'UNPLUG', 'DIGG OR DIE'], x: 232, y: 50, w: 32, h: 32, def: false, flash: 0, ox: 0 },
+      { key: 'tom', name: 'TOM', hp: 140, maxHp: 140, sp: 40, maxSp: 40, atk: 18, skills: ['FREE SOLO', 'CABLE DROP', 'SELF-DESTRUCT'], x: 232, y: 50, w: 32, h: 32, def: false, flash: 0, ox: 0 },
       { key: 'ina', name: 'ALEJANDRO', hp: 110, maxHp: 110, sp: 50, maxSp: 50, atk: 13, skills: ['LONG TAKE', 'CUT!', 'CATERING'], x: 270, y: 70, w: 32, h: 32, def: false, flash: 0, ox: 0 }
     ],
     enemies: [
@@ -1414,7 +1477,7 @@ function beginSelect() {
 function menuOptions() {
   const a = rpg.party[rpg.actor];
   if (rpg.menu === 'main') return [
-    { label: 'ATTACK', ok: true, desc: a.key === 'tom' ? 'ATTACK: A SWING OF THE SPADE.' : 'ATTACK: CLAPPERBOARD TO THE FACE.' },
+    { label: 'ATTACK', ok: true, desc: a.key === 'tom' ? 'ATTACK: A SPINNING KICK.' : 'ATTACK: CLAPPERBOARD TO THE FACE.' },
     { label: 'SKILL', ok: true, desc: a.name + ' SKILLS. SP: ' + a.sp },
     { label: 'ITEM', ok: true, desc: 'COFFEE x' + rpg.items.COFFEE + '   SOLAR CELL x' + rpg.items.SOLAR },
     { label: 'DEFEND', ok: true, desc: 'DEFEND: HALF DAMAGE THIS TURN, +4 SP.' }
@@ -1511,7 +1574,7 @@ function partyAct(a, q) {
   if (q.cmd === 'defend') { a.def = true; a.sp = Math.min(a.maxSp, a.sp + 4); rpg.msg = a.name + ' BRACES FOR IMPACT.'; return; }
   if (q.cmd === 'attack') {
     hitEnemy(pickT(q.tgt), a.atk); sfx.swing();
-    rpg.msg = a.key === 'tom' ? 'TOM SWINGS THE SPADE!' : 'ALEJANDRO SWINGS THE CLAPPERBOARD!'; return;
+    rpg.msg = a.key === 'tom' ? 'TOM LANDS A SPINNING KICK!' : 'ALEJANDRO SWINGS THE CLAPPERBOARD!'; return;
   }
   if (q.cmd === 'item') {
     rpg.items[q.item]--; const t = q.tgt; sfx.gem();
@@ -1521,12 +1584,12 @@ function partyAct(a, q) {
   }
   a.sp -= SKILLS[q.skill].sp;
   switch (q.skill) {
-    case 'BOOT STOMP': hitEnemy(pickT(q.tgt), a.atk * 2.2); sfx.bounce(); rpg.msg = 'TOM: BOOT STOMP!'; break;
-    case 'UNPLUG': aliveE().forEach(e => hitEnemy(e, a.atk * (e.kind === 'server' ? 2 : 1))); rpg.msg = 'TOM YANKS OUT EVERY POWER CABLE HE CAN REACH!'; break;
-    case 'DIGG OR DIE': {
+    case 'FREE SOLO': { const t = pickT(q.tgt); hitEnemy(t, a.atk * 2.2); sfx.bounce(); rpg.msg = 'TOM FREE-SOLOS UP ' + (t ? t.name : 'THE RACK') + ' AND DROPS ON TOP!'; break; }
+    case 'CABLE DROP': aliveE().forEach(e => hitEnemy(e, a.atk * (e.kind === 'server' ? 2 : 1))); rpg.msg = 'TOM DROPS FROM THE CEILING ON A WIRE AND PULLS EVERY PLUG!'; break;
+    case 'SELF-DESTRUCT': {
       const t = pickT(q.tgt); if (!t) break;
-      rpg.bootFx = { x: t.x + t.w / 2 - 36, y: -110, ty: t.y + t.h - 96, t: 0, tgt: t, dmg: a.atk * 3.6 };
-      sfx.whistle(); rpg.msg = 'DIGG. OR DIE. THE GIANT BOOT DESCENDS!'; break;
+      rpg.fx = { x0: a.x + 10, y0: a.y + 10, x1: t.x + t.w / 2, y1: t.y + (t.kind === 'sam' ? 22 : 18), t: 0, dur: 70, tgt: t, dmg: a.atk * 3.6 };
+      tone('sine', 1200, 1200, 0.08, 0.08); rpg.msg = 'THIS MESSAGE WILL SELF-DESTRUCT IN FIVE SECONDS...'; break;
     }
     case 'LONG TAKE':
       for (let k = 0; k < 4; k++) { const t = pick(aliveE()); if (t) hitEnemy(t, a.atk * 0.75); }
@@ -1577,17 +1640,18 @@ function updateRPG() {
   for (const f of rp.floats) { f.t--; f.y -= 0.4; }
   rp.floats = rp.floats.filter(f => f.t > 0);
   for (const m of [...rp.party, ...rp.enemies]) { m.ox *= 0.82; if (m.flash > 0) m.flash--; }
-  if (rp.bootFx) {
-    const b = rp.bootFx; b.y = Math.min(b.ty, b.y + 10);
-    if (b.y >= b.ty && ++b.t === 1) { shake = 14; sfx.boom(); hitEnemy(b.tgt.dead ? pick(aliveE()) : b.tgt, b.dmg); }
-    if (b.t > 40) rp.bootFx = null;
+  if (rp.fx) {
+    const b = rp.fx; b.t++;
+    if (b.t < b.dur && b.t % 14 === 0) tone('sine', 1200, 1200, 0.06, 0.07);
+    if (b.t === b.dur) { shake = 14; sfx.boom(); hitEnemy(b.tgt.dead ? pick(aliveE()) : b.tgt, b.dmg); }
+    if (b.t > b.dur + 32) rp.fx = null;
   }
   switch (rp.phase) {
     case 'intro': if (rp.t > 110 || pressed.ok) beginSelect(); break;
     case 'select': updateSelect(); break;
     case 'act':
-      if (rp.wait > 0) { rp.wait--; if (rp.wait < 50 && pressed.ok && !rp.bootFx) rp.wait = 0; }
-      else if (!rp.bootFx) nextAction();
+      if (rp.wait > 0) { rp.wait--; if (rp.wait < 50 && pressed.ok && !rp.fx) rp.wait = 0; }
+      else if (!rp.fx) nextAction();
       break;
     case 'win': if (--rp.wait <= 0) startVN(ENDING, () => { state = 'credits'; creditsT = 0; }); break;
     case 'lose': if (--rp.wait <= 0) startRPG(rp.take + 1); break;
@@ -1633,7 +1697,7 @@ function drawRPG() {
     if (p.flash > 0 && frame % 4 < 2) ctx.filter = 'brightness(3)';
     if (p.hp <= 0) ctx.filter = 'grayscale(1) brightness(0.6)';
     ctx.save(); ctx.translate(Math.round(p.x + p.ox), p.y + (active && frame % 20 < 10 ? -1 : 0)); ctx.scale(2, 2);
-    if (p.key === 'tom') drawTom({ x: 3, y: 2, w: 10, h: 14, face: -1, onGround: true, vx: 0, pogo: false, atk: Math.abs(p.ox) > 4 ? 8 : 0, sprint: false }, frame);
+    if (p.key === 'tom') drawEthanSmall(0, 0, -1, frame, Math.abs(p.ox) > 4);
     else drawInaSmall(0, 0, -1, frame);
     ctx.restore(); ctx.filter = 'none';
     if (p.def) text('DEF', p.x + 16, p.y - 8, '#8cf', 'center');
@@ -1643,7 +1707,21 @@ function drawRPG() {
     const o = menuOptions()[rp.cursor];
     if (o) { const t = o.value, bx = t.x + t.w / 2, by = t.y - 14 + (frame % 20 < 10 ? 0 : 2); R(bx - 3, by, 7, 2, '#ffd84a'); R(bx - 2, by + 2, 5, 2, '#ffd84a'); R(bx - 1, by + 4, 3, 2, '#ffd84a'); }
   }
-  if (rp.bootFx) drawGiantBoot(rp.bootFx);
+  if (rp.fx) {
+    const b = rp.fx;
+    if (b.t < b.dur) { // the sunglasses fly over, counting down
+      const k = Math.min(1, b.t / 30), x = b.x0 + (b.x1 - b.x0) * k, y = b.y0 + (b.y1 - b.y0) * k - Math.sin(k * Math.PI) * 30;
+      R(x - 7, y, 6, 4, '#111'); R(x + 1, y, 6, 4, '#111'); R(x - 1, y + 1, 2, 1, '#111'); R(x - 6, y, 2, 1, '#6af'); R(x + 2, y, 2, 1, '#6af');
+      text(String(5 - Math.floor(b.t / 14)), x + 12, y - 2, '#f44', 'left');
+    } else { // boom
+      const k = (b.t - b.dur) / 32;
+      ctx.save(); ctx.globalAlpha = 1 - k;
+      ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(b.x1, b.y1, 10 + k * 40, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ff9a2a'; ctx.beginPath(); ctx.arc(b.x1, b.y1, 6 + k * 30, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#c8321a'; ctx.beginPath(); ctx.arc(b.x1, b.y1, 3 + k * 16, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+  }
   for (const f of rp.floats) { ctx.globalAlpha = Math.min(1, f.t / 12); text(f.txt, f.x, f.y, f.c, 'center'); ctx.globalAlpha = 1; }
   ctx.restore();
 
@@ -1670,19 +1748,20 @@ function drawRPG() {
     R(116, y + 11, 110, 4, '#300'); R(116, y + 11, 110 * p.hp / p.maxHp, 4, p.hp / p.maxHp < 0.3 ? '#fa3' : '#4c4');
     text('SP ' + p.sp, 312, y + 10, '#8cf', 'right');
   });
-  if (rp.phase === 'intro' && rp.t < 60) { R(0, 60, VW, 30, '#000b'); text('CHAPTER 3: THE DATA CENTER', VW / 2, 71, '#ffd84a', 'center'); }
+  if (rp.phase === 'intro' && rp.t < 60) { R(0, 60, VW, 30, '#000b'); text('MISSION: IMPLAUSIBLE', VW / 2, 71, '#ffd84a', 'center'); }
   if (rp.take > 1 && rp.phase === 'intro') text('TAKE ' + rp.take, VW / 2, 92, '#fff', 'center');
 }
 
 function drawCredits() {
   R(0, 0, VW, VH, '#000');
   text('THE END', VW / 2, 18, '#ffd84a', 'center', 16);
-  text('DIGG. OR DIE.', VW / 2, 42, '#fff', 'center');
+  text('MISSION ACCOMPLISHED.', VW / 2, 42, '#fff', 'center');
   text('BOX OFFICE: $' + money + 'M', VW / 2, 64, '#ffd84a', 'center');
   text('EUROPE: SAVED (MOSTLY)', VW / 2, 80, '#7f7', 'center');
   text('THE CAT: FINE', VW / 2 - 10, 94, '#f9a', 'center'); drawCat(VW / 2 + 52, 92);
-  text('THIS GAME WAS MADE WITH AI.', VW / 2, 120, '#aaa', 'center');
-  text('SORRY, EUROPE.', VW / 2, 132, '#aaa', 'center');
+  text('THIS GAME WAS MADE WITH AI', VW / 2, 114, '#aaa', 'center');
+  text('IN 4,200,000 ITERATIONS.', VW / 2, 126, '#aaa', 'center');
+  text('SORRY, EUROPE.', VW / 2, 140, '#aaa', 'center');
   if (creditsT > 90 && frame % 60 < 40) text('PRESS ENTER', VW / 2, 158, '#fff', 'center');
 }
 

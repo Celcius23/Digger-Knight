@@ -66,32 +66,40 @@ Clapperboards are checkpoints. Dying yells "CUT!" and costs 20% of the box offic
 5. The premiere: boss fight with Mortimer Snobb
 
 All set against a sunset of searchlights, the HOLLYDIG sign and nodding oil
-pumpjacks. Beat the boss for a **100% FRESH** critics consensus... but then:
+pumpjacks. Beat the boss and the **100% FRESH** success screen rolls...
+until static and an alarm cut in: **WE INTERRUPT THIS PROGRAM.**
 
 ### Chapter 2: the visual novel
-BREAKING NEWS. The AI-made marketing game went viral, two billion players spun
-up a million GPUs, and the left half of Europe is gone. Climate scientist
-Dr. Frost briefs Tom and Iñárritu, then a certain tech CEO calls in to say the
-next model will fix it, if he can just get a few more gigawatts.
+Breaking news: data centers all over the planet are overheating, and the left
+half of Europe is gone. In a crisis lab, Dr. Frost explains it to Tom Cruise
+and Iñárritu. The marketing game was made with AI, and Tom kept asking for
+"one more take": **4,200,000 versions**, each one spinning up more GPUs. The
+request log scrolls on the wall, Tom flashes his famous smile ("Well... at
+least the game is perfect"), and a certain tech CEO calls in to say one more
+iteration will fix it, if he can just get a few more gigawatts.
 Press **Z / Enter** (or tap) to advance.
 
-### Chapter 3: the turn-based battle
-Tom and Iñárritu storm the data center to fight **Sam Altman** and his GPU
-server racks in a classic turn-based battle, to an original 5/4 spy-thriller theme.
+### Chapter 3: Mission: Implausible
+*Your mission, should you choose to accept it: pull the plug.* Tom, in his
+long-haired, sunglasses-wearing cliff-climbing look from the opening of
+*Mission: Impossible 2*, and Iñárritu break into the data center to face
+**Sam Altman** and his GPU server racks in a turn-based battle, to an original
+5/4 spy-thriller theme.
 
 | Tom | Iñárritu |
 | --- | --- |
-| **Boot Stomp:** big single hit | **Long Take:** four hits on random foes |
-| **Unplug:** hits all, double damage to servers | **CUT!:** a foe loses its next turn (cancels a charging gigawatt) |
-| **Digg or Die:** the giant boot | **Catering:** heals the whole crew |
+| **Free Solo:** climb it with no rope, drop on it | **Long Take:** four hits on random foes |
+| **Cable Drop:** drop from the ceiling on a wire and pull every plug (hits all, double vs. servers) | **CUT!:** a foe loses its next turn (cancels a charging gigawatt) |
+| **Self-Destruct:** exploding sunglasses, with a countdown | **Catering:** heals the whole crew |
 
 Items: **Iced Coffee** (+50 HP, revives) and **Solar Cell** (+20 SP).
-Servers shield Sam (half damage), so unplug them first. When Sam starts
+Servers shield Sam (half damage), so pull their plugs first. When Sam starts
 "scaling up", defend or yell CUT! Menus: arrows to choose, **Z/Enter** to
 confirm, **X/Esc** to go back (touch: ◀ ▶ ▼, JUMP = OK, DIG = back).
 
-Win, and Sam agrees to run everything on renewables, the Alps refreeze, and
-the cat is fine.
+Win, and Sam agrees to renewables and *no more iterations* ("Not even... one
+more?"). The Alps refreeze, the cat is fine, and Iñárritu calls it: "Print it.
+First take."
 
 ---
 
